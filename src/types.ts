@@ -10,9 +10,14 @@ export type Category =
 
 export interface Listing {
   id: string
+  ownerId: string
   title: string
   price: number
   category: Category
+  subCategory: string | null
+  condition: string
+  description: string | null
+  city: string | null
   location: string
   distanceKm: number
   verified: boolean
@@ -21,6 +26,21 @@ export interface Listing {
   spin360?: boolean
   emoji: string
   bg: string
+  status: 'active' | 'sold' | 'removed'
+  createdAt: string
+}
+
+// Shape the Sell wizard collects and hands to lib/listings.ts createListing().
+// A narrower type than Listing since fields like id/status/createdAt are server-assigned.
+export interface NewListingInput {
+  title: string
+  price: number
+  category: Category
+  subCategory?: string
+  condition: string
+  description?: string
+  city?: string
+  location?: string
 }
 
 export interface User {
