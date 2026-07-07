@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { categories } from "../data/listings";
-import { countActiveListingsInCategory, createListing } from "../lib/listings";
+import {
+  countActiveListingsInCategory,
+  createListing,
+  attachPhotos,
+} from "../lib/listings";
+import { uploadListingPhotos, validatePhotoFiles } from "../lib/storage";
 import { Category } from "../types";
 import { useAuth } from "../context/AuthContext";
-import { Mic, Upload, Check } from "lucide-react";
+import { Mic, Upload, Check, X } from "lucide-react";
 
 const stepNames = ["Category", "Details", "Media", "Review"];
 const LISTING_CAP_PER_CATEGORY = 2; // matches the flat cap new users start with; grows with trust score later
@@ -22,7 +27,39 @@ export default function Sell() {
   const [posted, setPosted] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const [photoWarning, setPhotoWarning] = useState<string | null>(null);
   const [activeInCategory, setActiveInCategory] = useState<number | null>(null);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+
+  // Object URLs for instant local previews before anything is uploaded.
+  // Must be revoked when files change/unmount, or they leak memory.
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  useEffect(() => {
+    const urls = photoFiles.map((f) => URL.createObjectURL(f));
+    setPreviewUrls(urls);
+    return () => urls.forEach((u) => URL.revokeObjectURL(u));
+  }, [photoFiles]);
+
+  function onFilesSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const chosen = Array.from(e.target.files ?? []);
+    if (chosen.length === 0) return;
+    const combined = [...photoFiles, ...chosen];
+    const error = validatePhotoFiles(combined);
+    if (error) {
+      setPhotoError(error);
+      return;
+    }
+    setPhotoError(null);
+    setPhotoFiles(combined);
+    e.target.value = ""; // allow re-selecting the same file after removing it
+  }
+
+  function removePhoto(index: number) {
+    setPhotoFiles((prev) => prev.filter((_, i) => i !== index));
+    setPhotoError(null);
+  }
 
   // Once a category is picked, check how many active listings this user already
   // has in it — that's what drives the real progressive-cap and anti-bot fee.
@@ -64,7 +101,7 @@ export default function Sell() {
     setPublishing(true);
     setPublishError(null);
     try {
-      await createListing(user.id, {
+      const listing = await createListing(user.id, {
         title: title || "Untitled listing",
         price: Number(price) || 0,
         category,
@@ -73,6 +110,23 @@ export default function Sell() {
         description: description || undefined,
         city: profile?.city || undefined,
       });
+
+      if (photoFiles.length > 0) {
+        setUploadingPhotos(true);
+        try {
+          const urls = await uploadListingPhotos(user.id, listing.id, photoFiles);
+          await attachPhotos(listing.id, urls);
+        } catch (photoErr) {
+          // The listing itself published fine — don't block on a photo failure,
+          // just let the user know so they're not confused why photos are missing.
+          setPhotoWarning(
+            "Listing published, but photo upload failed. You can retry from My listings once photo editing is added.",
+          );
+        } finally {
+          setUploadingPhotos(false);
+        }
+      }
+
       setPosted(true);
     } catch (err: any) {
       setPublishError(
@@ -96,6 +150,11 @@ export default function Sell() {
           "{title || "Your item"}" is live in {category}. Anti-bot fee of ₹
           {nextListingFee} applied.
         </p>
+        {photoWarning && (
+          <p className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
+            {photoWarning}
+          </p>
+        )}
         <button
           onClick={() => navigate("/orders")}
           className="mt-8 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light"
@@ -266,33 +325,55 @@ export default function Sell() {
           <div>
             <h2 className="font-semibold text-ink">Add photos</h2>
             <p className="mt-1 text-sm text-ink/60">
-              We'll clean the background and flag stock/watermarked images
-              automatically.
-            </p>
-            <p className="mt-1 text-xs text-ink/40">
-              (Real photo upload lands in the feature/image-upload branch — for
-              now this listing publishes with a category icon.)
+              Up to 6 photos, 5MB each. Background cleanup and stock-photo
+              detection aren't wired up yet — those are a later AI branch.
             </p>
             <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
-              <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-xl2 border-2 border-dashed border-black/15 text-ink/40 hover:border-clay/40">
-                <Upload size={20} />
-                <span className="text-xs">Upload</span>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  multiple
-                />
-              </label>
-              {[1, 2, 3].map((i) => (
+              {previewUrls.map((url, i) => (
                 <div
                   key={i}
-                  className="flex aspect-square items-center justify-center rounded-xl2 bg-cream-dark text-ink/20"
+                  className="group relative aspect-square overflow-hidden rounded-xl2 bg-cream-dark"
                 >
-                  <span className="text-xs">Empty</span>
+                  <img
+                    src={url}
+                    alt={`Upload ${i + 1}`}
+                    className="h-full w-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(i)}
+                    className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition group-hover:opacity-100"
+                    aria-label="Remove photo"
+                  >
+                    <X size={13} />
+                  </button>
                 </div>
               ))}
+              {photoFiles.length < 6 && (
+                <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-xl2 border-2 border-dashed border-black/15 text-ink/40 hover:border-clay/40">
+                  <Upload size={20} />
+                  <span className="text-xs">Upload</span>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    multiple
+                    onChange={onFilesSelected}
+                  />
+                </label>
+              )}
             </div>
+            {photoError && (
+              <p className="mt-3 rounded-lg bg-red-50 p-3 text-xs text-red-600">
+                {photoError}
+              </p>
+            )}
+            {photoFiles.length === 0 && (
+              <p className="mt-3 text-xs text-ink/40">
+                No photos yet — you can still publish without any, the listing
+                will just show a category icon instead.
+              </p>
+            )}
           </div>
         )}
 
@@ -312,6 +393,14 @@ export default function Sell() {
               <Row label="Price" value={price ? `₹${price}` : "—"} />
               <Row label="Condition" value={condition} />
               <Row label="Description" value={description || "—"} />
+              <Row
+                label="Photos"
+                value={
+                  photoFiles.length > 0
+                    ? `${photoFiles.length} attached`
+                    : "None"
+                }
+              />
               <Row label="Anti-bot fee due now" value={`₹${nextListingFee}`} />
             </div>
             {publishError && (
@@ -348,7 +437,11 @@ export default function Sell() {
             disabled={publishing}
             className="rounded-full bg-clay px-6 py-2.5 text-sm font-semibold text-white hover:bg-clay-light disabled:opacity-50"
           >
-            {publishing ? "Publishing…" : `Pay ₹${nextListingFee} & publish`}
+            {uploadingPhotos
+              ? "Uploading photos…"
+              : publishing
+                ? "Publishing…"
+                : `Pay ₹${nextListingFee} & publish`}
           </button>
         )}
       </div>

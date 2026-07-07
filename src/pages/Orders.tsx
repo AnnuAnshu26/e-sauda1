@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Package, Trash2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { deleteListing, fetchUserListings } from "../lib/listings";
+import { deleteListingPhotos } from "../lib/storage";
 import { Listing } from "../types";
 
 const tabs = ["Buying", "Selling", "My listings"] as const;
@@ -30,8 +31,12 @@ export default function Orders() {
   }, [user]);
 
   async function handleDelete(id: string) {
+    if (!user) return;
     setDeletingId(id);
     try {
+      // Best-effort — if photo cleanup fails, still remove the listing row rather
+      // than leaving an orphaned, undeletable listing stuck in the UI.
+      await deleteListingPhotos(user.id, id).catch(() => {});
       await deleteListing(id);
       setMyListings((prev) => prev.filter((l) => l.id !== id));
     } finally {

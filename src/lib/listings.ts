@@ -21,6 +21,7 @@ function mapRow(row: any): Listing {
     escrow: true, // every listing on the platform uses the vault flow
     emoji: row.emoji,
     bg: row.bg,
+    photoUrls: row.photo_urls ?? [],
     status: row.status,
     createdAt: row.created_at,
   }
@@ -104,6 +105,11 @@ export async function createListing(
 
   if (error) throw error
   return mapRow(data)
+}
+
+export async function attachPhotos(id: string, photoUrls: string[]): Promise<void> {
+  const { error } = await supabase.from('listings').update({ photo_urls: photoUrls }).eq('id', id)
+  if (error) throw error
 }
 
 export async function deleteListing(id: string): Promise<void> {

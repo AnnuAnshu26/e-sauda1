@@ -26,6 +26,7 @@ export interface Listing {
   spin360?: boolean
   emoji: string
   bg: string
+  photoUrls: string[]
   status: 'active' | 'sold' | 'removed'
   createdAt: string
 }

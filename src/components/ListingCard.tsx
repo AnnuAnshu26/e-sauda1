@@ -8,6 +8,13 @@ export default function ListingCard({ listing }: { listing: Listing }) {
   return (
     <div className="group overflow-hidden rounded-xl2 border border-black/5 bg-white transition hover:shadow-lg">
       <div className={`relative flex h-40 items-center justify-center text-5xl ${listing.bg}`}>
+        {listing.photoUrls?.length > 0 && (
+          <img
+            src={listing.photoUrls[0]}
+            alt={listing.title}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
         <div className="absolute left-2 top-2 flex gap-1">
           {listing.escrow && (
             <span className="flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-[11px] font-medium text-ink">
@@ -32,7 +39,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         >
           <Heart size={14} className={saved ? 'fill-clay text-clay' : 'text-ink/70'} />
         </button>
-        <span>{listing.emoji}</span>
+        {!(listing.photoUrls?.length > 0) && <span>{listing.emoji}</span>}
       </div>
       <div className="p-4">
         <div className="flex items-center justify-between">
