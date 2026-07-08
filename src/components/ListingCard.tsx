@@ -1,12 +1,16 @@
 import { Heart, Lock, Camera, RotateCw } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Listing } from '../types'
 
 export default function ListingCard({ listing }: { listing: Listing }) {
   const [saved, setSaved] = useState(false)
 
   return (
-    <div className="group overflow-hidden rounded-xl2 border border-black/5 bg-white transition hover:shadow-lg">
+    <Link
+      to={`/listing/${listing.id}`}
+      className="group block overflow-hidden rounded-xl2 border border-black/5 bg-white transition hover:shadow-lg"
+    >
       <div className={`relative flex h-40 items-center justify-center text-5xl ${listing.bg}`}>
         {listing.photoUrls?.length > 0 && (
           <img
@@ -33,7 +37,11 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           )}
         </div>
         <button
-          onClick={() => setSaved((v) => !v)}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setSaved((v) => !v)
+          }}
           className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90"
           aria-label="Save listing"
         >
@@ -55,6 +63,6 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           {listing.location} · {listing.distanceKm}km
         </p>
       </div>
-    </div>
+    </Link>
   )
 }

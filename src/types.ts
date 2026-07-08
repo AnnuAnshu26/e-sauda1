@@ -44,6 +44,33 @@ export interface NewListingInput {
   location?: string
 }
 
+export interface Conversation {
+  id: string
+  listingId: string
+  buyerId: string
+  sellerId: string
+  createdAt: string
+}
+
+export interface Message {
+  id: string
+  conversationId: string
+  senderId: string
+  body: string
+  createdAt: string
+}
+
+// A conversation enriched with listing + last-message info, used to render the inbox list.
+export interface ConversationSummary extends Conversation {
+  listingTitle: string
+  listingPrice: number
+  listingEmoji: string
+  listingPhotoUrl: string | null
+  otherPartyId: string
+  lastMessageBody: string | null
+  lastMessageAt: string | null
+}
+
 export interface User {
   name: string
   city: string
