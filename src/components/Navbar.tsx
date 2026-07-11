@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut } from 'lucide-react'
+import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut, Inbox } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
@@ -67,6 +67,7 @@ export default function Navbar() {
 
         <nav className="hidden shrink-0 items-center gap-6 text-sm font-medium text-ink/80 md:flex">
           <Link to="/browse" className="hover:text-ink">Browse</Link>
+          {user && <Link to="/messages" className="hover:text-ink">Messages</Link>}
           <Link to="/vault" className="hover:text-ink">Vault</Link>
           <Link to="/orders" className="hover:text-ink">Orders</Link>
         </nav>
@@ -108,6 +109,9 @@ export default function Navbar() {
                   </div>
                   <Link to="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream">
                     <UserIcon size={16} /> My profile
+                  </Link>
+                  <Link to="/messages" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream">
+                    <Inbox size={16} /> Messages
                   </Link>
                   <Link to="/orders" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream">
                     <MessageSquare size={16} /> My orders

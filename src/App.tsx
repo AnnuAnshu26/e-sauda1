@@ -10,6 +10,8 @@ import Vault from './pages/Vault'
 import Profile from './pages/Profile'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import ListingDetail from './pages/ListingDetail'
+import Messages from './pages/Messages'
 
 export default function App() {
   return (
@@ -21,6 +23,7 @@ export default function App() {
           <Route path="/browse" element={<Browse />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/listing/:id" element={<ListingDetail />} />
           <Route
             path="/sell"
             element={
@@ -50,6 +53,22 @@ export default function App() {
             element={
               <RequireAuth>
                 <Profile />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/messages"
+            element={
+              <RequireAuth>
+                <Messages />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/messages/:id"
+            element={
+              <RequireAuth>
+                <Messages />
               </RequireAuth>
             }
           />
