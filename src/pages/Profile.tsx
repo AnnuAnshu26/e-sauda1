@@ -3,15 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { Lock, ShieldCheck, Award, Star, TrendingUp } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { fetchUserListings } from "../lib/listings";
+import { fetchMyPurchases, fetchMySales } from "../lib/vault";
 
 export default function Profile() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const [activeListingCount, setActiveListingCount] = useState(0);
+  const [completedCount, setCompletedCount] = useState(0);
 
-  // Active listings is now real, from the `listings` table. Completed saudas,
-  // saved items, and rating still live in tables we haven't built yet
-  // (escrow/orders, saved-items branches) — they'll come alive later.
+  // Active listings is now real, from the `listings` table. Rating and trust score
+  // are real too, from the `profiles` table (fed by submit_rating() in
+  // supabase/ratings_schema.sql). Saved items still isn't wired up.
   useEffect(() => {
     if (!user) return;
     fetchUserListings(user.id)
@@ -21,17 +23,27 @@ export default function Profile() {
         ),
       )
       .catch(() => setActiveListingCount(0));
+
+    Promise.all([fetchMyPurchases(user.id), fetchMySales(user.id)])
+      .then(([purchases, sales]) =>
+        setCompletedCount(
+          [...purchases, ...sales].filter((o) => o.status === "completed").length,
+        ),
+      )
+      .catch(() => setCompletedCount(0));
   }, [user]);
 
   // Trust score and verified status are real, from the `profiles` table.
   const trustScore = profile?.trust_score ?? 50;
   const verified = profile?.verified ?? false;
   const displayName = profile?.display_name || user?.email || "You";
+  const ratingAvg = profile?.rating_avg ?? null;
+  const ratingCount = profile?.rating_count ?? 0;
 
   const badges = [
     { icon: ShieldCheck, label: "Verified identity", unlocked: verified },
-    { icon: Award, label: "First sauda", unlocked: false },
-    { icon: Star, label: "5-star seller", unlocked: false },
+    { icon: Award, label: "First sauda", unlocked: completedCount > 0 },
+    { icon: Star, label: "5-star seller", unlocked: !!ratingAvg && ratingAvg >= 4.5 && ratingCount >= 3 },
     { icon: TrendingUp, label: "Trust 80+", unlocked: trustScore >= 80 },
   ];
 
@@ -66,6 +78,16 @@ export default function Profile() {
             <p className="font-display text-4xl font-semibold text-clay">
               {trustScore}
             </p>
+            <p className="mt-1 flex items-center justify-end gap-1 text-xs text-ink/50">
+              {ratingAvg ? (
+                <>
+                  <Star size={12} className="fill-clay text-clay" />
+                  {ratingAvg.toFixed(1)} ({ratingCount} rating{ratingCount === 1 ? "" : "s"})
+                </>
+              ) : (
+                "No ratings yet"
+              )}
+            </p>
           </div>
         </div>
         <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-white/60">
@@ -80,7 +102,7 @@ export default function Profile() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Stat label="Completed saudas" value={0} />
+        <Stat label="Completed saudas" value={completedCount} />
         <Stat
           label="Active listings"
           value={activeListingCount}

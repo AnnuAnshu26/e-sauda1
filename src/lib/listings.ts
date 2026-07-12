@@ -33,13 +33,6 @@ export async function fetchListingById(id: string): Promise<Listing | null> {
   return data ? mapRow(data) : null
 }
 
-// A single listing's full detail — used by the /listing/:id page.
-export async function fetchListingById(id: string): Promise<Listing | null> {
-  const { data, error } = await supabase.from('listings').select('*').eq('id', id).maybeSingle()
-  if (error) throw error
-  return data ? mapRow(data) : null
-}
-
 export interface ListingFilters {
   category?: Category | 'All'
   minPrice?: number

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, ShieldCheck, AlertTriangle, X } from "lucide-react";
+import { Lock, ShieldCheck, AlertTriangle, X, Star } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
   fetchMyPurchases,
@@ -9,7 +9,8 @@ import {
   confirmHandover,
   cancelVaultOrder,
 } from "../lib/vault";
-import { VaultOrder } from "../types";
+import { fetchMyRatingForOrder, submitRating } from "../lib/ratings";
+import { VaultOrder, Rating } from "../types";
 
 const tabs = ["Buying", "Selling"] as const;
 
@@ -104,7 +105,7 @@ export default function Vault() {
                 Past orders
               </p>
               {history.map((order) => (
-                <HistoryRow key={order.id} order={order} />
+                <HistoryRow key={order.id} order={order} currentUserId={user?.id} />
               ))}
             </>
           )}
@@ -285,20 +286,131 @@ function SellingCard({ order, onChange }: { order: VaultOrder; onChange: () => v
   );
 }
 
-function HistoryRow({ order }: { order: VaultOrder }) {
+function HistoryRow({ order, currentUserId }: { order: VaultOrder; currentUserId?: string }) {
   const isCompleted = order.status === "completed";
+  const [myRating, setMyRating] = useState<Rating | null>(null);
+  const [checked, setChecked] = useState(false);
+  const [ratingOpen, setRatingOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isCompleted || !currentUserId) {
+      setChecked(true);
+      return;
+    }
+    fetchMyRatingForOrder(order.id, currentUserId)
+      .then(setMyRating)
+      .catch(() => setMyRating(null))
+      .finally(() => setChecked(true));
+  }, [order.id, currentUserId, isCompleted]);
+
   return (
-    <div className="flex items-center justify-between rounded-xl2 border border-black/5 bg-white p-4">
-      <OrderHeader order={order} />
-      {isCompleted ? (
-        <span className="flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
-          <ShieldCheck size={12} /> Completed
-        </span>
-      ) : (
-        <span className="flex items-center gap-1 rounded-full bg-black/5 px-2.5 py-1 text-xs font-medium text-ink/50">
-          <X size={12} /> Cancelled
-        </span>
+    <div className="rounded-xl2 border border-black/5 bg-white p-4">
+      <div className="flex items-center justify-between">
+        <OrderHeader order={order} />
+        {isCompleted ? (
+          <span className="flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
+            <ShieldCheck size={12} /> Completed
+          </span>
+        ) : (
+          <span className="flex items-center gap-1 rounded-full bg-black/5 px-2.5 py-1 text-xs font-medium text-ink/50">
+            <X size={12} /> Cancelled
+          </span>
+        )}
+      </div>
+
+      {isCompleted && checked && (
+        <div className="mt-3 border-t border-black/5 pt-3">
+          {myRating ? (
+            <p className="flex items-center gap-1 text-xs text-ink/50">
+              You rated this transaction
+              <StarRow value={myRating.stars} />
+            </p>
+          ) : ratingOpen ? (
+            <RatingForm
+              orderId={order.id}
+              onDone={(r) => {
+                setMyRating(r);
+                setRatingOpen(false);
+              }}
+            />
+          ) : (
+            <button
+              onClick={() => setRatingOpen(true)}
+              className="flex items-center gap-1 text-xs font-semibold text-clay hover:underline"
+            >
+              <Star size={13} /> Rate this transaction
+            </button>
+          )}
+        </div>
       )}
+    </div>
+  );
+}
+
+function StarRow({ value }: { value: number }) {
+  return (
+    <span className="flex items-center">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Star key={n} size={13} className={n <= value ? "fill-clay text-clay" : "text-black/15"} />
+      ))}
+    </span>
+  );
+}
+
+function RatingForm({ orderId, onDone }: { orderId: string; onDone: (r: Rating) => void }) {
+  const [stars, setStars] = useState(0);
+  const [hovered, setHovered] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    if (stars === 0) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const rating = await submitRating(orderId, stars, comment.trim() || undefined);
+      onDone(rating);
+    } catch (err: any) {
+      setError(err.message || "Couldn't submit your rating.");
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div>
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => setStars(n)}
+            onMouseEnter={() => setHovered(n)}
+            onMouseLeave={() => setHovered(0)}
+            aria-label={`${n} star${n > 1 ? "s" : ""}`}
+          >
+            <Star
+              size={20}
+              className={n <= (hovered || stars) ? "fill-clay text-clay" : "text-black/15"}
+            />
+          </button>
+        ))}
+      </div>
+      <textarea
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        rows={2}
+        placeholder="Optional: how did it go? (e.g. item as described, on time, easy handover)"
+        className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2 text-xs"
+      />
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      <button
+        onClick={submit}
+        disabled={submitting || stars === 0}
+        className="mt-2 rounded-full bg-forest px-4 py-1.5 text-xs font-semibold text-cream disabled:opacity-40"
+      >
+        {submitting ? "Submitting…" : "Submit rating"}
+      </button>
     </div>
   );
 }

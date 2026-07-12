@@ -24,7 +24,6 @@ export default function App() {
           <Route path="/listing/:id" element={<ListingDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/listing/:id" element={<ListingDetail />} />
           <Route
             path="/messages"
             element={
@@ -70,22 +69,6 @@ export default function App() {
             element={
               <RequireAuth>
                 <Profile />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/messages"
-            element={
-              <RequireAuth>
-                <Messages />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/messages/:id"
-            element={
-              <RequireAuth>
-                <Messages />
               </RequireAuth>
             }
           />

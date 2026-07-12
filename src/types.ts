@@ -71,8 +71,6 @@ export interface ConversationSummary extends Conversation {
   lastMessageAt: string | null
 }
 
-<<<<<<< HEAD
-=======
 export type VaultOrderStatus = 'funded' | 'completed' | 'cancelled'
 
 // Represents one "Buy with Vault" purchase attempt. handoverOtp is deliberately NOT a
@@ -100,7 +98,16 @@ export interface VaultOrderWithOtp extends VaultOrder {
   handoverOtp: string
 }
 
->>>>>>> feature/escrow-vault
+export interface Rating {
+  id: string
+  vaultOrderId: string
+  raterId: string
+  ratedUserId: string
+  stars: number
+  comment: string | null
+  createdAt: string
+}
+
 export interface User {
   name: string
   city: string

@@ -8,6 +8,8 @@ interface Profile {
   city: string | null
   trust_score: number
   verified: boolean
+  rating_avg: number | null
+  rating_count: number
 }
 
 interface AuthContextValue {
@@ -49,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     supabase
       .from('profiles')
-      .select('id, display_name, city, trust_score, verified')
+      .select('id, display_name, city, trust_score, verified, rating_avg, rating_count')
       .eq('id', session.user.id)
       .single()
       .then(({ data }) => setProfile(data))
