@@ -146,4 +146,8 @@ export function subscribeToMessages(
   return () => {
     supabase.removeChannel(channel)
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> feature/escrow-vault

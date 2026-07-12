@@ -3,8 +3,14 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Lock, ShieldCheck, MapPin, MessageCircle } from 'lucide-react'
 import { fetchListingById } from '../lib/listings'
 import { getOrCreateConversation } from '../lib/chat'
+<<<<<<< HEAD
 import { useAuth } from '../context/AuthContext'
 import { Listing } from '../types'
+=======
+import { createVaultOrder } from '../lib/vault'
+import { useAuth } from '../context/AuthContext'
+import { Listing, VaultOrderWithOtp } from '../types'
+>>>>>>> feature/escrow-vault
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>()
@@ -16,6 +22,12 @@ export default function ListingDetail() {
   const [activePhoto, setActivePhoto] = useState(0)
   const [startingChat, setStartingChat] = useState(false)
   const [chatError, setChatError] = useState<string | null>(null)
+<<<<<<< HEAD
+=======
+  const [buying, setBuying] = useState(false)
+  const [buyError, setBuyError] = useState<string | null>(null)
+  const [purchase, setPurchase] = useState<VaultOrderWithOtp | null>(null)
+>>>>>>> feature/escrow-vault
 
   useEffect(() => {
     if (!id) return
@@ -49,6 +61,28 @@ export default function ListingDetail() {
     }
   }
 
+<<<<<<< HEAD
+=======
+  async function handleBuy() {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    if (!listing) return
+    setBuying(true)
+    setBuyError(null)
+    try {
+      const order = await createVaultOrder(listing.id)
+      setPurchase(order)
+      setListing({ ...listing, status: 'sold' })
+    } catch (err: any) {
+      setBuyError(err.message || 'Could not start this purchase. Try again.')
+    } finally {
+      setBuying(false)
+    }
+  }
+
+>>>>>>> feature/escrow-vault
   if (loading) {
     return (
       <div className="mx-auto max-w-5xl px-6 py-10">
@@ -154,15 +188,43 @@ export default function ListingDetail() {
           )}
 
           {chatError && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{chatError}</p>}
+<<<<<<< HEAD
+=======
+          {buyError && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{buyError}</p>}
+>>>>>>> feature/escrow-vault
 
           <div className="mt-8">
             {isOwner ? (
               <div className="rounded-lg bg-black/5 p-4 text-sm text-ink/60">This is your own listing.</div>
+<<<<<<< HEAD
+=======
+            ) : purchase ? (
+              <div className="rounded-xl2 border border-emerald-200 bg-emerald-50 p-4">
+                <p className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
+                  <ShieldCheck size={16} /> Funds secured in the Vault
+                </p>
+                <p className="mt-3 text-xs uppercase tracking-wide text-ink/50">Your handover OTP</p>
+                <p className="mt-1 font-display text-3xl font-semibold tracking-widest text-ink">
+                  {purchase.handoverOtp}
+                </p>
+                <p className="mt-2 text-xs text-ink/50">
+                  Only share this with the seller in person, after you've inspected the item.
+                  Never send it over chat, SMS, or a screenshot.
+                </p>
+                <Link
+                  to="/vault"
+                  className="mt-4 inline-block rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream hover:bg-forest-light"
+                >
+                  Go to Sauda Vault
+                </Link>
+              </div>
+>>>>>>> feature/escrow-vault
             ) : listing.status !== 'active' ? (
               <div className="rounded-lg bg-black/5 p-4 text-sm text-ink/60">
                 This listing is no longer available.
               </div>
             ) : (
+<<<<<<< HEAD
               <button
                 onClick={handleChat}
                 disabled={startingChat}
@@ -171,6 +233,26 @@ export default function ListingDetail() {
                 <MessageCircle size={16} />
                 {startingChat ? 'Starting chat…' : 'Chat with seller'}
               </button>
+=======
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={handleChat}
+                  disabled={startingChat}
+                  className="flex items-center gap-2 rounded-full border border-black/10 bg-white px-6 py-3 text-sm font-semibold text-ink hover:bg-cream-dark disabled:opacity-50"
+                >
+                  <MessageCircle size={16} />
+                  {startingChat ? 'Starting chat…' : 'Chat with seller'}
+                </button>
+                <button
+                  onClick={handleBuy}
+                  disabled={buying}
+                  className="flex items-center gap-2 rounded-full bg-clay px-6 py-3 text-sm font-semibold text-white hover:bg-clay-light disabled:opacity-50"
+                >
+                  <Lock size={16} />
+                  {buying ? 'Locking funds…' : 'Buy with Vault'}
+                </button>
+              </div>
+>>>>>>> feature/escrow-vault
             )}
           </div>
         </div>

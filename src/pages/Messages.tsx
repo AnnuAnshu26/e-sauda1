@@ -24,7 +24,10 @@ export default function Messages() {
   const [sending, setSending] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
+<<<<<<< HEAD
   // Load the inbox list once we know who's logged in.
+=======
+>>>>>>> feature/escrow-vault
   useEffect(() => {
     if (!user) return
     setLoadingList(true)
@@ -34,7 +37,10 @@ export default function Messages() {
       .finally(() => setLoadingList(false))
   }, [user])
 
+<<<<<<< HEAD
   // Load the open thread + subscribe to new messages arriving live.
+=======
+>>>>>>> feature/escrow-vault
   useEffect(() => {
     if (!activeId) {
       setMessages([])
@@ -64,10 +70,15 @@ export default function Messages() {
     setDraft('')
     try {
       await sendMessage(activeId, user.id, body)
+<<<<<<< HEAD
       // No optimistic append needed — the Realtime subscription above delivers
       // our own message back within milliseconds, keeping a single source of truth.
     } catch (err) {
       setDraft(body) // put it back so the user doesn't lose what they typed
+=======
+    } catch (err) {
+      setDraft(body)
+>>>>>>> feature/escrow-vault
     } finally {
       setSending(false)
     }
@@ -80,7 +91,10 @@ export default function Messages() {
       <h1 className="font-display text-3xl font-semibold">Messages</h1>
 
       <div className="mt-6 grid grid-cols-1 gap-0 overflow-hidden rounded-xl2 border border-black/5 bg-white md:grid-cols-[320px_1fr]">
+<<<<<<< HEAD
         {/* Conversation list */}
+=======
+>>>>>>> feature/escrow-vault
         <div className="border-b border-black/5 md:border-b-0 md:border-r">
           {loadingList ? (
             <div className="space-y-3 p-4">
@@ -129,7 +143,10 @@ export default function Messages() {
           )}
         </div>
 
+<<<<<<< HEAD
         {/* Thread */}
+=======
+>>>>>>> feature/escrow-vault
         <div className="flex h-[70vh] flex-col">
           {!activeId ? (
             <div className="flex flex-1 items-center justify-center text-sm text-ink/40">
@@ -199,4 +216,8 @@ export default function Messages() {
       </div>
     </div>
   )
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> feature/escrow-vault

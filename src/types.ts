@@ -71,6 +71,36 @@ export interface ConversationSummary extends Conversation {
   lastMessageAt: string | null
 }
 
+<<<<<<< HEAD
+=======
+export type VaultOrderStatus = 'funded' | 'completed' | 'cancelled'
+
+// Represents one "Buy with Vault" purchase attempt. handoverOtp is deliberately NOT a
+// field here — it's never fetched as part of a normal row read (the DB revokes
+// column-level access to it for everyone but the SECURITY DEFINER functions in
+// supabase/vault_schema.sql). It only ever appears via VaultOrderWithOtp, returned
+// directly from createVaultOrder/getHandoverOtp.
+export interface VaultOrder {
+  id: string
+  listingId: string
+  buyerId: string
+  sellerId: string
+  amount: number
+  status: VaultOrderStatus
+  createdAt: string
+  completedAt: string | null
+  cancelledAt: string | null
+  cancelReason: string | null
+  listingTitle?: string
+  listingEmoji?: string
+  listingPhotoUrl?: string | null
+}
+
+export interface VaultOrderWithOtp extends VaultOrder {
+  handoverOtp: string
+}
+
+>>>>>>> feature/escrow-vault
 export interface User {
   name: string
   city: string
