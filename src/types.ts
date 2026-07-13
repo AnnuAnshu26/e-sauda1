@@ -98,6 +98,23 @@ export interface VaultOrderWithOtp extends VaultOrder {
   handoverOtp: string
 }
 
+export type DeliveryStatus = 'assigned' | 'delivered' | 'cancelled'
+export type DeliveryPartner = 'Rapido' | 'Uber' | 'Dunzo'
+
+export interface Delivery {
+  id: string
+  vaultOrderId: string
+  buyerId: string
+  sellerId: string
+  partner: DeliveryPartner
+  etaMinutes: number
+  distanceKm: number
+  fee: number
+  status: DeliveryStatus
+  createdAt: string
+  deliveredAt: string | null
+}
+
 export interface Rating {
   id: string
   vaultOrderId: string

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, ShieldCheck, AlertTriangle, X, Star } from "lucide-react";
+import { Lock, ShieldCheck, AlertTriangle, X, Star, Truck } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
   fetchMyPurchases,
@@ -10,7 +10,8 @@ import {
   cancelVaultOrder,
 } from "../lib/vault";
 import { fetchMyRatingForOrder, submitRating } from "../lib/ratings";
-import { VaultOrder, Rating } from "../types";
+import { arrangeDelivery, markDelivered, fetchDeliveryForOrder } from "../lib/delivery";
+import { VaultOrder, Rating, Delivery } from "../types";
 
 const tabs = ["Buying", "Selling"] as const;
 
@@ -140,6 +141,44 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
   const [showCancel, setShowCancel] = useState(false);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [delivery, setDelivery] = useState<Delivery | null>(null);
+  const [deliveryChecked, setDeliveryChecked] = useState(false);
+  const [arranging, setArranging] = useState(false);
+  const [confirmingDelivered, setConfirmingDelivered] = useState(false);
+
+  useEffect(() => {
+    fetchDeliveryForOrder(order.id)
+      .then(setDelivery)
+      .catch(() => setDelivery(null))
+      .finally(() => setDeliveryChecked(true));
+  }, [order.id]);
+
+  async function handleArrangeDelivery() {
+    setArranging(true);
+    setError(null);
+    try {
+      const d = await arrangeDelivery(order.id);
+      setDelivery(d);
+    } catch (err: any) {
+      setError(err.message || "Couldn't arrange delivery.");
+    } finally {
+      setArranging(false);
+    }
+  }
+
+  async function handleMarkDelivered() {
+    if (!delivery) return;
+    setConfirmingDelivered(true);
+    setError(null);
+    try {
+      const d = await markDelivered(delivery.id);
+      setDelivery(d);
+    } catch (err: any) {
+      setError(err.message || "Couldn't confirm delivery.");
+    } finally {
+      setConfirmingDelivered(false);
+    }
+  }
 
   async function reveal() {
     setRevealing(true);
@@ -193,6 +232,45 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
 
       {error && <p className="mt-3 rounded-lg bg-red-50 p-2 text-xs text-red-600">{error}</p>}
 
+      {deliveryChecked && (
+        <div className="mt-4 border-t border-emerald-100 pt-3">
+          {delivery ? (
+            <div className="rounded-lg bg-white p-3">
+              <p className="flex items-center gap-2 text-xs font-semibold text-ink">
+                <Truck size={13} className="text-clay" /> {delivery.partner} rider{" "}
+                {delivery.status === "delivered" ? "delivered" : "assigned"}
+              </p>
+              <p className="mt-1 text-xs text-ink/50">
+                ETA {delivery.etaMinutes} min · {delivery.distanceKm}km · ₹{delivery.fee} delivery fee
+              </p>
+              {delivery.status === "assigned" && (
+                <button
+                  onClick={handleMarkDelivered}
+                  disabled={confirmingDelivered}
+                  className="mt-2 rounded-full border border-emerald-300 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+                >
+                  {confirmingDelivered ? "Confirming…" : "Mark as delivered"}
+                </button>
+              )}
+              {delivery.status === "delivered" && (
+                <p className="mt-1 text-xs text-emerald-700">
+                  Once you've inspected the item, reveal your OTP above and share it via the rider.
+                </p>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={handleArrangeDelivery}
+              disabled={arranging}
+              className="flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-ink hover:bg-cream-dark disabled:opacity-50"
+            >
+              <Truck size={13} />
+              {arranging ? "Arranging…" : "Arrange delivery instead of meeting up"}
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="mt-4 border-t border-emerald-100 pt-3">
         {showCancel ? (
           <div className="space-y-2">
@@ -235,6 +313,13 @@ function SellingCard({ order, onChange }: { order: VaultOrder; onChange: () => v
   const [entered, setEntered] = useState("");
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [delivery, setDelivery] = useState<Delivery | null>(null);
+
+  useEffect(() => {
+    fetchDeliveryForOrder(order.id)
+      .then(setDelivery)
+      .catch(() => setDelivery(null));
+  }, [order.id]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -264,6 +349,19 @@ function SellingCard({ order, onChange }: { order: VaultOrder; onChange: () => v
       <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-700">
         <ShieldCheck size={15} /> Funds secured in the Vault
       </p>
+
+      {delivery && (
+        <div className="mt-3 rounded-lg bg-cream-dark p-3 text-xs text-ink/70">
+          <p className="flex items-center gap-2 font-semibold text-ink">
+            <Truck size={13} className="text-clay" /> Buyer arranged {delivery.partner} delivery
+          </p>
+          <p className="mt-1">
+            {delivery.status === "delivered"
+              ? "Marked as delivered — expect the buyer to share the OTP via the rider."
+              : `ETA ${delivery.etaMinutes} min · rider assigned`}
+          </p>
+        </div>
+      )}
 
       <form onSubmit={submit} className="mt-3 flex items-center gap-2">
         <input
