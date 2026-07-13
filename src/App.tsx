@@ -11,6 +11,7 @@ import Profile from './pages/Profile'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import ListingDetail from './pages/ListingDetail'
+import SellerProfile from './pages/SellerProfile'
 import Messages from './pages/Messages'
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/browse" element={<Browse />} />
           <Route path="/listing/:id" element={<ListingDetail />} />
+          <Route path="/seller/:id" element={<SellerProfile />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route

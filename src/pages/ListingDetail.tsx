@@ -154,6 +154,11 @@ export default function ListingDetail() {
           <p className="mt-3 flex items-center gap-1 text-sm text-ink/60">
             <MapPin size={14} /> {listing.location || listing.city || 'Location not set'} · {listing.distanceKm}km away
           </p>
+          {!isOwner && (
+            <Link to={`/seller/${listing.ownerId}`} className="mt-1 inline-block text-sm text-clay hover:underline">
+              View seller profile
+            </Link>
+          )}
 
           <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
             <div className="rounded-lg bg-white p-3">
