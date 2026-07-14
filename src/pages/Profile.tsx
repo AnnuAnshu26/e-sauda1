@@ -4,16 +4,18 @@ import { Lock, ShieldCheck, Award, Star, TrendingUp } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { fetchUserListings } from "../lib/listings";
 import { fetchMyPurchases, fetchMySales } from "../lib/vault";
+import { fetchSavedListingIds } from "../lib/savedItems";
 
 export default function Profile() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const [activeListingCount, setActiveListingCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
+  const [savedCount, setSavedCount] = useState(0);
 
-  // Active listings is now real, from the `listings` table. Rating and trust score
-  // are real too, from the `profiles` table (fed by submit_rating() in
-  // supabase/ratings_schema.sql). Saved items still isn't wired up.
+  // Active listings, completed saudas, and saved items are all real now, from the
+  // `listings`, `vault_orders`, and `saved_items` tables. Rating and trust score are
+  // real too, from `profiles` (fed by submit_rating() in supabase/ratings_schema.sql).
   useEffect(() => {
     if (!user) return;
     fetchUserListings(user.id)
@@ -31,6 +33,10 @@ export default function Profile() {
         ),
       )
       .catch(() => setCompletedCount(0));
+
+    fetchSavedListingIds(user.id)
+      .then((ids) => setSavedCount(ids.size))
+      .catch(() => setSavedCount(0));
   }, [user]);
 
   // Trust score and verified status are real, from the `profiles` table.
@@ -108,7 +114,7 @@ export default function Profile() {
           value={activeListingCount}
           suffix="per category cap: 2"
         />
-        <Stat label="Saved items" value={0} />
+        <Stat label="Saved items" value={savedCount} />
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl2 border-2 border-dashed border-clay/40 bg-white p-6">

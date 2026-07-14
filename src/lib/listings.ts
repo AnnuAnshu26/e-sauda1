@@ -4,7 +4,7 @@ import { categoryVisual } from '../data/listings'
 
 // Maps a raw Supabase row (snake_case, matches supabase/listings_schema.sql)
 // to the app's Listing type (camelCase, matches what ListingCard/Browse/Home expect).
-function mapRow(row: any): Listing {
+export function mapRow(row: any): Listing {
   return {
     id: row.id,
     ownerId: row.owner_id,

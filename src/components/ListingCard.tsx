@@ -3,8 +3,18 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Listing } from '../types'
 
-export default function ListingCard({ listing }: { listing: Listing }) {
-  const [saved, setSaved] = useState(false)
+interface ListingCardProps {
+  listing: Listing
+  // Both optional: pages that use useSavedListings() pass these to persist saves;
+  // if omitted, the heart still works but only for the current render (local-only).
+  saved?: boolean
+  onToggleSaved?: (listingId: string) => void
+}
+
+export default function ListingCard({ listing, saved: savedProp, onToggleSaved }: ListingCardProps) {
+  const [localSaved, setLocalSaved] = useState(false)
+  const controlled = onToggleSaved !== undefined
+  const saved = controlled ? !!savedProp : localSaved
 
   return (
     <Link
@@ -40,10 +50,10 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
-            setSaved((v) => !v)
+            controlled ? onToggleSaved!(listing.id) : setLocalSaved((v) => !v)
           }}
           className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90"
-          aria-label="Save listing"
+          aria-label={saved ? 'Remove from saved' : 'Save listing'}
         >
           <Heart size={14} className={saved ? 'fill-clay text-clay' : 'text-ink/70'} />
         </button>

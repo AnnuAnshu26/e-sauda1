@@ -3,11 +3,13 @@ import { useSearchParams } from "react-router-dom";
 import { categories } from "../data/listings";
 import { Category, Listing } from "../types";
 import { fetchListings } from "../lib/listings";
+import { useSavedListings } from "../hooks/useSavedListings";
 import ListingCard from "../components/ListingCard";
 
 const tabs: ("All" | Category)[] = ["All", ...categories.map((c) => c.name)];
 
 export default function Browse() {
+  const { savedIds, toggleSaved } = useSavedListings();
   const [params] = useSearchParams();
   const [active, setActive] = useState<"All" | Category>(
     (params.get("category") as Category) || "All",
@@ -155,7 +157,12 @@ export default function Browse() {
           ) : (
             <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 xl:grid-cols-4">
               {filtered.map((l) => (
-                <ListingCard key={l.id} listing={l} />
+                <ListingCard
+                  key={l.id}
+                  listing={l}
+                  saved={savedIds.has(l.id)}
+                  onToggleSaved={toggleSaved}
+                />
               ))}
             </div>
           )}

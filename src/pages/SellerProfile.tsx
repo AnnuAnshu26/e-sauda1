@@ -4,10 +4,12 @@ import { Star, ShieldCheck, MapPin, Package } from 'lucide-react'
 import { fetchPublicProfile, PublicProfile } from '../lib/profiles'
 import { fetchUserListings } from '../lib/listings'
 import { fetchRatingsForUser } from '../lib/ratings'
+import { useSavedListings } from '../hooks/useSavedListings'
 import { Listing, Rating } from '../types'
 import ListingCard from '../components/ListingCard'
 
 export default function SellerProfile() {
+  const { savedIds, toggleSaved } = useSavedListings()
   const { id } = useParams<{ id: string }>()
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [listings, setListings] = useState<Listing[]>([])
@@ -104,7 +106,12 @@ export default function SellerProfile() {
       ) : (
         <div className="mt-4 grid grid-cols-2 gap-5 sm:grid-cols-3">
           {listings.map((l) => (
-            <ListingCard key={l.id} listing={l} />
+            <ListingCard
+              key={l.id}
+              listing={l}
+              saved={savedIds.has(l.id)}
+              onToggleSaved={toggleSaved}
+            />
           ))}
         </div>
       )}

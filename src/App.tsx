@@ -13,6 +13,7 @@ import Signup from './pages/Signup'
 import ListingDetail from './pages/ListingDetail'
 import SellerProfile from './pages/SellerProfile'
 import Messages from './pages/Messages'
+import Saved from './pages/Saved'
 
 export default function App() {
   return (
@@ -71,6 +72,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <Profile />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/saved"
+            element={
+              <RequireAuth>
+                <Saved />
               </RequireAuth>
             }
           />

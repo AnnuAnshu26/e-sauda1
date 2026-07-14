@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { categories } from "../data/listings";
 import { fetchListings } from "../lib/listings";
+import { useSavedListings } from "../hooks/useSavedListings";
 import { Listing } from "../types";
 import ListingCard from "../components/ListingCard";
 
@@ -71,6 +72,7 @@ const features = [
 ];
 
 export default function Home() {
+  const { savedIds, toggleSaved } = useSavedListings();
   const [fresh, setFresh] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -253,7 +255,12 @@ export default function Home() {
         ) : fresh.length > 0 ? (
           <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
             {fresh.map((l) => (
-              <ListingCard key={l.id} listing={l} />
+              <ListingCard
+                key={l.id}
+                listing={l}
+                saved={savedIds.has(l.id)}
+                onToggleSaved={toggleSaved}
+              />
             ))}
           </div>
         ) : (
