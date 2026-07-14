@@ -124,6 +124,18 @@ export interface Rating {
   comment: string | null
   createdAt: string
 }
+export type NotificationType = 'message' | 'vault_funded' | 'vault_completed' | 'vault_cancelled'
+
+export interface AppNotification {
+  id: string
+  userId: string
+  type: NotificationType
+  title: string
+  body: string | null
+  link: string | null
+  read: boolean
+  createdAt: string
+}
 
 export interface User {
   name: string
