@@ -7,6 +7,7 @@ import {
   attachPhotos,
 } from "../lib/listings";
 import { uploadListingPhotos, validatePhotoFiles } from "../lib/storage";
+import { suggestPrice, PriceSuggestion } from "../lib/pricing";
 import { Category } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { Mic, Upload, Check, X } from "lucide-react";
@@ -32,6 +33,8 @@ export default function Sell() {
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [priceSuggestion, setPriceSuggestion] = useState<PriceSuggestion | null>(null);
+  const [priceSuggestionLoading, setPriceSuggestionLoading] = useState(false);
 
   // Object URLs for instant local previews before anything is uploaded.
   // Must be revoked when files change/unmount, or they leak memory.
@@ -80,6 +83,33 @@ export default function Sell() {
       cancelled = true;
     };
   }, [category, user]);
+
+  // Debounced: subCategory is free text, so wait for a pause in typing rather than
+  // querying on every keystroke. Re-fires whenever category or subCategory changes.
+  useEffect(() => {
+    if (!category) {
+      setPriceSuggestion(null);
+      return;
+    }
+    let cancelled = false;
+    setPriceSuggestionLoading(true);
+    const timer = setTimeout(() => {
+      suggestPrice(category, subCategory.trim() || undefined)
+        .then((s) => {
+          if (!cancelled) setPriceSuggestion(s);
+        })
+        .catch(() => {
+          if (!cancelled) setPriceSuggestion(null);
+        })
+        .finally(() => {
+          if (!cancelled) setPriceSuggestionLoading(false);
+        });
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [category, subCategory]);
 
   const nextListingFee = !activeInCategory
     ? 1
@@ -285,10 +315,32 @@ export default function Sell() {
                   placeholder="12500"
                   className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
                 />
-                <p className="mt-1 text-xs text-ink/50">
-                  Smart pricing suggests a fair range once you add photos in the
-                  next step.
-                </p>
+                {priceSuggestionLoading ? (
+                  <p className="mt-1 text-xs text-ink/40">Checking similar listings…</p>
+                ) : priceSuggestion ? (
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <p className="text-xs text-ink/60">
+                      Similar {priceSuggestion.matchedSubCategory ? subCategory : category} listings
+                      go for{" "}
+                      <strong className="text-ink">
+                        ₹{priceSuggestion.low.toLocaleString("en-IN")}–₹
+                        {priceSuggestion.high.toLocaleString("en-IN")}
+                      </strong>{" "}
+                      ({priceSuggestion.sampleSize} active listings)
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setPrice(String(Math.round(priceSuggestion.median)))}
+                      className="shrink-0 rounded-full bg-clay/10 px-2.5 py-1 text-xs font-semibold text-clay hover:bg-clay/20"
+                    >
+                      Use ₹{priceSuggestion.median.toLocaleString("en-IN")}
+                    </button>
+                  </div>
+                ) : (
+                  <p className="mt-1 text-xs text-ink/50">
+                    Not enough similar listings yet to suggest a price range.
+                  </p>
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium text-ink">
