@@ -20,6 +20,7 @@ interface AuthContextValue {
   signUp: (email: string, password: string, displayName: string) => Promise<{ error: string | null }>
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
+  refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -44,32 +45,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => listener.subscription.unsubscribe()
   }, [])
 
+  async function loadProfile(userId: string) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, display_name, city, trust_score, verified, rating_avg, rating_count')
+      .eq('id', userId)
+      .single()
+    setProfile(data)
+  }
+
   useEffect(() => {
     if (!session?.user) {
       setProfile(null)
       return
     }
-    supabase
-      .from('profiles')
-      .select('id, display_name, city, trust_score, verified, rating_avg, rating_count')
-      .eq('id', session.user.id)
-      .single()
-      .then(({ data }) => setProfile(data))
+    loadProfile(session.user.id)
   }, [session?.user?.id])
 
+  // Lets a page (e.g. Profile, after editing display_name) pull the latest row without
+  // waiting for the next auth state change, which otherwise wouldn't fire at all.
+  async function refreshProfile() {
+    if (session?.user) await loadProfile(session.user.id)
+  }
+
   async function signUp(email: string, password: string, displayName: string) {
-    const { data, error } = await supabase.auth.signUp({ email, password })
+    // Passing display_name here is what makes it available to the `handle_new_user`
+    // trigger (supabase/schema.sql) as `raw_user_meta_data->>'display_name'` — without
+    // this, the trigger's coalesce() always falls through to its 'New user' fallback,
+    // because it fires before any client-side code gets a chance to run.
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { display_name: displayName } },
+    })
     if (error) return { error: error.message }
 
-    // Create the matching profile row. If you're using the SQL trigger from the README instead,
-    // you can delete this block — the trigger will do it automatically on signup.
+    // Belt-and-suspenders fallback for setups without the SQL trigger installed, and to
+    // correct the name if the trigger already created the row with its 'New user'
+    // fallback (e.g. if this signup form is used against an older-schema project).
+    // Using upsert (not insert) is what makes this actually take effect — a plain
+    // insert here would just fail silently on the row the trigger already created.
     if (data.user) {
-      await supabase.from('profiles').insert({
-        id: data.user.id,
-        display_name: displayName,
-        trust_score: 50,
-        verified: false,
-      })
+      await supabase
+        .from('profiles')
+        .upsert(
+          { id: data.user.id, display_name: displayName, trust_score: 50, verified: false },
+          { onConflict: 'id' },
+        )
     }
     return { error: null }
   }
@@ -85,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ session, user: session?.user ?? null, profile, loading, signUp, signIn, signOut }}
+      value={{ session, user: session?.user ?? null, profile, loading, signUp, signIn, signOut, refreshProfile }}
     >
       {children}
     </AuthContext.Provider>

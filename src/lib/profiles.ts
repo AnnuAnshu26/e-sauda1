@@ -1,5 +1,16 @@
 import { supabase } from './supabase'
 
+// Lets a user fix their own display_name after the fact — e.g. accounts stuck as
+// "New user" from before the signUp() metadata fix, or anyone who just wants to
+// rename themselves. RLS's existing "Users can update their own profile" policy
+// (supabase/schema.sql) already restricts this to auth.uid() = id.
+export async function updateDisplayName(userId: string, displayName: string): Promise<void> {
+  const trimmed = displayName.trim()
+  if (!trimmed) throw new Error('Name cannot be empty')
+  const { error } = await supabase.from('profiles').update({ display_name: trimmed }).eq('id', userId)
+  if (error) throw error
+}
+
 export interface PublicProfile {
   id: string
   displayName: string

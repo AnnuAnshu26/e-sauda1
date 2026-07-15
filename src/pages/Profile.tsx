@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, ShieldCheck, Award, Star, TrendingUp } from "lucide-react";
+import { Lock, ShieldCheck, Award, Star, TrendingUp, Pencil, Check, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { fetchUserListings } from "../lib/listings";
 import { fetchMyPurchases, fetchMySales } from "../lib/vault";
 import { fetchSavedListingIds } from "../lib/savedItems";
+import { updateDisplayName } from "../lib/profiles";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const [activeListingCount, setActiveListingCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   const [savedCount, setSavedCount] = useState(0);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [savingName, setSavingName] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
 
   // Active listings, completed saudas, and saved items are all real now, from the
   // `listings`, `vault_orders`, and `saved_items` tables. Rating and trust score are
@@ -39,10 +44,32 @@ export default function Profile() {
       .catch(() => setSavedCount(0));
   }, [user]);
 
+  const displayName = profile?.display_name || user?.email || "You";
+
+  function startEditingName() {
+    setNameInput(profile?.display_name && profile.display_name !== "New user" ? profile.display_name : "");
+    setNameError(null);
+    setEditingName(true);
+  }
+
+  async function saveName() {
+    if (!user) return;
+    setNameError(null);
+    setSavingName(true);
+    try {
+      await updateDisplayName(user.id, nameInput);
+      await refreshProfile();
+      setEditingName(false);
+    } catch (err: any) {
+      setNameError(err.message || "Could not save name");
+    } finally {
+      setSavingName(false);
+    }
+  }
+
   // Trust score and verified status are real, from the `profiles` table.
   const trustScore = profile?.trust_score ?? 50;
   const verified = profile?.verified ?? false;
-  const displayName = profile?.display_name || user?.email || "You";
   const ratingAvg = profile?.rating_avg ?? null;
   const ratingCount = profile?.rating_count ?? 0;
 
@@ -62,11 +89,65 @@ export default function Profile() {
               {displayName.charAt(0).toUpperCase()}
             </span>
             <div>
-              <h1 className="font-display text-2xl font-semibold">
-                {displayName}
-              </h1>
+              {editingName ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    autoFocus
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") saveName();
+                      if (e.key === "Escape") setEditingName(false);
+                    }}
+                    placeholder="Your name"
+                    className="rounded-lg border border-black/10 bg-white px-3 py-1.5 font-display text-xl font-semibold"
+                  />
+                  <button
+                    onClick={saveName}
+                    disabled={savingName}
+                    className="rounded-full bg-forest p-1.5 text-cream hover:bg-forest-light disabled:opacity-50"
+                    aria-label="Save name"
+                  >
+                    <Check size={14} />
+                  </button>
+                  <button
+                    onClick={() => setEditingName(false)}
+                    className="rounded-full border border-black/10 p-1.5 text-ink/60 hover:bg-black/5"
+                    aria-label="Cancel"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <h1 className="flex items-center gap-2 font-display text-2xl font-semibold">
+                  {displayName}
+                  <button
+                    onClick={startEditingName}
+                    className="text-ink/30 hover:text-ink/60"
+                    aria-label="Edit name"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                </h1>
+              )}
+              {nameError && <p className="mt-1 text-xs text-red-600">{nameError}</p>}
               <p className="text-sm text-ink/60">
                 {profile?.city || "Location not set"}
+              </p>
+              <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink/50">
+                <span>Logged in as {user?.email}</span>
+                <span className="text-ink/30">·</span>
+                <span className="font-mono">
+                  ID: {user?.id ? `${user.id.slice(0, 8)}…` : "—"}
+                </span>
+                {user?.id && (
+                  <button
+                    onClick={() => navigator.clipboard.writeText(user.id)}
+                    className="rounded border border-black/10 px-1.5 py-0.5 text-[10px] font-medium text-ink/50 hover:bg-black/5"
+                  >
+                    Copy full ID
+                  </button>
+                )}
               </p>
               <div className="mt-1 flex items-center gap-3 text-xs">
                 <span
