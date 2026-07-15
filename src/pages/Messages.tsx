@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Send, MessageSquare } from 'lucide-react'
+import { Send, MessageSquare, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import {
   fetchConversations,
@@ -8,6 +8,7 @@ import {
   sendMessage,
   subscribeToMessages,
 } from '../lib/chat'
+import { scanMessage, describeFlags } from '../lib/moderation'
 import { ConversationSummary, Message } from '../types'
 
 export default function Messages() {
@@ -22,6 +23,9 @@ export default function Messages() {
   const [loadingThread, setLoadingThread] = useState(false)
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
+  const [pendingWarning, setPendingWarning] = useState<{ body: string; reasons: string[] } | null>(
+    null,
+  )
   const bottomRef = useRef<HTMLDivElement>(null)
 
   // Load the inbox list once we know who's logged in.
@@ -41,6 +45,7 @@ export default function Messages() {
       return
     }
     setLoadingThread(true)
+    setPendingWarning(null)
     fetchMessages(activeId)
       .then(setMessages)
       .catch(() => setMessages([]))
@@ -56,12 +61,9 @@ export default function Messages() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  async function handleSend(e: React.FormEvent) {
-    e.preventDefault()
-    if (!user || !activeId || !draft.trim()) return
+  async function actuallySend(body: string) {
+    if (!user || !activeId) return
     setSending(true)
-    const body = draft.trim()
-    setDraft('')
     try {
       await sendMessage(activeId, user.id, body)
       // No optimistic append needed — the Realtime subscription above delivers
@@ -71,6 +73,31 @@ export default function Messages() {
     } finally {
       setSending(false)
     }
+  }
+
+  async function handleSend(e: React.FormEvent) {
+    e.preventDefault()
+    if (!user || !activeId || !draft.trim()) return
+    const body = draft.trim()
+
+    // Scan before sending, not after — a warning is only useful if it can still
+    // change the person's mind. If it's clean, send immediately as before.
+    const { flagged, reasons } = scanMessage(body)
+    if (flagged) {
+      setPendingWarning({ body, reasons })
+      return
+    }
+
+    setDraft('')
+    await actuallySend(body)
+  }
+
+  async function sendAnyway() {
+    if (!pendingWarning) return
+    const { body } = pendingWarning
+    setPendingWarning(null)
+    setDraft('')
+    await actuallySend(body)
   }
 
   const activeConversation = conversations.find((c) => c.id === activeId)
@@ -159,7 +186,7 @@ export default function Messages() {
                   messages.map((m) => {
                     const mine = m.senderId === user?.id
                     return (
-                      <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                      <div key={m.id} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
                         <div
                           className={`max-w-[75%] rounded-xl2 px-4 py-2 text-sm ${
                             mine ? 'bg-forest text-cream' : 'bg-cream-dark text-ink'
@@ -167,6 +194,12 @@ export default function Messages() {
                         >
                           {m.body}
                         </div>
+                        {m.flagged && (
+                          <span className="mt-1 flex items-center gap-1 text-[11px] text-amber-700">
+                            <AlertTriangle size={11} /> May contain sensitive info — never share OTPs
+                            or pay outside the Vault
+                          </span>
+                        )}
                       </div>
                     )
                   })
@@ -174,10 +207,37 @@ export default function Messages() {
                 <div ref={bottomRef} />
               </div>
 
+              {pendingWarning && (
+                <div className="mx-4 mb-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                  <p className="flex items-start gap-2 text-xs text-amber-800">
+                    <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+                    {describeFlags(pendingWarning.reasons)}
+                  </p>
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      onClick={() => setPendingWarning(null)}
+                      className="rounded-full border border-amber-300 px-3 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-100"
+                    >
+                      Edit message
+                    </button>
+                    <button
+                      onClick={sendAnyway}
+                      disabled={sending}
+                      className="rounded-full bg-amber-800 px-3 py-1 text-xs font-semibold text-white hover:bg-amber-900 disabled:opacity-50"
+                    >
+                      Send anyway
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-black/5 p-4">
                 <input
                   value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
+                  onChange={(e) => {
+                    setDraft(e.target.value)
+                    if (pendingWarning) setPendingWarning(null)
+                  }}
                   placeholder="Type a message…"
                   className="flex-1 rounded-full border border-black/10 px-4 py-2.5 text-sm focus:outline-none"
                 />

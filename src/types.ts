@@ -58,6 +58,8 @@ export interface Message {
   senderId: string
   body: string
   createdAt: string
+  flagged: boolean
+  flagReasons: string[]
 }
 
 // A conversation enriched with listing + last-message info, used to render the inbox list.
