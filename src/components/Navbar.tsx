@@ -2,23 +2,37 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut, Inbox, Heart, ShieldAlert } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useNotifications } from '../hooks/useNotifications'
+import { timeAgo } from '../lib/time'
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
   const [query, setQuery] = useState('')
   const menuRef = useRef<HTMLDivElement>(null)
+  const notifRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const { user, profile, signOut } = useAuth()
+  const { notifications, unreadCount, markRead, markAllRead } = useNotifications()
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false)
       }
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false)
+      }
     }
     document.addEventListener('mousedown', onClick)
     return () => document.removeEventListener('mousedown', onClick)
   }, [])
+
+  async function handleNotificationClick(id: string, link: string | null) {
+    await markRead(id)
+    setNotifOpen(false)
+    if (link) navigate(link)
+  }
 
   function onSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -73,9 +87,58 @@ export default function Navbar() {
           <Link to="/orders" className="hover:text-ink">Orders</Link>
         </nav>
 
-        <button className="relative shrink-0 rounded-full p-2 text-ink/70 hover:bg-black/5" aria-label="Notifications">
-          <Bell size={18} />
-        </button>
+        {user && (
+          <div className="relative shrink-0" ref={notifRef}>
+            <button
+              onClick={() => setNotifOpen((v) => !v)}
+              className="relative rounded-full p-2 text-ink/70 hover:bg-black/5"
+              aria-label="Notifications"
+            >
+              <Bell size={18} />
+              {unreadCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-clay px-1 text-[10px] font-semibold text-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+            {notifOpen && (
+              <div className="absolute right-0 mt-2 w-80 rounded-xl2 border border-black/10 bg-white p-2 shadow-xl">
+                <div className="flex items-center justify-between border-b border-black/5 p-2">
+                  <p className="text-sm font-semibold text-ink">Notifications</p>
+                  {unreadCount > 0 && (
+                    <button onClick={markAllRead} className="text-xs font-medium text-clay hover:underline">
+                      Mark all read
+                    </button>
+                  )}
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <p className="p-4 text-center text-sm text-ink/50">You're all caught up.</p>
+                  ) : (
+                    notifications.map((n) => (
+                      <button
+                        key={n.id}
+                        onClick={() => handleNotificationClick(n.id, n.link)}
+                        className={`block w-full rounded-lg p-3 text-left text-sm hover:bg-cream ${
+                          n.read ? '' : 'bg-clay/5'
+                        }`}
+                      >
+                        <span className="flex items-start gap-2">
+                          {!n.read && <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-clay" />}
+                          <span className={n.read ? 'ml-3.5' : ''}>
+                            <span className="block font-semibold text-ink">{n.title}</span>
+                            {n.body && <span className="block truncate text-xs text-ink/60">{n.body}</span>}
+                            <span className="block text-xs text-ink/40">{timeAgo(n.createdAt)}</span>
+                          </span>
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {!user ? (
           <div className="flex shrink-0 items-center gap-2">
