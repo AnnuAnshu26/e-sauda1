@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { Search } from "lucide-react";
 import { categories } from "../data/listings";
 import { Category, Listing } from "../types";
 import { fetchListings } from "../lib/listings";
@@ -10,16 +11,39 @@ const tabs: ("All" | Category)[] = ["All", ...categories.map((c) => c.name)];
 
 export default function Browse() {
   const { savedIds, toggleSaved } = useSavedListings();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const [active, setActive] = useState<"All" | Category>(
     (params.get("category") as Category) || "All",
   );
   const [min, setMin] = useState("");
   const [max, setMax] = useState("");
   const [sort, setSort] = useState("Relevance");
+  const [searchInput, setSearchInput] = useState(params.get("q") || "");
+  const [search, setSearch] = useState(params.get("q") || "");
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Debounce typing in the search box so we're not firing a query on every
+  // keystroke — 350ms feels responsive without hammering the DB while typing.
+  useEffect(() => {
+    const timeout = setTimeout(() => setSearch(searchInput), 350);
+    return () => clearTimeout(timeout);
+  }, [searchInput]);
+
+  // Keeps the URL bookmarkable/shareable (e.g. the navbar's search box links here
+  // with ?q=...) without fighting the debounce above.
+  useEffect(() => {
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        search ? next.set("q", search) : next.delete("q");
+        return next;
+      },
+      { replace: true },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
 
   useEffect(() => {
     let cancelled = false;
@@ -29,6 +53,7 @@ export default function Browse() {
       category: active,
       minPrice: min ? Number(min) : undefined,
       maxPrice: max ? Number(max) : undefined,
+      search,
     })
       .then((data) => {
         if (!cancelled) setListings(data);
@@ -42,7 +67,7 @@ export default function Browse() {
     return () => {
       cancelled = true;
     };
-  }, [active, min, max]);
+  }, [active, min, max, search]);
 
   const filtered = useMemo(() => {
     let result = listings;
@@ -76,6 +101,21 @@ export default function Browse() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr]">
         <aside className="h-fit rounded-xl2 border border-black/5 bg-white p-5">
           <h3 className="font-display text-lg font-semibold">Filters</h3>
+
+          <div className="mt-5">
+            <label className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+              Search
+            </label>
+            <div className="mt-2 flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2">
+              <Search size={16} className="shrink-0 text-ink/40" />
+              <input
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Search listings..."
+                className="w-full bg-transparent text-sm text-ink placeholder:text-ink/40 focus:outline-none"
+              />
+            </div>
+          </div>
 
           <div className="mt-5">
             <label className="text-xs font-semibold uppercase tracking-wide text-ink/50">
@@ -133,7 +173,7 @@ export default function Browse() {
 
         <div>
           <p className="mb-4 font-display text-xl font-semibold">
-            {active === "All" ? "All listings" : active}{" "}
+            {search ? `Results for "${search}"` : active === "All" ? "All listings" : active}{" "}
             <span className="text-base font-normal text-ink/50">
               · {loading ? "…" : filtered.length} results across India
             </span>
@@ -169,7 +209,9 @@ export default function Browse() {
 
           {!loading && filtered.length === 0 && !error && (
             <p className="mt-10 text-center text-sm text-ink/50">
-              No listings match these filters yet.
+              {search
+                ? `No listings match "${search}". Try a different search term.`
+                : "No listings match these filters yet."}
             </p>
           )}
 

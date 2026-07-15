@@ -37,6 +37,17 @@ export interface ListingFilters {
   category?: Category | 'All'
   minPrice?: number
   maxPrice?: number
+  // Free-text search box on Browse/Navbar. Matched against title, description, and
+  // sub-category with ilike (case-insensitive substring) rather than Postgres full-text
+  // search — this is a personal-marketplace scale app, so a GIN/tsvector index would be
+  // premature; ilike is plenty fast on a table this size and needs zero schema changes.
+  search?: string
+}
+
+// Escapes the characters that mean something special inside a Postgres LIKE/ILIKE
+// pattern (%, _) so a search for e.g. "100% cotton" doesn't get misread as a wildcard.
+function escapeLike(term: string): string {
+  return term.replace(/[%_]/g, (c) => `\\${c}`)
 }
 
 // Public browse feed — only ever returns active listings from anyone.
@@ -51,6 +62,10 @@ export async function fetchListings(filters: ListingFilters = {}): Promise<Listi
   }
   if (filters.maxPrice !== undefined) {
     query = query.lte('price', filters.maxPrice)
+  }
+  if (filters.search && filters.search.trim()) {
+    const term = escapeLike(filters.search.trim())
+    query = query.or(`title.ilike.%${term}%,description.ilike.%${term}%,sub_category.ilike.%${term}%`)
   }
 
   const { data, error } = await query.order('created_at', { ascending: false })
