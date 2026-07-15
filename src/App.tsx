@@ -12,6 +12,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import ListingDetail from './pages/ListingDetail'
 import EditListing from './pages/EditListing'
+import Admin from './pages/Admin'
 import SellerProfile from './pages/SellerProfile'
 import Messages from './pages/Messages'
 import Saved from './pages/Saved'
@@ -89,6 +90,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <Saved />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <RequireAuth>
+                <Admin />
               </RequireAuth>
             }
           />

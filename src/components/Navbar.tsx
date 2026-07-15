@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut, Inbox, Heart } from 'lucide-react'
+import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut, Inbox, Heart, ShieldAlert } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
@@ -126,6 +126,11 @@ export default function Navbar() {
                   <Link to="/browse" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream">
                     <ShoppingBag size={16} /> Browse marketplace
                   </Link>
+                  {profile?.is_admin && (
+                    <Link to="/admin" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream">
+                      <ShieldAlert size={16} /> Reports (admin)
+                    </Link>
+                  )}
                   <button onClick={handleSignOut} className="flex w-full items-center gap-3 rounded-lg p-3 text-left text-sm text-red-600 hover:bg-red-50">
                     <LogOut size={16} /> Log out
                   </button>
