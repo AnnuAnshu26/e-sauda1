@@ -4,12 +4,15 @@ import { Star, ShieldCheck, MapPin, Package } from 'lucide-react'
 import { fetchPublicProfile, PublicProfile } from '../lib/profiles'
 import { fetchUserListings } from '../lib/listings'
 import { fetchRatingsForUser } from '../lib/ratings'
+import { useAuth } from '../context/AuthContext'
 import { useSavedListings } from '../hooks/useSavedListings'
 import { Listing, Rating } from '../types'
 import ListingCard from '../components/ListingCard'
+import ReportButton from '../components/ReportButton'
 
 export default function SellerProfile() {
   const { savedIds, toggleSaved } = useSavedListings()
+  const { user } = useAuth()
   const { id } = useParams<{ id: string }>()
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [listings, setListings] = useState<Listing[]>([])
@@ -94,6 +97,11 @@ export default function SellerProfile() {
           <div className="text-right">
             <p className="text-xs uppercase tracking-wide text-ink/50">Trust score</p>
             <p className="font-display text-4xl font-semibold text-clay">{profile.trustScore}</p>
+            {user && user.id !== profile.id && (
+              <div className="mt-2">
+                <ReportButton reportedUserId={profile.id} label="Report user" />
+              </div>
+            )}
           </div>
         </div>
       </div>

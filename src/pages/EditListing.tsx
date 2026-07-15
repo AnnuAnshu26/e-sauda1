@@ -1,0 +1,207 @@
+import { useEffect, useState, FormEvent } from 'react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { fetchListingById, updateListing } from '../lib/listings'
+import { useAuth } from '../context/AuthContext'
+import { Listing } from '../types'
+
+// Deliberately a standalone lightweight form rather than reusing the Sell wizard --
+// Sell's multi-step voice-first flow (with the listing-cap/fee-tier logic baked into
+// its category step) is built for *creating* a listing, not fixing a typo in one that
+// already exists. Category is intentionally not editable here; see the comment on
+// ListingUpdateInput in lib/listings.ts for why.
+export default function EditListing() {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { user } = useAuth()
+
+  const [listing, setListing] = useState<Listing | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
+  const [forbidden, setForbidden] = useState(false)
+
+  const [title, setTitle] = useState('')
+  const [price, setPrice] = useState('')
+  const [condition, setCondition] = useState('Good')
+  const [description, setDescription] = useState('')
+  const [city, setCity] = useState('')
+
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    if (!id) return
+    setLoading(true)
+    fetchListingById(id)
+      .then((data) => {
+        if (!data) {
+          setNotFound(true)
+          return
+        }
+        if (user && data.ownerId !== user.id) {
+          setForbidden(true)
+          return
+        }
+        setListing(data)
+        setTitle(data.title)
+        setPrice(String(data.price))
+        setCondition(data.condition)
+        setDescription(data.description || '')
+        setCity(data.city || '')
+      })
+      .catch(() => setNotFound(true))
+      .finally(() => setLoading(false))
+  }, [id, user])
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault()
+    if (!id) return
+    setError(null)
+
+    const parsedPrice = Number(price)
+    if (!title.trim()) {
+      setError('Title cannot be empty.')
+      return
+    }
+    if (!price || parsedPrice < 0 || Number.isNaN(parsedPrice)) {
+      setError('Enter a valid price.')
+      return
+    }
+
+    setSaving(true)
+    try {
+      await updateListing(id, {
+        title: title.trim(),
+        price: parsedPrice,
+        condition,
+        description: description.trim(),
+        city: city.trim(),
+        location: city.trim(),
+      })
+      setSaved(true)
+      setTimeout(() => navigate(`/listing/${id}`), 900)
+    } catch (err: any) {
+      setError(err.message || 'Could not save changes. Try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-xl px-6 py-20">
+        <div className="h-8 w-1/2 animate-pulse rounded bg-cream-dark" />
+        <div className="mt-6 h-64 animate-pulse rounded-xl2 bg-cream-dark" />
+      </div>
+    )
+  }
+
+  if (notFound) {
+    return (
+      <div className="mx-auto max-w-lg px-6 py-24 text-center">
+        <p className="font-display text-2xl font-semibold">Listing not found</p>
+        <p className="mt-2 text-sm text-ink/60">It may have been removed or sold.</p>
+        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
+          Back to Browse
+        </Link>
+      </div>
+    )
+  }
+
+  if (forbidden) {
+    return (
+      <div className="mx-auto max-w-lg px-6 py-24 text-center">
+        <p className="font-display text-2xl font-semibold">Not your listing</p>
+        <p className="mt-2 text-sm text-ink/60">You can only edit listings you own.</p>
+        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
+          Back to Browse
+        </Link>
+      </div>
+    )
+  }
+
+  if (!listing) return null
+
+  return (
+    <div className="mx-auto max-w-xl px-6 py-12">
+      <Link to={`/listing/${listing.id}`} className="text-sm text-ink/50 hover:text-ink">
+        ← Back to listing
+      </Link>
+      <h1 className="mt-2 font-display text-3xl font-semibold">Edit listing</h1>
+      <p className="mt-1 text-sm text-ink/60">
+        Category ({listing.category}
+        {listing.subCategory ? ` · ${listing.subCategory}` : ''}) can't be changed here — post a
+        new listing if it belongs elsewhere.
+      </p>
+
+      <form onSubmit={onSubmit} className="mt-8 space-y-4">
+        <div>
+          <label className="text-sm font-medium text-ink">Title</label>
+          <input
+            required
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-ink">Price (₹)</label>
+          <input
+            required
+            type="number"
+            min="0"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-ink">Condition</label>
+          <select
+            value={condition}
+            onChange={(e) => setCondition(e.target.value)}
+            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+          >
+            <option>New</option>
+            <option>Like new</option>
+            <option>Good</option>
+            <option>Fair</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-ink">City</label>
+          <input
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-ink">Description</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+            placeholder="Any dents, accessories included, reason for selling..."
+            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+          />
+        </div>
+
+        {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>}
+        {saved && <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">Saved. Taking you back…</p>}
+
+        <button
+          type="submit"
+          disabled={saving}
+          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light disabled:opacity-50"
+        >
+          {saving ? 'Saving…' : 'Save changes'}
+        </button>
+      </form>
+    </div>
+  )
+}

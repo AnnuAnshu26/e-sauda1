@@ -6,6 +6,7 @@ import { getOrCreateConversation } from '../lib/chat'
 import { createVaultOrder } from '../lib/vault'
 import { useAuth } from '../context/AuthContext'
 import { Listing, VaultOrderWithOtp } from '../types'
+import ReportButton from '../components/ReportButton'
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>()
@@ -155,9 +156,12 @@ export default function ListingDetail() {
             <MapPin size={14} /> {listing.location || listing.city || 'Location not set'} · {listing.distanceKm}km away
           </p>
           {!isOwner && (
-            <Link to={`/seller/${listing.ownerId}`} className="mt-1 inline-block text-sm text-clay hover:underline">
-              View seller profile
-            </Link>
+            <div className="mt-1 flex items-center gap-3">
+              <Link to={`/seller/${listing.ownerId}`} className="text-sm text-clay hover:underline">
+                View seller profile
+              </Link>
+              <ReportButton listingId={listing.id} reportedUserId={listing.ownerId} label="Report listing" />
+            </div>
           )}
 
           <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
@@ -186,7 +190,15 @@ export default function ListingDetail() {
 
           <div className="mt-8">
             {isOwner ? (
-              <div className="rounded-lg bg-black/5 p-4 text-sm text-ink/60">This is your own listing.</div>
+              <div className="flex items-center justify-between gap-3 rounded-lg bg-black/5 p-4 text-sm text-ink/60">
+                This is your own listing.
+                <Link
+                  to={`/listing/${listing.id}/edit`}
+                  className="shrink-0 rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-ink hover:bg-cream-dark"
+                >
+                  Edit listing
+                </Link>
+              </div>
             ) : purchase ? (
               <div className="rounded-xl2 border border-emerald-200 bg-emerald-50 p-4">
                 <p className="flex items-center gap-2 text-sm font-semibold text-emerald-700">

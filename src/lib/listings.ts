@@ -133,6 +133,37 @@ export async function attachPhotos(id: string, photoUrls: string[]): Promise<voi
   if (error) throw error
 }
 
+// Category is deliberately not editable here — it feeds the per-category listing cap
+// and anti-bot fee tier (see countActiveListingsInCategory), and letting someone swap
+// category after posting would be a way to dodge that. Everything else about a listing
+// is fair game to fix after the fact (typos, price changes, more detail, etc).
+export interface ListingUpdateInput {
+  title: string
+  price: number
+  condition: string
+  description: string
+  city: string
+  location: string
+}
+
+export async function updateListing(id: string, input: ListingUpdateInput): Promise<Listing> {
+  const { data, error } = await supabase
+    .from('listings')
+    .update({
+      title: input.title,
+      price: input.price,
+      condition: input.condition,
+      description: input.description || null,
+      city: input.city || null,
+      location: input.location || input.city || '',
+    })
+    .eq('id', id)
+    .select('*')
+    .single()
+  if (error) throw error
+  return mapRow(data)
+}
+
 export async function deleteListing(id: string): Promise<void> {
   const { error } = await supabase.from('listings').delete().eq('id', id)
   if (error) throw error
