@@ -46,7 +46,7 @@ export interface ListingFilters {
 
 // Escapes the characters that mean something special inside a Postgres LIKE/ILIKE
 // pattern (%, _) so a search for e.g. "100% cotton" doesn't get misread as a wildcard.
-function escapeLike(term: string): string {
+export function escapeLike(term: string): string {
   return term.replace(/[%_]/g, (c) => `\\${c}`)
 }
 

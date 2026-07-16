@@ -2,16 +2,20 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Lock, ShieldCheck, MapPin, MessageCircle } from 'lucide-react'
 import { fetchListingById } from '../lib/listings'
+import { fetchRecommendedListings } from '../lib/recommendations'
 import { getOrCreateConversation } from '../lib/chat'
 import { createVaultOrder } from '../lib/vault'
 import { useAuth } from '../context/AuthContext'
+import { useSavedListings } from '../hooks/useSavedListings'
 import { Listing, VaultOrderWithOtp } from '../types'
 import ReportButton from '../components/ReportButton'
+import ListingCard from '../components/ListingCard'
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { savedIds, toggleSaved } = useSavedListings()
   const [listing, setListing] = useState<Listing | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
@@ -21,6 +25,7 @@ export default function ListingDetail() {
   const [buying, setBuying] = useState(false)
   const [buyError, setBuyError] = useState<string | null>(null)
   const [purchase, setPurchase] = useState<VaultOrderWithOtp | null>(null)
+  const [recommended, setRecommended] = useState<Listing[]>([])
 
   useEffect(() => {
     if (!id) return
@@ -33,6 +38,27 @@ export default function ListingDetail() {
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false))
   }, [id])
+
+  // Runs after the main listing loads (not in parallel with it) since it needs the
+  // listing's category to know what to look for. Failing quietly to an empty list is
+  // fine here — this section is a bonus, not core to viewing or buying the listing.
+  useEffect(() => {
+    if (!listing) {
+      setRecommended([])
+      return
+    }
+    let cancelled = false
+    fetchRecommendedListings(listing)
+      .then((results) => {
+        if (!cancelled) setRecommended(results)
+      })
+      .catch(() => {
+        if (!cancelled) setRecommended([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [listing?.id, listing?.category])
 
   const isOwner = !!user && !!listing && user.id === listing.ownerId
 
@@ -245,6 +271,25 @@ export default function ListingDetail() {
             )}
           </div>
         </div>
+
+        {recommended.length > 0 && (
+          <div className="mt-12">
+            <p className="font-display text-xl font-semibold text-ink">You might also need</p>
+            <p className="mt-1 text-sm text-ink/50">
+              Other active listings that often go with a {listing.category.toLowerCase()} purchase.
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-5 sm:grid-cols-3 xl:grid-cols-4">
+              {recommended.map((l) => (
+                <ListingCard
+                  key={l.id}
+                  listing={l}
+                  saved={savedIds.has(l.id)}
+                  onToggleSaved={toggleSaved}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
