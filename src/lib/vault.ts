@@ -13,6 +13,8 @@ function mapRow(row: any): VaultOrder {
     completedAt: row.completed_at,
     cancelledAt: row.cancelled_at,
     cancelReason: row.cancel_reason,
+    refundAmount: row.refund_amount !== null && row.refund_amount !== undefined ? Number(row.refund_amount) : null,
+    deductedFee: Number(row.deducted_fee ?? 0),
     listingTitle: row.listings?.title,
     listingEmoji: row.listings?.emoji,
     listingPhotoUrl: row.listings?.photo_urls?.[0] ?? null,
@@ -65,7 +67,7 @@ export async function cancelVaultOrder(orderId: string, reason: string): Promise
 // it is revoked for every client role in vault_schema.sql, so even asking for it here
 // would just error. Only the RPC functions above can read or write it.
 const SELECT_COLUMNS =
-  'id, listing_id, buyer_id, seller_id, amount, status, created_at, completed_at, cancelled_at, cancel_reason, listings(title, emoji, photo_urls)'
+  'id, listing_id, buyer_id, seller_id, amount, status, created_at, completed_at, cancelled_at, cancel_reason, refund_amount, deducted_fee, listings(title, emoji, photo_urls)'
 
 export async function fetchMyPurchases(userId: string): Promise<VaultOrder[]> {
   const { data, error } = await supabase

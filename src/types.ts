@@ -91,6 +91,11 @@ export interface VaultOrder {
   completedAt: string | null
   cancelledAt: string | null
   cancelReason: string | null
+  // Only meaningful once status === 'cancelled'. refundAmount is null until then;
+  // deductedFee defaults to 0 and only becomes non-zero if a delivery rider had
+  // already been arranged for this order at cancellation time.
+  refundAmount: number | null
+  deductedFee: number
   listingTitle?: string
   listingEmoji?: string
   listingPhotoUrl?: string | null

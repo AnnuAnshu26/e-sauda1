@@ -274,6 +274,14 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
       <div className="mt-4 border-t border-emerald-100 pt-3">
         {showCancel ? (
           <div className="space-y-2">
+            {delivery && delivery.status !== "cancelled" && (
+              <p className="rounded-lg bg-amber-50 p-2 text-xs text-amber-800">
+                A {delivery.partner} rider has already been arranged for this order.
+                Cancelling now deducts the ₹{delivery.fee} delivery fee from your
+                refund — you'll get back ₹{Math.max(order.amount - delivery.fee, 0)}{" "}
+                instead of ₹{order.amount}.
+              </p>
+            )}
             <input
               value={reason}
               onChange={(e) => setReason(e.target.value)}
@@ -415,6 +423,15 @@ function HistoryRow({ order, currentUserId }: { order: VaultOrder; currentUserId
           </span>
         )}
       </div>
+
+      {!isCompleted && order.refundAmount !== null && (
+        <p className="mt-2 text-xs text-ink/50">
+          Refunded ₹{order.refundAmount.toLocaleString("en-IN")}
+          {order.deductedFee > 0 && (
+            <> (₹{order.deductedFee.toLocaleString("en-IN")} delivery fee deducted)</>
+          )}
+        </p>
+      )}
 
       {isCompleted && checked && (
         <div className="mt-3 border-t border-black/5 pt-3">
