@@ -44,11 +44,21 @@ begin
   -- A rider trip already happened (or is happening) if a delivery was arranged and
   -- hasn't itself already been cancelled. Deduct its fee from the refund, capped so
   -- the refund never goes negative on an unusually small order.
+  --
+  -- NOTE: this uses `FOUND` (Postgres's built-in flag set by the preceding SELECT
+  -- INTO), not `v_delivery IS NOT NULL`. That distinction matters here: a row type
+  -- like `deliveries` is only "IS NOT NULL" per SQL's composite-type rules if EVERY
+  -- column is non-null — but an 'assigned' (not yet delivered) delivery has
+  -- delivered_at = NULL, a legitimate value for that state. A row with a mix of
+  -- null and non-null fields is neither "IS NULL" nor "IS NOT NULL" (both evaluate
+  -- false), so checking `IS NOT NULL` here silently treated a found delivery as if
+  -- none existed, and the fee was never deducted. FOUND doesn't have this problem —
+  -- it just reports whether the SELECT matched a row.
   select * into v_delivery from public.deliveries
     where vault_order_id = p_order_id and status in ('assigned', 'delivered')
     for update;
 
-  if v_delivery is not null then
+  if found then
     v_deducted := least(v_delivery.fee, v_order.amount);
     update public.deliveries set status = 'cancelled' where id = v_delivery.id;
   end if;
