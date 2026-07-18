@@ -131,7 +131,13 @@ export interface Rating {
   comment: string | null
   createdAt: string
 }
-export type NotificationType = 'message' | 'vault_funded' | 'vault_completed' | 'vault_cancelled'
+export type NotificationType =
+  | 'message'
+  | 'vault_funded'
+  | 'vault_completed'
+  | 'vault_cancelled'
+  | 'report_reviewed'
+  | 'report_dismissed'
 
 export interface AppNotification {
   id: string

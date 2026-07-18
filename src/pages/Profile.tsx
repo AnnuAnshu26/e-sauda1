@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Lock, ShieldCheck, Award, Star, TrendingUp, Pencil, Check, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { fetchUserListings } from "../lib/listings";
@@ -190,11 +190,13 @@ export default function Profile() {
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Stat label="Completed saudas" value={completedCount} />
-        <Stat
-          label="Active listings"
-          value={activeListingCount}
-          suffix="per category cap: 2"
-        />
+        <Link to="/my-listings">
+          <Stat
+            label="Active listings"
+            value={activeListingCount}
+            suffix="per category cap: 2"
+          />
+        </Link>
         <Stat label="Saved items" value={savedCount} />
       </div>
 

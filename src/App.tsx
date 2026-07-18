@@ -12,6 +12,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import ListingDetail from './pages/ListingDetail'
 import EditListing from './pages/EditListing'
+import MyListings from './pages/MyListings'
 import Admin from './pages/Admin'
 import SellerProfile from './pages/SellerProfile'
 import Messages from './pages/Messages'
@@ -58,6 +59,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <Sell />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/my-listings"
+            element={
+              <RequireAuth>
+                <MyListings />
               </RequireAuth>
             }
           />

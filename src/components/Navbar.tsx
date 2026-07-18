@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut, Inbox, Heart, ShieldAlert } from 'lucide-react'
+import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut, Inbox, Heart, ShieldAlert, Package } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useNotifications } from '../hooks/useNotifications'
 import { timeAgo } from '../lib/time'
@@ -173,6 +173,9 @@ export default function Navbar() {
                   </div>
                   <Link to="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream">
                     <UserIcon size={16} /> My profile
+                  </Link>
+                  <Link to="/my-listings" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream">
+                    <Package size={16} /> My listings
                   </Link>
                   <Link to="/messages" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream">
                     <Inbox size={16} /> Messages
