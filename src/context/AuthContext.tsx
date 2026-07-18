@@ -23,6 +23,8 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
+  requestPasswordReset: (email: string) => Promise<{ error: string | null }>
+  updatePassword: (newPassword: string) => Promise<{ error: string | null }>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -107,9 +109,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut()
   }
 
+  // Supabase emails a link containing a recovery token; the link lands on
+  // /reset-password, and supabase-js's default detectSessionInUrl picks the token up
+  // from the URL automatically, giving that page a real (if temporary) session to call
+  // updatePassword from -- no manual token handling needed on our end.
+  async function requestPasswordReset(email: string) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    return { error: error ? error.message : null }
+  }
+
+  async function updatePassword(newPassword: string) {
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    return { error: error ? error.message : null }
+  }
+
   return (
     <AuthContext.Provider
-      value={{ session, user: session?.user ?? null, profile, loading, signUp, signIn, signOut, refreshProfile }}
+      value={{
+        session,
+        user: session?.user ?? null,
+        profile,
+        loading,
+        signUp,
+        signIn,
+        signOut,
+        refreshProfile,
+        requestPasswordReset,
+        updatePassword,
+      }}
     >
       {children}
     </AuthContext.Provider>

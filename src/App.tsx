@@ -10,6 +10,8 @@ import Vault from './pages/Vault'
 import Profile from './pages/Profile'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import ListingDetail from './pages/ListingDetail'
 import EditListing from './pages/EditListing'
 import MyListings from './pages/MyListings'
@@ -38,6 +40,8 @@ export default function App() {
           <Route path="/seller/:id" element={<SellerProfile />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route
             path="/messages"
             element={

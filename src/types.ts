@@ -138,6 +138,7 @@ export type NotificationType =
   | 'vault_cancelled'
   | 'report_reviewed'
   | 'report_dismissed'
+  | 'price_drop'
 
 export interface AppNotification {
   id: string
