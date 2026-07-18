@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ShieldAlert, Check, X } from 'lucide-react'
+import { ShieldAlert, Check, X, Trash2, UserX, UserCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { fetchReports, updateReportStatus, AdminReport } from '../lib/admin'
+import { fetchReports, updateReportStatus, removeListing, setUserSuspended, AdminReport } from '../lib/admin'
 import { reportReasonLabels } from '../lib/reports'
 
 const tabs: Array<'open' | 'reviewed' | 'dismissed' | 'all'> = ['open', 'reviewed', 'dismissed', 'all']
@@ -44,6 +44,48 @@ export default function Admin() {
       setReports((prev) => (tab === 'all' ? prev.map((r) => (r.id === id ? { ...r, status } : r)) : prev.filter((r) => r.id !== id)))
     } catch (err: any) {
       setError(err.message || 'Could not update this report')
+    } finally {
+      setActingOn(null)
+    }
+  }
+
+  async function handleRemoveListing(report: AdminReport) {
+    if (!report.listingId) return
+    if (!confirm(`Remove listing "${report.listingTitle}"? This takes it off the marketplace.`)) return
+    setActingOn(report.id)
+    try {
+      await removeListing(report.listingId)
+      setReports((prev) =>
+        prev.map((r) => (r.listingId === report.listingId ? { ...r, listingStatus: 'removed' } : r)),
+      )
+    } catch (err: any) {
+      setError(err.message || 'Could not remove this listing')
+    } finally {
+      setActingOn(null)
+    }
+  }
+
+  async function handleToggleSuspend(report: AdminReport) {
+    if (!report.reportedUserId) return
+    const nextSuspended = !report.reportedUserSuspended
+    if (
+      !confirm(
+        nextSuspended
+          ? `Suspend ${report.reportedUserName}? They won't be able to post listings or send messages.`
+          : `Lift the suspension on ${report.reportedUserName}?`,
+      )
+    )
+      return
+    setActingOn(report.id)
+    try {
+      await setUserSuspended(report.reportedUserId, nextSuspended)
+      setReports((prev) =>
+        prev.map((r) =>
+          r.reportedUserId === report.reportedUserId ? { ...r, reportedUserSuspended: nextSuspended } : r,
+        ),
+      )
+    } catch (err: any) {
+      setError(err.message || 'Could not update suspension')
     } finally {
       setActingOn(null)
     }
@@ -138,24 +180,56 @@ export default function Admin() {
                 )}
               </div>
 
-              {r.status === 'open' && (
-                <div className="mt-4 flex gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
+                {r.status === 'open' && (
+                  <>
+                    <button
+                      onClick={() => act(r.id, 'reviewed')}
+                      disabled={actingOn === r.id}
+                      className="flex items-center gap-1.5 rounded-full bg-forest px-4 py-2 text-xs font-semibold text-cream hover:bg-forest-light disabled:opacity-50"
+                    >
+                      <Check size={13} /> Mark reviewed
+                    </button>
+                    <button
+                      onClick={() => act(r.id, 'dismissed')}
+                      disabled={actingOn === r.id}
+                      className="flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-ink/70 hover:bg-cream-dark disabled:opacity-50"
+                    >
+                      <X size={13} /> Dismiss
+                    </button>
+                  </>
+                )}
+                {r.listingId && r.listingStatus !== 'removed' && (
                   <button
-                    onClick={() => act(r.id, 'reviewed')}
+                    onClick={() => handleRemoveListing(r)}
                     disabled={actingOn === r.id}
-                    className="flex items-center gap-1.5 rounded-full bg-forest px-4 py-2 text-xs font-semibold text-cream hover:bg-forest-light disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-100 disabled:opacity-50"
                   >
-                    <Check size={13} /> Mark reviewed
+                    <Trash2 size={13} /> Remove listing
                   </button>
+                )}
+                {r.reportedUserId && (
                   <button
-                    onClick={() => act(r.id, 'dismissed')}
+                    onClick={() => handleToggleSuspend(r)}
                     disabled={actingOn === r.id}
-                    className="flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-ink/70 hover:bg-cream-dark disabled:opacity-50"
+                    className={`flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-semibold disabled:opacity-50 ${
+                      r.reportedUserSuspended
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                        : 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100'
+                    }`}
                   >
-                    <X size={13} /> Dismiss
+                    {r.reportedUserSuspended ? (
+                      <>
+                        <UserCheck size={13} /> Lift suspension
+                      </>
+                    ) : (
+                      <>
+                        <UserX size={13} /> Suspend user
+                      </>
+                    )}
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           ))
         )}

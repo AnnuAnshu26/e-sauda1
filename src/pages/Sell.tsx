@@ -167,6 +167,18 @@ export default function Sell() {
     }
   }
 
+  if (profile?.suspended) {
+    return (
+      <div className="mx-auto max-w-lg px-6 py-24 text-center">
+        <h1 className="font-display text-2xl font-semibold">Account suspended</h1>
+        <p className="mt-2 text-sm text-ink/60">
+          Your account has been suspended and can't post new listings. If you think
+          this is a mistake, contact support.
+        </p>
+      </div>
+    );
+  }
+
   if (posted) {
     return (
       <div className="mx-auto max-w-lg px-6 py-24 text-center">

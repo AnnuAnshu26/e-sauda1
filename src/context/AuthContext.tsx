@@ -11,6 +11,7 @@ interface Profile {
   rating_avg: number | null
   rating_count: number
   is_admin: boolean
+  suspended: boolean
 }
 
 interface AuthContextValue {
@@ -49,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function loadProfile(userId: string) {
     const { data } = await supabase
       .from('profiles')
-      .select('id, display_name, city, trust_score, verified, rating_avg, rating_count, is_admin')
+      .select('id, display_name, city, trust_score, verified, rating_avg, rating_count, is_admin, suspended')
       .eq('id', userId)
       .single()
     setProfile(data)
