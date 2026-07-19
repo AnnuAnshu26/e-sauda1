@@ -197,7 +197,14 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
     setCancelling(true);
     setError(null);
     try {
-      await cancelVaultOrder(order.id, reason || "Buyer cancelled");
+      const result = await cancelVaultOrder(order.id, reason || "Buyer cancelled");
+      if (result.refundFailed) {
+        // The order IS cancelled -- this isn't a failure to retry the whole action,
+        // just a heads-up that the money side needs another pass. Calling
+        // cancelVaultOrder again on the same order safely retries only the refund
+        // step (see the Edge Function's "already cancelled" branch).
+        setError('Order cancelled. The refund is still processing — try again in a moment if it doesn\'t show up.');
+      }
       onChange();
     } catch (err: any) {
       setError(err.message || "Couldn't cancel this order.");
@@ -426,7 +433,8 @@ function HistoryRow({ order, currentUserId }: { order: VaultOrder; currentUserId
 
       {!isCompleted && order.refundAmount !== null && (
         <p className="mt-2 text-xs text-ink/50">
-          Refunded ₹{order.refundAmount.toLocaleString("en-IN")}
+          {!order.razorpayPaymentId || order.refundProcessedAt ? 'Refunded' : 'Refund processing'} ₹
+          {order.refundAmount.toLocaleString("en-IN")}
           {order.deductedFee > 0 && (
             <> (₹{order.deductedFee.toLocaleString("en-IN")} delivery fee deducted)</>
           )}

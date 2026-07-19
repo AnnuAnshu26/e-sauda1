@@ -96,6 +96,15 @@ export interface VaultOrder {
   // already been arranged for this order at cancellation time.
   refundAmount: number | null
   deductedFee: number
+  // Set once cancel-vault-order-and-refund's Razorpay call actually succeeds --
+  // distinct from refundAmount, which is just the *computed* amount and gets set
+  // immediately on cancellation regardless of whether the real refund went through.
+  refundProcessedAt: string | null
+  // Null for orders created before the Razorpay integration (or in any environment
+  // still running the mocked Vault) -- there's no real payment behind those, so
+  // "refund processing" would never resolve for them. Non-null means a real payment
+  // exists and refundProcessedAt is meaningful to wait on.
+  razorpayPaymentId: string | null
   listingTitle?: string
   listingEmoji?: string
   listingPhotoUrl?: string | null

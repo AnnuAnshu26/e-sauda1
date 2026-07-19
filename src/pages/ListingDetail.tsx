@@ -5,6 +5,7 @@ import { fetchListingById } from '../lib/listings'
 import { fetchRecommendedListings } from '../lib/recommendations'
 import { getOrCreateConversation } from '../lib/chat'
 import { createVaultOrder } from '../lib/vault'
+import { payWithRazorpay } from '../lib/razorpay'
 import { useAuth } from '../context/AuthContext'
 import { useSavedListings } from '../hooks/useSavedListings'
 import { Listing, VaultOrderWithOtp } from '../types'
@@ -14,7 +15,7 @@ import ListingCard from '../components/ListingCard'
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { savedIds, toggleSaved } = useSavedListings()
   const [listing, setListing] = useState<Listing | null>(null)
   const [loading, setLoading] = useState(true)
@@ -89,11 +90,20 @@ export default function ListingDetail() {
     setBuying(true)
     setBuyError(null)
     try {
-      const order = await createVaultOrder(listing.id)
+      const { razorpayOrderId } = await payWithRazorpay(
+        listing.id,
+        profile?.display_name || 'e-Sauda buyer',
+        user.email || '',
+      )
+      const order = await createVaultOrder(listing.id, razorpayOrderId)
       setPurchase(order)
       setListing({ ...listing, status: 'sold' })
     } catch (err: any) {
-      setBuyError(err.message || 'Could not start this purchase. Try again.')
+      // Closing the Checkout modal without paying isn't a failure worth alarming
+      // someone about -- they just changed their mind, so no error banner for it.
+      if (err.message !== 'cancelled') {
+        setBuyError(err.message || 'Could not complete this purchase. Try again.')
+      }
     } finally {
       setBuying(false)
     }
