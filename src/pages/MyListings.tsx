@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Pencil, Trash2, Package } from 'lucide-react'
+import { Pencil, Trash2, Package, CheckCircle, RotateCcw } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { fetchUserListings, deleteListing } from '../lib/listings'
+import { fetchUserListings, deleteListing, markListingSold, relistListing } from '../lib/listings'
 import { Listing } from '../types'
 
 const statusStyles: Record<Listing['status'], string> = {
@@ -20,6 +20,7 @@ export default function MyListings() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [statusChangingId, setStatusChangingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -40,6 +41,30 @@ export default function MyListings() {
       setError(err.message || 'Could not delete this listing')
     } finally {
       setDeletingId(null)
+    }
+  }
+
+  async function handleMarkSold(listing: Listing) {
+    setStatusChangingId(listing.id)
+    try {
+      await markListingSold(listing.id)
+      setListings((prev) => prev.map((l) => (l.id === listing.id ? { ...l, status: 'sold' } : l)))
+    } catch (err: any) {
+      setError(err.message || 'Could not update this listing')
+    } finally {
+      setStatusChangingId(null)
+    }
+  }
+
+  async function handleRelist(listing: Listing) {
+    setStatusChangingId(listing.id)
+    try {
+      await relistListing(listing.id)
+      setListings((prev) => prev.map((l) => (l.id === listing.id ? { ...l, status: 'active' } : l)))
+    } catch (err: any) {
+      setError(err.message || 'Could not update this listing')
+    } finally {
+      setStatusChangingId(null)
     }
   }
 
@@ -91,12 +116,30 @@ export default function MyListings() {
 
               <div className="flex shrink-0 items-center gap-2">
                 {l.status === 'active' && (
-                  <Link
-                    to={`/listing/${l.id}/edit`}
-                    className="flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-ink/70 hover:bg-cream-dark"
+                  <>
+                    <Link
+                      to={`/listing/${l.id}/edit`}
+                      className="flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-ink/70 hover:bg-cream-dark"
+                    >
+                      <Pencil size={12} /> Edit
+                    </Link>
+                    <button
+                      onClick={() => handleMarkSold(l)}
+                      disabled={statusChangingId === l.id}
+                      className="flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
+                    >
+                      <CheckCircle size={12} /> Mark as sold
+                    </button>
+                  </>
+                )}
+                {l.status === 'sold' && (
+                  <button
+                    onClick={() => handleRelist(l)}
+                    disabled={statusChangingId === l.id}
+                    className="flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-ink/70 hover:bg-cream-dark disabled:opacity-50"
                   >
-                    <Pencil size={12} /> Edit
-                  </Link>
+                    <RotateCcw size={12} /> Relist
+                  </button>
                 )}
                 <button
                   onClick={() => handleDelete(l)}

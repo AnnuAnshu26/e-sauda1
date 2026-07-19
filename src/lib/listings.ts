@@ -173,3 +173,11 @@ export async function markListingSold(id: string): Promise<void> {
   const { error } = await supabase.from('listings').update({ status: 'sold' }).eq('id', id)
   if (error) throw error
 }
+
+// Undoes a mistaken "mark as sold" — puts a listing back in front of buyers on
+// Browse/Home without needing to re-post it from scratch (which would lose its
+// chat history, saves, and listing-cap accounting).
+export async function relistListing(id: string): Promise<void> {
+  const { error } = await supabase.from('listings').update({ status: 'active' }).eq('id', id)
+  if (error) throw error
+}
