@@ -9,6 +9,12 @@ import Orders from './pages/Orders'
 import Vault from './pages/Vault'
 import Profile from './pages/Profile'
 import Login from './pages/Login'
+import Terms from './pages/legal/Terms'
+import Privacy from './pages/legal/Privacy'
+import RefundPolicy from './pages/legal/RefundPolicy'
+import ShippingPolicy from './pages/legal/ShippingPolicy'
+import ContactUs from './pages/legal/ContactUs'
+import Pricing from './pages/legal/Pricing'
 import Signup from './pages/Signup'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
@@ -42,6 +48,12 @@ export default function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/refund-policy" element={<RefundPolicy />} />
+          <Route path="/shipping-policy" element={<ShippingPolicy />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route
             path="/messages"
             element={

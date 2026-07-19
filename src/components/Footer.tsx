@@ -26,23 +26,26 @@ export default function Footer() {
           <div>
             <h4 className="text-sm font-semibold text-ink">Trust &amp; safety</h4>
             <ul className="mt-3 space-y-2 text-sm text-ink/60">
-              <li>DigiLocker verification</li>
+              <li>DigiLocker verification (coming soon)</li>
               <li>OTP handover</li>
               <li>Chat moderation</li>
-              <li>Safe meet zones</li>
+              <li>Report &amp; block</li>
             </ul>
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-ink">Delivery partners</h4>
+            <h4 className="text-sm font-semibold text-ink">Legal</h4>
             <ul className="mt-3 space-y-2 text-sm text-ink/60">
-              <li>Rapido</li>
-              <li>Uber</li>
-              <li>Dunzo</li>
+              <li><Link to="/terms" className="hover:text-clay">Terms and conditions</Link></li>
+              <li><Link to="/privacy" className="hover:text-clay">Privacy policy</Link></li>
+              <li><Link to="/refund-policy" className="hover:text-clay">Cancellation &amp; refunds</Link></li>
+              <li><Link to="/shipping-policy" className="hover:text-clay">Shipping policy</Link></li>
+              <li><Link to="/pricing" className="hover:text-clay">Pricing</Link></li>
+              <li><Link to="/contact" className="hover:text-clay">Contact us</Link></li>
             </ul>
           </div>
         </div>
         <p className="mt-10 border-t border-black/5 pt-6 text-xs text-ink/40">
-          © 2026 e-Sauda. Prototype demo.
+          © 2026 e-Sauda. <Link to="/terms" className="hover:text-clay">Terms</Link> · <Link to="/privacy" className="hover:text-clay">Privacy</Link>
         </p>
       </div>
     </footer>
