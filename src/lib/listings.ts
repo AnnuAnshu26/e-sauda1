@@ -164,6 +164,20 @@ export async function updateListing(id: string, input: ListingUpdateInput): Prom
   return mapRow(data)
 }
 
+// Separate from updateListing() above since photos change via their own upload/delete
+// flow on the edit page (immediate per-action, not part of the title/price/etc form
+// submit) — keeping it a dedicated call makes that timing clear at the call site.
+export async function updateListingPhotos(id: string, photoUrls: string[]): Promise<Listing> {
+  const { data, error } = await supabase
+    .from('listings')
+    .update({ photo_urls: photoUrls })
+    .eq('id', id)
+    .select('*')
+    .single()
+  if (error) throw error
+  return mapRow(data)
+}
+
 export async function deleteListing(id: string): Promise<void> {
   const { error } = await supabase.from('listings').delete().eq('id', id)
   if (error) throw error

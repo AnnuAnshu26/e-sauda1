@@ -1,6 +1,8 @@
 import { useEffect, useState, FormEvent } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { fetchListingById, updateListing } from '../lib/listings'
+import { X, Upload } from 'lucide-react'
+import { fetchListingById, updateListing, updateListingPhotos } from '../lib/listings'
+import { uploadListingPhotos, deleteListingPhotoByUrl, validatePhotoFiles, MAX_PHOTOS } from '../lib/storage'
 import { useAuth } from '../context/AuthContext'
 import { Listing } from '../types'
 
@@ -29,6 +31,11 @@ export default function EditListing() {
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
 
+  const [photos, setPhotos] = useState<string[]>([])
+  const [photoError, setPhotoError] = useState<string | null>(null)
+  const [removingUrl, setRemovingUrl] = useState<string | null>(null)
+  const [uploadingPhotos, setUploadingPhotos] = useState(false)
+
   useEffect(() => {
     if (!id) return
     setLoading(true)
@@ -48,10 +55,60 @@ export default function EditListing() {
         setCondition(data.condition)
         setDescription(data.description || '')
         setCity(data.city || '')
+        setPhotos(data.photoUrls || [])
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false))
   }, [id, user])
+
+  // Photo changes save immediately (unlike title/price/etc, which wait for the form's
+  // Save button) — matches how removing a photo or picking a file feels everywhere
+  // else in the app: an action, not a draft edit.
+  async function handleRemovePhoto(url: string) {
+    if (!id) return
+    setPhotoError(null)
+    setRemovingUrl(url)
+    const next = photos.filter((p) => p !== url)
+    try {
+      await updateListingPhotos(id, next)
+      await deleteListingPhotoByUrl(url)
+      setPhotos(next)
+    } catch (err: any) {
+      setPhotoError(err.message || 'Could not remove that photo.')
+    } finally {
+      setRemovingUrl(null)
+    }
+  }
+
+  async function handleAddPhotos(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!id || !user) return
+    const files = Array.from(e.target.files || [])
+    e.target.value = '' // lets picking the same file again re-trigger onChange
+    if (files.length === 0) return
+
+    setPhotoError(null)
+    if (photos.length + files.length > MAX_PHOTOS) {
+      setPhotoError(`You can have up to ${MAX_PHOTOS} photos total (${photos.length} already there).`)
+      return
+    }
+    const fileValidationError = validatePhotoFiles(files)
+    if (fileValidationError) {
+      setPhotoError(fileValidationError)
+      return
+    }
+
+    setUploadingPhotos(true)
+    try {
+      const newUrls = await uploadListingPhotos(user.id, id, files, photos.length)
+      const next = [...photos, ...newUrls]
+      await updateListingPhotos(id, next)
+      setPhotos(next)
+    } catch (err: any) {
+      setPhotoError(err.message || 'Could not upload those photos.')
+    } finally {
+      setUploadingPhotos(false)
+    }
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -133,6 +190,47 @@ export default function EditListing() {
         {listing.subCategory ? ` · ${listing.subCategory}` : ''}) can't be changed here — post a
         new listing if it belongs elsewhere.
       </p>
+
+      <div className="mt-8">
+        <label className="text-sm font-medium text-ink">Photos</label>
+        <p className="mt-1 text-xs text-ink/50">
+          Changes here save immediately — no need to hit Save changes below.
+        </p>
+
+        <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4">
+          {photos.map((url) => (
+            <div key={url} className="group relative aspect-square overflow-hidden rounded-xl2 bg-cream-dark">
+              <img src={url} alt="" className="h-full w-full object-cover" />
+              <button
+                type="button"
+                onClick={() => handleRemovePhoto(url)}
+                disabled={removingUrl === url}
+                className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 disabled:opacity-50"
+                aria-label="Remove photo"
+              >
+                <X size={13} />
+              </button>
+            </div>
+          ))}
+
+          {photos.length < MAX_PHOTOS && (
+            <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl2 border-2 border-dashed border-black/15 text-ink/40 hover:border-clay/40">
+              <Upload size={18} />
+              <span className="text-xs">{uploadingPhotos ? 'Uploading…' : 'Add'}</span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                disabled={uploadingPhotos}
+                onChange={handleAddPhotos}
+              />
+            </label>
+          )}
+        </div>
+
+        {photoError && <p className="mt-2 text-xs text-red-600">{photoError}</p>}
+      </div>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <div>
