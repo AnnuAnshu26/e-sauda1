@@ -25,6 +25,10 @@ export default function Sell() {
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [condition, setCondition] = useState("Good");
+  // Optional — leave blank to skip the size-check/AR viewer entirely for this listing.
+  const [widthCm, setWidthCm] = useState("");
+  const [heightCm, setHeightCm] = useState("");
+  const [depthCm, setDepthCm] = useState("");
   const [posted, setPosted] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -139,6 +143,11 @@ export default function Sell() {
         condition,
         description: description || undefined,
         city: profile?.city || undefined,
+        // All-or-nothing: a partial set can't scale the size-check box correctly,
+        // so only send dimensions once every field has a valid positive number.
+        widthCm: widthCm && heightCm && depthCm ? Number(widthCm) : undefined,
+        heightCm: widthCm && heightCm && depthCm ? Number(heightCm) : undefined,
+        depthCm: widthCm && heightCm && depthCm ? Number(depthCm) : undefined,
       });
 
       if (photoFiles.length > 0) {
@@ -380,6 +389,43 @@ export default function Sell() {
                   placeholder="Any dents, accessories included, reason for selling..."
                   className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
                 />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-ink">
+                  Dimensions (optional)
+                </label>
+                <p className="mt-1 text-xs text-ink/50">
+                  Add all three to let buyers preview it in their own space in 3D/AR.
+                </p>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    inputMode="decimal"
+                    value={widthCm}
+                    onChange={(e) => setWidthCm(e.target.value)}
+                    placeholder="Width cm"
+                    className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    inputMode="decimal"
+                    value={heightCm}
+                    onChange={(e) => setHeightCm(e.target.value)}
+                    placeholder="Height cm"
+                    className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    inputMode="decimal"
+                    value={depthCm}
+                    onChange={(e) => setDepthCm(e.target.value)}
+                    placeholder="Depth cm"
+                    className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+                  />
+                </div>
               </div>
             </div>
           </div>

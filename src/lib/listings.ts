@@ -19,6 +19,10 @@ export function mapRow(row: any): Listing {
     distanceKm: Number(row.distance_km ?? 0),
     verified: false, // real per-listing verification isn't wired up yet
     escrow: true, // every listing on the platform uses the vault flow
+    ar: row.width_cm != null && row.height_cm != null && row.depth_cm != null,
+    widthCm: row.width_cm != null ? Number(row.width_cm) : null,
+    heightCm: row.height_cm != null ? Number(row.height_cm) : null,
+    depthCm: row.depth_cm != null ? Number(row.depth_cm) : null,
     emoji: row.emoji,
     bg: row.bg,
     photoUrls: row.photo_urls ?? [],
@@ -118,6 +122,9 @@ export async function createListing(
       description: input.description || null,
       city: input.city || null,
       location: input.location || input.city || '',
+      width_cm: input.widthCm ?? null,
+      height_cm: input.heightCm ?? null,
+      depth_cm: input.depthCm ?? null,
       emoji: visual.emoji,
       bg: visual.bg,
     })
@@ -144,6 +151,12 @@ export interface ListingUpdateInput {
   description: string
   city: string
   location: string
+  // Undefined = leave untouched; null = explicitly clear. Sell/EditListing always
+  // pass either a number or null (never undefined) once the dimensions section
+  // has been touched, but the ?? fallback below keeps a bare partial call safe too.
+  widthCm?: number | null
+  heightCm?: number | null
+  depthCm?: number | null
 }
 
 export async function updateListing(id: string, input: ListingUpdateInput): Promise<Listing> {
@@ -156,6 +169,9 @@ export async function updateListing(id: string, input: ListingUpdateInput): Prom
       description: input.description || null,
       city: input.city || null,
       location: input.location || input.city || '',
+      width_cm: input.widthCm ?? null,
+      height_cm: input.heightCm ?? null,
+      depth_cm: input.depthCm ?? null,
     })
     .eq('id', id)
     .select('*')

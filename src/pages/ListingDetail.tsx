@@ -11,6 +11,7 @@ import { useSavedListings } from '../hooks/useSavedListings'
 import { Listing, VaultOrderWithOtp } from '../types'
 import ReportButton from '../components/ReportButton'
 import ListingCard from '../components/ListingCard'
+import SpaceFitViewer from '../components/SpaceFitViewer'
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>()
@@ -163,6 +164,15 @@ export default function ListingDetail() {
                 </button>
               ))}
             </div>
+          )}
+
+          {listing.ar && listing.widthCm && listing.heightCm && listing.depthCm && (
+            <SpaceFitViewer
+              widthCm={listing.widthCm}
+              heightCm={listing.heightCm}
+              depthCm={listing.depthCm}
+              title={listing.title}
+            />
           )}
         </div>
 
