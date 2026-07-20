@@ -11,6 +11,7 @@ import {
 } from "../lib/vault";
 import { fetchMyRatingForOrder, submitRating } from "../lib/ratings";
 import { arrangeDelivery, markDelivered, fetchDeliveryForOrder } from "../lib/delivery";
+import MeetupPlanner from "../components/MeetupPlanner";
 import { VaultOrder, Rating, Delivery } from "../types";
 
 const tabs = ["Buying", "Selling"] as const;
@@ -219,6 +220,8 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
         <ShieldCheck size={15} /> Funds secured — safe to meet the seller
       </p>
 
+      <MeetupPlanner vaultOrderId={order.id} otherPartyLabel="the seller" />
+
       {otp ? (
         <div className="mt-3">
           <p className="text-xs uppercase tracking-wide text-ink/50">Handover OTP</p>
@@ -364,6 +367,8 @@ function SellingCard({ order, onChange }: { order: VaultOrder; onChange: () => v
       <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-700">
         <ShieldCheck size={15} /> Funds secured in the Vault
       </p>
+
+      <MeetupPlanner vaultOrderId={order.id} otherPartyLabel="the buyer" />
 
       {delivery && (
         <div className="mt-3 rounded-lg bg-cream-dark p-3 text-xs text-ink/70">
