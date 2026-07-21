@@ -172,6 +172,7 @@ export default function ListingDetail() {
               heightCm={listing.heightCm}
               depthCm={listing.depthCm}
               title={listing.title}
+              photoUrls={listing.photoUrls}
             />
           )}
         </div>

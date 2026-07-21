@@ -7,20 +7,107 @@ interface SpaceFitViewerProps {
   heightCm: number
   depthCm: number
   title: string
+  // Optional — when provided, the box's faces are textured with the listing's real
+  // photos instead of a flat color, so what you see genuinely resembles the item
+  // rather than an abstract placeholder. Falls back to the plain-color box (the
+  // original behavior) if omitted, empty, or if a photo fails to load for any reason
+  // (CORS hiccup, broken URL, etc.) — a broken texture should never break the whole
+  // size-check feature.
+  photoUrls?: string[]
+}
+
+// Loads a texture without ever rejecting — a broken URL, CORS hiccup, or slow network
+// should degrade that one face back to a plain color, not break the whole preview.
+function loadTextureSafe(url: string): Promise<THREE.Texture | null> {
+  return new Promise((resolve) => {
+    const loader = new THREE.TextureLoader()
+    loader.crossOrigin = 'anonymous'
+    loader.load(
+      url,
+      (texture) => {
+        texture.colorSpace = THREE.SRGBColorSpace
+        resolve(texture)
+      },
+      undefined,
+      () => resolve(null),
+    )
+  })
+}
+
+const FALLBACK_COLOR = 0xc17a54
+
+function materialFor(texture: THREE.Texture | null, shade = 1): THREE.MeshStandardMaterial {
+  if (texture) {
+    return new THREE.MeshStandardMaterial({ map: texture, roughness: 0.6 })
+  }
+  const color = new THREE.Color(FALLBACK_COLOR).multiplyScalar(shade)
+  return new THREE.MeshStandardMaterial({ color, roughness: 0.6 })
 }
 
 // Builds a single to-scale box (glTF units are metres, hence the /100) standing in
-// for the item's real-world footprint. This is intentionally NOT a photorealistic
-// model — the point is "will this fit through my door / in this corner", which a
-// correctly-dimensioned box answers just as well as a detailed scan would, without
-// needing a 3D asset pipeline, a scanning app, or any paid service.
-function buildBoxGlb(widthCm: number, heightCm: number, depthCm: number): Promise<string> {
+// for the item's real-world footprint. When photos are available, they're mapped onto
+// the box's side faces so it actually resembles the item being sold — not just an
+// abstract placeholder — while top/bottom stay a plain shaded color (product photos
+// essentially never show those angles). This is still deliberately NOT a full 3D scan
+// or reconstruction: the geometry is always a plain box, only the surface differs.
+async function buildBoxGlb(
+  widthCm: number,
+  heightCm: number,
+  depthCm: number,
+  photoUrls: string[],
+): Promise<string> {
   const scene = new THREE.Scene()
   const geometry = new THREE.BoxGeometry(widthCm / 100, heightCm / 100, depthCm / 100)
-  const material = new THREE.MeshStandardMaterial({ color: 0xc17a54, roughness: 0.6 })
-  const box = new THREE.Mesh(geometry, material)
+
+  // Reuses whatever photos exist across more faces rather than leaving them blank —
+  // a listing with just one photo still gets a fully "wrapped" box.
+  const pick = (i: number) => (photoUrls.length > 0 ? photoUrls[i % photoUrls.length] : null)
+  const [front, back, right, left] = await Promise.all([
+    pick(0) ? loadTextureSafe(pick(0)!) : Promise.resolve(null),
+    pick(1) ? loadTextureSafe(pick(1)!) : Promise.resolve(null),
+    pick(2) ? loadTextureSafe(pick(2)!) : Promise.resolve(null),
+    pick(3) ? loadTextureSafe(pick(3)!) : Promise.resolve(null),
+  ])
+
+  // BoxGeometry's material array order is [+X, -X, +Y, -Y, +Z, -Z] i.e.
+  // right, left, top, bottom, front, back.
+  const materials = [
+    materialFor(right, 0.95),
+    materialFor(left, 0.95),
+    materialFor(null, 1.15), // top — brightened plain color, product shots rarely cover this angle
+    materialFor(null, 0.75), // bottom — darkened plain color, sits against the floor
+    materialFor(front, 1),
+    materialFor(back ?? front, 0.9),
+  ]
+
+  const box = new THREE.Mesh(geometry, materials)
   box.position.set(0, heightCm / 200, 0) // sit on the ground plane, not centered through it
   scene.add(box)
+
+  // A soft radial-gradient shadow disc under the box — a cheap trick (no real-time
+  // shadow mapping needed) that meaningfully improves the sense of the box actually
+  // resting on a surface rather than floating.
+  const shadowCanvas = document.createElement('canvas')
+  shadowCanvas.width = 256
+  shadowCanvas.height = 256
+  const ctx = shadowCanvas.getContext('2d')
+  if (ctx) {
+    const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 128)
+    gradient.addColorStop(0, 'rgba(0,0,0,0.35)')
+    gradient.addColorStop(1, 'rgba(0,0,0,0)')
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, 256, 256)
+    const shadowTexture = new THREE.CanvasTexture(shadowCanvas)
+    const shadowSize = Math.max(widthCm, depthCm) / 100 * 1.6
+    const shadowPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(shadowSize, shadowSize),
+      new THREE.MeshBasicMaterial({ map: shadowTexture, transparent: true, depthWrite: false }),
+    )
+    shadowPlane.rotation.x = -Math.PI / 2
+    shadowPlane.position.y = 0.001 // just above 0 to avoid z-fighting with any ground plane
+    scene.add(shadowPlane)
+  }
+
   scene.add(new THREE.AmbientLight(0xffffff, 0.9))
   const dir = new THREE.DirectionalLight(0xffffff, 0.6)
   dir.position.set(1, 2, 1)
@@ -45,7 +132,7 @@ function buildBoxGlb(widthCm: number, heightCm: number, depthCm: number): Promis
 // button — it uses Three.js internally, so this component's only job is producing
 // a correctly-scaled GLB for it to display. Fully client-side: no API key, no
 // account, no daily quota, works offline once the page and script are cached.
-export default function SpaceFitViewer({ widthCm, heightCm, depthCm, title }: SpaceFitViewerProps) {
+export default function SpaceFitViewer({ widthCm, heightCm, depthCm, title, photoUrls = [] }: SpaceFitViewerProps) {
   const [glbUrl, setGlbUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const urlRef = useRef<string | null>(null)
@@ -53,7 +140,7 @@ export default function SpaceFitViewer({ widthCm, heightCm, depthCm, title }: Sp
   useEffect(() => {
     let cancelled = false
     setError(null)
-    buildBoxGlb(widthCm, heightCm, depthCm)
+    buildBoxGlb(widthCm, heightCm, depthCm, photoUrls)
       .then((url) => {
         if (cancelled) {
           URL.revokeObjectURL(url)
@@ -69,7 +156,7 @@ export default function SpaceFitViewer({ widthCm, heightCm, depthCm, title }: Sp
     return () => {
       cancelled = true
     }
-  }, [widthCm, heightCm, depthCm])
+  }, [widthCm, heightCm, depthCm, photoUrls.join(',')])
 
   useEffect(() => {
     return () => {
@@ -86,7 +173,7 @@ export default function SpaceFitViewer({ widthCm, heightCm, depthCm, title }: Sp
       <p className="text-sm font-semibold text-ink">View in your space</p>
       <p className="mt-1 text-xs text-ink/50">
         {widthCm} × {heightCm} × {depthCm} cm — drag to rotate, or tap "View in AR" on a phone to
-        place a true-to-scale box where the item would go.
+        place a true-to-scale{photoUrls.length > 0 ? ', photo-wrapped' : ''} box where the item would go.
       </p>
       <div className="mt-3 h-72 overflow-hidden rounded-xl2 bg-cream-dark">
         {glbUrl ? (
