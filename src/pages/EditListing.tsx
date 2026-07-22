@@ -1,8 +1,17 @@
 import { useEffect, useState, FormEvent } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { X, Upload } from 'lucide-react'
-import { fetchListingById, updateListing, updateListingPhotos } from '../lib/listings'
-import { uploadListingPhotos, deleteListingPhotoByUrl, validatePhotoFiles, MAX_PHOTOS } from '../lib/storage'
+import { X, Upload, Video } from 'lucide-react'
+import { fetchListingById, updateListing, updateListingPhotos, updateListingVideo } from '../lib/listings'
+import {
+  uploadListingPhotos,
+  deleteListingPhotoByUrl,
+  validatePhotoFiles,
+  MAX_PHOTOS,
+  uploadListingVideo,
+  deleteListingVideo,
+  validateVideoFile,
+  validateVideoDuration,
+} from '../lib/storage'
 import { useAuth } from '../context/AuthContext'
 import { Listing } from '../types'
 
@@ -39,6 +48,10 @@ export default function EditListing() {
   const [removingUrl, setRemovingUrl] = useState<string | null>(null)
   const [uploadingPhotos, setUploadingPhotos] = useState(false)
 
+  const [videoUrl, setVideoUrl] = useState<string | null>(null)
+  const [videoError, setVideoError] = useState<string | null>(null)
+  const [savingVideo, setSavingVideo] = useState(false)
+
   useEffect(() => {
     if (!id) return
     setLoading(true)
@@ -62,6 +75,7 @@ export default function EditListing() {
         setHeightCm(data.heightCm != null ? String(data.heightCm) : '')
         setDepthCm(data.depthCm != null ? String(data.depthCm) : '')
         setPhotos(data.photoUrls || [])
+        setVideoUrl(data.videoUrl)
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false))
@@ -113,6 +127,56 @@ export default function EditListing() {
       setPhotoError(err.message || 'Could not upload those photos.')
     } finally {
       setUploadingPhotos(false)
+    }
+  }
+
+  async function handleReplaceVideo(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!id || !user) return
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    setVideoError(null)
+    const sizeError = validateVideoFile(file)
+    if (sizeError) {
+      setVideoError(sizeError)
+      return
+    }
+    const durationError = await validateVideoDuration(file)
+    if (durationError) {
+      setVideoError(durationError)
+      return
+    }
+
+    setSavingVideo(true)
+    try {
+      // Old file, if any, is left in storage rather than deleted-then-replaced --
+      // uploadListingVideo uses upsert on the same path (derived from the filename),
+      // which usually overwrites it anyway; any orphaned older file is harmless
+      // clutter, not a correctness issue, and not worth a second network round trip
+      // to clean up on every replace.
+      const url = await uploadListingVideo(user.id, id, file)
+      await updateListingVideo(id, url)
+      setVideoUrl(url)
+    } catch (err: any) {
+      setVideoError(err.message || 'Could not upload that video.')
+    } finally {
+      setSavingVideo(false)
+    }
+  }
+
+  async function handleRemoveVideo() {
+    if (!id || !user) return
+    setVideoError(null)
+    setSavingVideo(true)
+    try {
+      await updateListingVideo(id, null)
+      await deleteListingVideo(user.id, id)
+      setVideoUrl(null)
+    } catch (err: any) {
+      setVideoError(err.message || 'Could not remove the video.')
+    } finally {
+      setSavingVideo(false)
     }
   }
 
@@ -239,6 +303,41 @@ export default function EditListing() {
         </div>
 
         {photoError && <p className="mt-2 text-xs text-red-600">{photoError}</p>}
+      </div>
+
+      <div className="mt-8">
+        <label className="text-sm font-medium text-ink">Video</label>
+        <p className="mt-1 text-xs text-ink/50">
+          Changes here save immediately — no need to hit Save changes below.
+        </p>
+
+        {videoUrl ? (
+          <div className="group relative mt-3 aspect-video w-full max-w-sm overflow-hidden rounded-xl2 bg-black">
+            <video src={videoUrl} controls className="h-full w-full" />
+            <button
+              type="button"
+              onClick={handleRemoveVideo}
+              disabled={savingVideo}
+              className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 disabled:opacity-50"
+              aria-label="Remove video"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        ) : (
+          <label className="mt-3 flex aspect-video w-full max-w-sm cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl2 border-2 border-dashed border-black/15 text-ink/40 hover:border-clay/40">
+            <Video size={20} />
+            <span className="text-xs">{savingVideo ? 'Uploading…' : 'Add a video'}</span>
+            <input
+              type="file"
+              accept="video/*"
+              className="hidden"
+              disabled={savingVideo}
+              onChange={handleReplaceVideo}
+            />
+          </label>
+        )}
+        {videoError && <p className="mt-2 text-xs text-red-600">{videoError}</p>}
       </div>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4">

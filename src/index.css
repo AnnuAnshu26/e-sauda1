@@ -2,6 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Light theme (the app's original palette) — R G B space-separated, required by
+     Tailwind's rgb(var(--x) / <alpha-value>) syntax so opacity utilities (bg-cream/50
+     etc.) still work correctly. */
+  --color-cream: 247 241 227;
+  --color-cream-dark: 240 232 214;
+  --color-forest: 13 59 49;
+  --color-forest-light: 19 74 62;
+  --color-clay: 232 115 59;
+  --color-clay-light: 243 164 107;
+  --color-ink: 28 27 24;
+}
+
+.dark {
+  /* Dark theme — same brand identity (warm off-white / forest green / clay orange),
+     roles inverted: cream becomes the dark background instead of a light one, ink
+     becomes light text instead of near-black. Forest and clay are nudged slightly
+     brighter than their light-mode values so they still have enough contrast sitting
+     on a dark background instead of a cream one. */
+  --color-cream: 22 33 28;
+  --color-cream-dark: 30 43 37;
+  --color-forest: 28 107 87;
+  --color-forest-light: 34 122 99;
+  --color-clay: 240 133 76;
+  --color-clay-light: 245 173 122;
+  --color-ink: 237 231 216;
+}
+
 html {
   scroll-behavior: smooth;
 }

@@ -7,6 +7,7 @@ import {
   attachPhotos,
 } from "../lib/listings";
 import { uploadListingPhotos, validatePhotoFiles } from "../lib/storage";
+import { payListingFee } from "../lib/listingFee";
 import { suggestPrice, PriceSuggestion } from "../lib/pricing";
 import { Category } from "../types";
 import { useAuth } from "../context/AuthContext";
@@ -135,20 +136,29 @@ export default function Sell() {
     setPublishing(true);
     setPublishError(null);
     try {
-      const listing = await createListing(user.id, {
-        title: title || "Untitled listing",
-        price: Number(price) || 0,
+      const { razorpayOrderId } = await payListingFee(
         category,
-        subCategory: subCategory || undefined,
-        condition,
-        description: description || undefined,
-        city: profile?.city || undefined,
-        // All-or-nothing: a partial set can't scale the size-check box correctly,
-        // so only send dimensions once every field has a valid positive number.
-        widthCm: widthCm && heightCm && depthCm ? Number(widthCm) : undefined,
-        heightCm: widthCm && heightCm && depthCm ? Number(heightCm) : undefined,
-        depthCm: widthCm && heightCm && depthCm ? Number(depthCm) : undefined,
-      });
+        profile?.display_name || "e-Sauda seller",
+        user.email || "",
+      );
+
+      const listing = await createListing(
+        {
+          title: title || "Untitled listing",
+          price: Number(price) || 0,
+          category,
+          subCategory: subCategory || undefined,
+          condition,
+          description: description || undefined,
+          city: profile?.city || undefined,
+          // All-or-nothing: a partial set can't scale the size-check box correctly,
+          // so only send dimensions once every field has a valid positive number.
+          widthCm: widthCm && heightCm && depthCm ? Number(widthCm) : undefined,
+          heightCm: widthCm && heightCm && depthCm ? Number(heightCm) : undefined,
+          depthCm: widthCm && heightCm && depthCm ? Number(depthCm) : undefined,
+        },
+        razorpayOrderId,
+      );
 
       if (photoFiles.length > 0) {
         setUploadingPhotos(true);
@@ -168,9 +178,11 @@ export default function Sell() {
 
       setPosted(true);
     } catch (err: any) {
-      setPublishError(
-        err.message || "Could not publish this listing. Try again.",
-      );
+      if (err.message !== "cancelled") {
+        setPublishError(
+          err.message || "Could not publish this listing. Try again.",
+        );
+      }
     } finally {
       setPublishing(false);
     }

@@ -36,6 +36,10 @@ export interface Listing {
   emoji: string
   bg: string
   photoUrls: string[]
+  // Null for listings created before feature/mandatory-video -- new listings always
+  // have one (enforced in the Sell wizard, not at the database level; see
+  // video_upload_schema.sql for why).
+  videoUrl: string | null
   status: 'active' | 'sold' | 'removed'
   createdAt: string
 }

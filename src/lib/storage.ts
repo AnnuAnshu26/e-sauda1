@@ -78,3 +78,69 @@ export async function deleteListingPhotoByUrl(url: string): Promise<void> {
   const path = decodeURIComponent(url.slice(idx + marker.length))
   await supabase.storage.from(BUCKET).remove([path])
 }
+
+// --- Video (feature/mandatory-video) ---------------------------------------------
+
+const VIDEO_BUCKET = 'listing-videos'
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024 // 50MB — a 30-60s phone video comfortably fits
+const MAX_VIDEO_SECONDS = 60 // "show the product," not a full walkthrough film
+
+export function validateVideoFile(file: File): string | null {
+  if (!file.type.startsWith('video/')) {
+    return `"${file.name}" isn't a video file.`
+  }
+  if (file.size > MAX_VIDEO_BYTES) {
+    return `"${file.name}" is over 50MB — try a shorter clip or lower resolution.`
+  }
+  return null
+}
+
+// File-size and type can be checked synchronously, but duration needs the browser to
+// actually load the video's metadata first -- there's no way to read that straight off
+// a File object. Returns null (no error) if it can't determine duration at all (some
+// mobile browsers/codecs don't reliably fire loadedmetadata) rather than blocking a
+// legitimate upload over a browser quirk.
+export function validateVideoDuration(file: File): Promise<string | null> {
+  return new Promise((resolve) => {
+    const video = document.createElement('video')
+    video.preload = 'metadata'
+    const url = URL.createObjectURL(file)
+    const cleanup = () => URL.revokeObjectURL(url)
+
+    video.onloadedmetadata = () => {
+      cleanup()
+      if (video.duration > MAX_VIDEO_SECONDS) {
+        resolve(`Video is ${Math.round(video.duration)}s — keep it under ${MAX_VIDEO_SECONDS}s.`)
+      } else {
+        resolve(null)
+      }
+    }
+    video.onerror = () => {
+      cleanup()
+      resolve(null)
+    }
+    video.src = url
+  })
+}
+
+export async function uploadListingVideo(ownerId: string, listingId: string, file: File): Promise<string> {
+  const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_')
+  const path = `${ownerId}/${listingId}/${safeName}`
+
+  const { error } = await supabase.storage.from(VIDEO_BUCKET).upload(path, file, {
+    cacheControl: '3600',
+    upsert: true,
+  })
+  if (error) throw error
+
+  const { data } = supabase.storage.from(VIDEO_BUCKET).getPublicUrl(path)
+  return data.publicUrl
+}
+
+export async function deleteListingVideo(ownerId: string, listingId: string): Promise<void> {
+  const prefix = `${ownerId}/${listingId}`
+  const { data, error } = await supabase.storage.from(VIDEO_BUCKET).list(prefix)
+  if (error || !data || data.length === 0) return
+  const paths = data.map((f) => `${prefix}/${f.name}`)
+  await supabase.storage.from(VIDEO_BUCKET).remove(paths)
+}

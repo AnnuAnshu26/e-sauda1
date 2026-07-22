@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut, Inbox, Heart, ShieldAlert, Package } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import ThemeToggle from './ThemeToggle'
 import { useNotifications } from '../hooks/useNotifications'
 import { timeAgo } from '../lib/time'
 
@@ -86,6 +87,8 @@ export default function Navbar() {
           <Link to="/vault" className="hover:text-ink">Vault</Link>
           <Link to="/orders" className="hover:text-ink">Orders</Link>
         </nav>
+
+        <ThemeToggle />
 
         {user && (
           <div className="relative shrink-0" ref={notifRef}>

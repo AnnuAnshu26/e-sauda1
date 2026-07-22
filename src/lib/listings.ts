@@ -105,31 +105,31 @@ export async function countActiveListingsInCategory(
   return count ?? 0
 }
 
+// Requires razorpayOrderId from a verified listing-fee payment (see lib/listingFee.ts's
+// payListingFee, which must be called first) -- create_listing_with_fee (SQL) refuses
+// to run without a matching unconsumed payment row, so this can't succeed by skipping
+// straight to createListing with a made-up order id.
 export async function createListing(
-  ownerId: string,
   input: NewListingInput,
+  razorpayOrderId: string,
 ): Promise<Listing> {
   const visual = categoryVisual(input.category)
-  const { data, error } = await supabase
-    .from('listings')
-    .insert({
-      owner_id: ownerId,
-      title: input.title,
-      price: input.price,
-      category: input.category,
-      sub_category: input.subCategory || null,
-      condition: input.condition,
-      description: input.description || null,
-      city: input.city || null,
-      location: input.location || input.city || '',
-      width_cm: input.widthCm ?? null,
-      height_cm: input.heightCm ?? null,
-      depth_cm: input.depthCm ?? null,
-      emoji: visual.emoji,
-      bg: visual.bg,
-    })
-    .select('*')
-    .single()
+  const { data, error } = await supabase.rpc('create_listing_with_fee', {
+    p_razorpay_order_id: razorpayOrderId,
+    p_title: input.title,
+    p_price: input.price,
+    p_category: input.category,
+    p_sub_category: input.subCategory || null,
+    p_condition: input.condition,
+    p_description: input.description || null,
+    p_city: input.city || null,
+    p_location: input.location || input.city || '',
+    p_width_cm: input.widthCm ?? null,
+    p_height_cm: input.heightCm ?? null,
+    p_depth_cm: input.depthCm ?? null,
+    p_emoji: visual.emoji,
+    p_bg: visual.bg,
+  })
 
   if (error) throw error
   return mapRow(data)

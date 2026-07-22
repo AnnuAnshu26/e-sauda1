@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>e-Sauda — Buy it, sell it without the drama</title>
+    <script>
+      // Runs synchronously, before any CSS or React loads, so there's no visible
+      // flash of the wrong theme while JS boots up. Mirrors the logic in
+      // src/hooks/useTheme.ts exactly -- if you change the fallback/precedence
+      // there, change it here too.
+      (function () {
+        var stored = localStorage.getItem('theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (stored === 'dark' || (!stored && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

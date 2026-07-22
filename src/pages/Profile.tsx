@@ -6,6 +6,7 @@ import { fetchUserListings } from "../lib/listings";
 import { fetchMyPurchases, fetchMySales } from "../lib/vault";
 import { fetchSavedListingIds } from "../lib/savedItems";
 import { updateDisplayName } from "../lib/profiles";
+import { deleteAccount } from "../lib/account";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -17,6 +18,10 @@ export default function Profile() {
   const [nameInput, setNameInput] = useState("");
   const [savingName, setSavingName] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Active listings, completed saudas, and saved items are all real now, from the
   // `listings`, `vault_orders`, and `saved_items` tables. Rating and trust score are
@@ -64,6 +69,18 @@ export default function Profile() {
       setNameError(err.message || "Could not save name");
     } finally {
       setSavingName(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    setDeleteError(null);
+    setDeleting(true);
+    try {
+      await deleteAccount();
+      navigate("/");
+    } catch (err: any) {
+      setDeleteError(err.message || "Could not delete your account. Try again.");
+      setDeleting(false);
     }
   }
 
@@ -253,6 +270,61 @@ export default function Profile() {
         >
           Post new listing
         </button>
+      </div>
+
+      <div className="mt-10 rounded-xl2 border border-red-200 bg-red-50/50 p-6">
+        <h2 className="font-display text-lg font-semibold text-red-700">Danger zone</h2>
+        {!showDeleteConfirm ? (
+          <>
+            <p className="mt-1 text-sm text-ink/60">
+              Permanently delete your account. Your name and personal details are
+              removed everywhere; past transactions the other party is involved in
+              stay on their record, just showing "Deleted user" instead of your name.
+            </p>
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="mt-4 rounded-full border border-red-300 bg-white px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+            >
+              Delete my account
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="mt-1 text-sm text-ink/60">
+              This can't be undone. You'll be logged out immediately and won't be
+              able to log back in. If you have a Vault order still in progress,
+              this will be blocked until you complete or cancel it.
+            </p>
+            <label className="mt-4 block text-sm font-medium text-ink">
+              Type <span className="font-mono font-semibold">DELETE</span> to confirm
+            </label>
+            <input
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              className="mt-2 w-full max-w-xs rounded-lg border border-red-200 px-3 py-2 text-sm"
+            />
+            {deleteError && <p className="mt-2 text-sm text-red-600">{deleteError}</p>}
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmText !== "DELETE" || deleting}
+                className="rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-40"
+              >
+                {deleting ? "Deleting…" : "Permanently delete my account"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setDeleteConfirmText("");
+                  setDeleteError(null);
+                }}
+                className="rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm font-semibold text-ink/70 hover:bg-cream-dark"
+              >
+                Never mind
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

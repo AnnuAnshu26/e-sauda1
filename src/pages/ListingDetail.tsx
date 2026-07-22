@@ -166,13 +166,23 @@ export default function ListingDetail() {
             </div>
           )}
 
+          {listing.videoUrl && (
+            <div className="mt-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink/40">Product video</p>
+              <video
+                src={listing.videoUrl}
+                controls
+                className="mt-2 aspect-video w-full rounded-xl2 bg-black"
+              />
+            </div>
+          )}
+
           {listing.ar && listing.widthCm && listing.heightCm && listing.depthCm && (
             <SpaceFitViewer
               widthCm={listing.widthCm}
               heightCm={listing.heightCm}
               depthCm={listing.depthCm}
               title={listing.title}
-              photoUrls={listing.photoUrls}
             />
           )}
         </div>
