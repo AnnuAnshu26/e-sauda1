@@ -26,6 +26,7 @@ export function mapRow(row: any): Listing {
     emoji: row.emoji,
     bg: row.bg,
     photoUrls: row.photo_urls ?? [],
+    videoUrl: row.video_url ?? null,
     status: row.status,
     createdAt: row.created_at,
   }
@@ -187,6 +188,20 @@ export async function updateListingPhotos(id: string, photoUrls: string[]): Prom
   const { data, error } = await supabase
     .from('listings')
     .update({ photo_urls: photoUrls })
+    .eq('id', id)
+    .select('*')
+    .single()
+  if (error) throw error
+  return mapRow(data)
+}
+
+// Separate from updateListing() for the same reason updateListingPhotos() is --
+// the video attach/remove flow fires immediately from its own upload/delete
+// controls on the edit page, not as part of the title/price/etc form submit.
+export async function updateListingVideo(id: string, videoUrl: string | null): Promise<Listing> {
+  const { data, error } = await supabase
+    .from('listings')
+    .update({ video_url: videoUrl })
     .eq('id', id)
     .select('*')
     .single()
