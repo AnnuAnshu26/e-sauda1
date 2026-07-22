@@ -57,13 +57,13 @@ export default function RefundPolicy() {
       <p>
         In rare cases a refund may be delayed due to a processing error on our payment
         processor's side. If your order shows as cancelled but you haven't received
-        your refund within 7 business days, contact us at aartieng6905@gmail.com with
+        your refund within 7 business days, contact us at edotsauda@gmail.com with
         your order details and we'll investigate.
       </p>
 
       <h2>Contact</h2>
       <p>
-        For any question about a specific order's refund, contact aartieng6905@gmail.com.
+        For any question about a specific order's refund, contact edotsauda@gmail.com.
       </p>
     </LegalLayout>
   )

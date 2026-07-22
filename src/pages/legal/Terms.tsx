@@ -79,7 +79,7 @@ export default function Terms() {
 
       <h2>Contact</h2>
       <p>
-        Questions about these Terms can be sent to aartieng6905@gmail.com. See also our
+        Questions about these Terms can be sent to edotsauda@gmail.com. See also our
         Contact Us page.
       </p>
     </LegalLayout>

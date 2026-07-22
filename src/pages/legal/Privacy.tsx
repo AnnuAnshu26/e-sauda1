@@ -51,7 +51,7 @@ export default function Privacy() {
       <p>
         We retain your account and transaction data for as long as your account is
         active, and as needed to comply with legal and tax obligations. You may
-        request deletion of your account by contacting us at aartieng6905@gmail.com.
+        request deletion of your account by contacting us at edotsauda@gmail.com.
       </p>
 
       <h2>Your choices</h2>
@@ -64,7 +64,7 @@ export default function Privacy() {
       <h2>Contact</h2>
       <p>
         Questions about this Privacy Policy or your data can be sent to
-        aartieng6905@gmail.com.
+        edotsauda@gmail.com.
       </p>
     </LegalLayout>
   )

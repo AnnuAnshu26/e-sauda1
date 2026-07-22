@@ -49,7 +49,7 @@ export default function ShippingPolicy() {
       </p>
 
       <h2>Contact</h2>
-      <p>Questions about delivery or handover can be sent to aartieng6905@gmail.com.</p>
+      <p>Questions about delivery or handover can be sent to edotsauda@gmail.com.</p>
     </LegalLayout>
   )
 }

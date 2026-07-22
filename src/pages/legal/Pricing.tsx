@@ -47,7 +47,7 @@ export default function Pricing() {
       </p>
 
       <h2>Contact</h2>
-      <p>Questions about pricing can be sent to aartieng6905@gmail.com .</p>
+      <p>Questions about pricing can be sent to edotsauda@gmail.com .</p>
     </LegalLayout>
   )
 }

@@ -10,7 +10,7 @@ export default function ContactUs() {
       </p>
 
       <h2>Support email</h2>
-      <p>aartieng6905@gmail.com -- we aim to respond within 2 business days.</p>
+      <p>edotsauda@gmail.com -- we aim to respond within 2 business days.</p>
 
       <h2>Phone</h2>
       <p>8375004426 -- available [Mon-Sat, 10am-6pm IST].</p>
@@ -29,7 +29,7 @@ export default function ContactUs() {
       <h2>For payment issues</h2>
       <p>
         Payments are processed by Razorpay. If a payment was deducted but doesn't
-        show as completed in your e-Sauda order, contact us at aartieng6905@gmail.com
+        show as completed in your e-Sauda order, contact us at edotsauda@gmail.com
         with your order ID and approximate payment time, and we'll look into it.
       </p>
     </LegalLayout>
