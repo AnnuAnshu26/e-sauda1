@@ -6,9 +6,10 @@ import { fetchRecommendedListings } from '../lib/recommendations'
 import { getOrCreateConversation } from '../lib/chat'
 import { createVaultOrder } from '../lib/vault'
 import { payWithRazorpay } from '../lib/razorpay'
+import { fetchMyAcceptedOffer } from '../lib/chatOffers'
 import { useAuth } from '../context/AuthContext'
 import { useSavedListings } from '../hooks/useSavedListings'
-import { Listing, VaultOrderWithOtp } from '../types'
+import { Listing, VaultOrderWithOtp, ChatOffer } from '../types'
 import ReportButton from '../components/ReportButton'
 import ListingCard from '../components/ListingCard'
 import SpaceFitViewer from '../components/SpaceFitViewer'
@@ -28,6 +29,17 @@ export default function ListingDetail() {
   const [buyError, setBuyError] = useState<string | null>(null)
   const [purchase, setPurchase] = useState<VaultOrderWithOtp | null>(null)
   const [recommended, setRecommended] = useState<Listing[]>([])
+  const [acceptedOffer, setAcceptedOffer] = useState<ChatOffer | null>(null)
+
+  useEffect(() => {
+    if (!user || !listing) {
+      setAcceptedOffer(null)
+      return
+    }
+    fetchMyAcceptedOffer(listing.id, user.id)
+      .then(setAcceptedOffer)
+      .catch(() => setAcceptedOffer(null))
+  }, [listing?.id, user?.id])
 
   useEffect(() => {
     if (!id) return
@@ -283,23 +295,36 @@ export default function ListingDetail() {
                 This listing is no longer available.
               </div>
             ) : (
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={handleChat}
-                  disabled={startingChat}
-                  className="flex items-center gap-2 rounded-full border border-black/10 bg-white px-6 py-3 text-sm font-semibold text-ink hover:bg-cream-dark disabled:opacity-50"
-                >
-                  <MessageCircle size={16} />
-                  {startingChat ? 'Starting chat…' : 'Chat with seller'}
-                </button>
-                <button
-                  onClick={handleBuy}
-                  disabled={buying}
-                  className="flex items-center gap-2 rounded-full bg-clay px-6 py-3 text-sm font-semibold text-white hover:bg-clay-light disabled:opacity-50"
-                >
-                  <Lock size={16} />
-                  {buying ? 'Locking funds…' : 'Buy with Vault'}
-                </button>
+              <div>
+                {acceptedOffer && (
+                  <div className="mb-3 rounded-lg border border-forest/20 bg-forest/5 px-4 py-2.5 text-sm text-forest">
+                    You have an accepted offer — you'll pay{' '}
+                    <strong>₹{acceptedOffer.amount.toLocaleString('en-IN')}</strong> instead of the listed
+                    price when you buy.
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={handleChat}
+                    disabled={startingChat}
+                    className="flex items-center gap-2 rounded-full border border-black/10 bg-surface px-6 py-3 text-sm font-semibold text-ink hover:bg-cream-dark disabled:opacity-50"
+                  >
+                    <MessageCircle size={16} />
+                    {startingChat ? 'Starting chat…' : 'Chat with seller'}
+                  </button>
+                  <button
+                    onClick={handleBuy}
+                    disabled={buying}
+                    className="flex items-center gap-2 rounded-full bg-clay px-6 py-3 text-sm font-semibold text-white hover:bg-clay-light disabled:opacity-50"
+                  >
+                    <Lock size={16} />
+                    {buying
+                      ? 'Locking funds…'
+                      : acceptedOffer
+                        ? `Buy with Vault — ₹${acceptedOffer.amount.toLocaleString('en-IN')}`
+                        : 'Buy with Vault'}
+                  </button>
+                </div>
               </div>
             )}
           </div>

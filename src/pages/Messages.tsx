@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Send, MessageSquare, AlertTriangle, Ban, ShieldOff } from 'lucide-react'
+import { Send, MessageSquare, AlertTriangle, Ban, ShieldOff, IndianRupee, Check, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import {
   fetchConversations,
@@ -8,9 +8,17 @@ import {
   sendMessage,
   subscribeToMessages,
 } from '../lib/chat'
+import {
+  fetchOffers,
+  makeOffer,
+  acceptOffer,
+  declineOffer,
+  withdrawOffer,
+  subscribeToOffers,
+} from '../lib/chatOffers'
 import { scanMessage, describeFlags } from '../lib/moderation'
 import { blockUser, unblockUser, amIBlocking, fetchMyBlockedUsers, BlockedUser } from '../lib/blocking'
-import { ConversationSummary, Message } from '../types'
+import { ConversationSummary, Message, ChatOffer } from '../types'
 
 export default function Messages() {
   const { id: activeId } = useParams<{ id: string }>()
@@ -24,6 +32,11 @@ export default function Messages() {
   const [loadingThread, setLoadingThread] = useState(false)
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
+  const [offers, setOffers] = useState<ChatOffer[]>([])
+  const [offerDraft, setOfferDraft] = useState('')
+  const [sendingOffer, setSendingOffer] = useState(false)
+  const [offerError, setOfferError] = useState<string | null>(null)
+  const [actingOfferId, setActingOfferId] = useState<string | null>(null)
   const [pendingWarning, setPendingWarning] = useState<{ body: string; reasons: string[] } | null>(
     null,
   )
@@ -48,24 +61,38 @@ export default function Messages() {
   useEffect(() => {
     if (!activeId) {
       setMessages([])
+      setOffers([])
       return
     }
     setLoadingThread(true)
     setPendingWarning(null)
+    setOfferError(null)
     fetchMessages(activeId)
       .then(setMessages)
       .catch(() => setMessages([]))
       .finally(() => setLoadingThread(false))
+    fetchOffers(activeId)
+      .then(setOffers)
+      .catch(() => setOffers([]))
 
-    const unsubscribe = subscribeToMessages(activeId, (message) => {
+    const unsubscribeMessages = subscribeToMessages(activeId, (message) => {
       setMessages((prev) => (prev.some((m) => m.id === message.id) ? prev : [...prev, message]))
     })
-    return unsubscribe
+    const unsubscribeOffers = subscribeToOffers(activeId, (offer) => {
+      setOffers((prev) => {
+        const exists = prev.some((o) => o.id === offer.id)
+        return exists ? prev.map((o) => (o.id === offer.id ? offer : o)) : [...prev, offer]
+      })
+    })
+    return () => {
+      unsubscribeMessages()
+      unsubscribeOffers()
+    }
   }, [activeId])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, offers])
 
   // Re-check block status whenever the active thread changes -- otherPartyId comes
   // from the conversation list, which is why this depends on `conversations` too.
@@ -168,6 +195,79 @@ export default function Messages() {
   }
 
   const activeConversation = conversations.find((c) => c.id === activeId)
+  const isBuyer = !!user && activeConversation?.buyerId === user.id
+  const hasPendingOffer = offers.some((o) => o.status === 'pending')
+
+  async function handleMakeOffer(e: React.FormEvent) {
+    e.preventDefault()
+    if (!user || !activeId) return
+    const amount = Number(offerDraft)
+    if (!amount || amount <= 0) {
+      setOfferError('Enter a valid amount.')
+      return
+    }
+    setSendingOffer(true)
+    setOfferError(null)
+    try {
+      const offer = await makeOffer(activeId, user.id, amount)
+      setOffers((prev) => [...prev, offer])
+      setOfferDraft('')
+    } catch (err: any) {
+      setOfferError(err.message || 'Could not send that offer. Try again.')
+    } finally {
+      setSendingOffer(false)
+    }
+  }
+
+  async function handleAcceptOffer(offerId: string) {
+    setActingOfferId(offerId)
+    setOfferError(null)
+    try {
+      await acceptOffer(offerId)
+      setOffers((prev) => prev.map((o) => (o.id === offerId ? { ...o, status: 'accepted' } : o)))
+    } catch (err: any) {
+      setOfferError(err.message || 'Could not accept this offer.')
+    } finally {
+      setActingOfferId(null)
+    }
+  }
+
+  async function handleDeclineOffer(offerId: string) {
+    setActingOfferId(offerId)
+    setOfferError(null)
+    try {
+      await declineOffer(offerId)
+      setOffers((prev) => prev.map((o) => (o.id === offerId ? { ...o, status: 'declined' } : o)))
+    } catch (err: any) {
+      setOfferError(err.message || 'Could not decline this offer.')
+    } finally {
+      setActingOfferId(null)
+    }
+  }
+
+  async function handleWithdrawOffer(offerId: string) {
+    setActingOfferId(offerId)
+    setOfferError(null)
+    try {
+      await withdrawOffer(offerId)
+      setOffers((prev) => prev.map((o) => (o.id === offerId ? { ...o, status: 'withdrawn' } : o)))
+    } catch (err: any) {
+      setOfferError(err.message || 'Could not withdraw this offer.')
+    } finally {
+      setActingOfferId(null)
+    }
+  }
+
+  // Messages and offers are separate tables, sorted together into a single
+  // timeline so an offer card appears right where it was actually sent,
+  // relative to the surrounding conversation.
+  type TimelineItem =
+    | { kind: 'message'; at: string; message: Message }
+    | { kind: 'offer'; at: string; offer: ChatOffer }
+  const timeline: TimelineItem[] = [
+    ...messages.map((message) => ({ kind: 'message' as const, at: message.createdAt, message })),
+    ...offers.map((offer) => ({ kind: 'offer' as const, at: offer.createdAt, offer })),
+  ].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
@@ -291,28 +391,86 @@ export default function Messages() {
                       <div key={i} className="h-10 w-2/3 animate-pulse rounded-lg bg-cream-dark" />
                     ))}
                   </div>
-                ) : messages.length === 0 ? (
+                ) : timeline.length === 0 ? (
                   <p className="mt-10 text-center text-sm text-ink/40">
                     No messages yet — say hello to get things moving.
                   </p>
                 ) : (
-                  messages.map((m) => {
-                    const mine = m.senderId === user?.id
-                    return (
-                      <div key={m.id} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
-                        <div
-                          className={`max-w-[75%] rounded-xl2 px-4 py-2 text-sm ${
-                            mine ? 'bg-forest text-cream' : 'bg-cream-dark text-ink'
-                          }`}
-                        >
-                          {m.body}
+                  timeline.map((item) => {
+                    if (item.kind === 'message') {
+                      const m = item.message
+                      const mine = m.senderId === user?.id
+                      return (
+                        <div key={`m-${m.id}`} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
+                          <div
+                            className={`max-w-[75%] rounded-xl2 px-4 py-2 text-sm ${
+                              mine ? 'bg-forest text-cream' : 'bg-cream-dark text-ink'
+                            }`}
+                          >
+                            {m.body}
+                          </div>
+                          {m.flagged && (
+                            <span className="mt-1 flex items-center gap-1 text-[11px] text-amber-700">
+                              <AlertTriangle size={11} /> May contain sensitive info — never share OTPs
+                              or pay outside the Vault
+                            </span>
+                          )}
                         </div>
-                        {m.flagged && (
-                          <span className="mt-1 flex items-center gap-1 text-[11px] text-amber-700">
-                            <AlertTriangle size={11} /> May contain sensitive info — never share OTPs
-                            or pay outside the Vault
-                          </span>
-                        )}
+                      )
+                    }
+
+                    const o = item.offer
+                    const iMadeThisOffer = o.buyerId === user?.id
+                    const canRespond = !iMadeThisOffer && o.status === 'pending' // seller
+                    const canWithdraw = iMadeThisOffer && o.status === 'pending' // buyer
+                    const acting = actingOfferId === o.id
+                    const statusCopy: Record<ChatOffer['status'], string> = {
+                      pending: iMadeThisOffer ? 'Waiting for seller to respond' : 'Awaiting your response',
+                      accepted: 'Offer accepted — buyer can now buy at this price',
+                      declined: 'Offer declined',
+                      withdrawn: 'Offer withdrawn',
+                      consumed: 'Purchased at this price',
+                    }
+                    return (
+                      <div key={`o-${o.id}`} className="flex justify-center">
+                        <div className="w-full max-w-xs rounded-xl2 border border-clay/30 bg-clay/5 p-3 text-center">
+                          <p className="flex items-center justify-center gap-1 text-sm font-semibold text-ink">
+                            <IndianRupee size={13} />
+                            {o.amount.toLocaleString('en-IN')} offer
+                          </p>
+                          <p className="mt-0.5 text-xs text-ink/50">{statusCopy[o.status]}</p>
+                          {(canRespond || canWithdraw) && (
+                            <div className="mt-2 flex justify-center gap-2">
+                              {canRespond && (
+                                <>
+                                  <button
+                                    onClick={() => handleAcceptOffer(o.id)}
+                                    disabled={acting}
+                                    className="flex items-center gap-1 rounded-full bg-forest px-3 py-1 text-xs font-semibold text-cream disabled:opacity-50"
+                                  >
+                                    <Check size={12} /> Accept
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeclineOffer(o.id)}
+                                    disabled={acting}
+                                    className="flex items-center gap-1 rounded-full border border-black/10 bg-surface px-3 py-1 text-xs font-semibold text-ink/60 disabled:opacity-50"
+                                  >
+                                    <X size={12} /> Decline
+                                  </button>
+                                </>
+                              )}
+                              {canWithdraw && (
+                                <button
+                                  onClick={() => handleWithdrawOffer(o.id)}
+                                  disabled={acting}
+                                  className="rounded-full border border-black/10 bg-surface px-3 py-1 text-xs font-semibold text-ink/60 disabled:opacity-50"
+                                >
+                                  Withdraw
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )
                   })
@@ -334,8 +492,36 @@ export default function Messages() {
                 </p>
               ) : (
                 <>
+                  {isBuyer && (
+                    <form
+                      onSubmit={handleMakeOffer}
+                      className="flex items-center gap-2 border-t border-black/5 bg-clay/5 px-4 py-2.5"
+                    >
+                      <IndianRupee size={14} className="shrink-0 text-ink/40" />
+                      <input
+                        type="number"
+                        min="1"
+                        value={offerDraft}
+                        onChange={(e) => setOfferDraft(e.target.value)}
+                        placeholder={hasPendingOffer ? 'Waiting on your current offer…' : 'Offer a different price'}
+                        disabled={hasPendingOffer || sendingOffer}
+                        className="flex-1 rounded-full border border-black/10 bg-surface px-3 py-1.5 text-sm focus:outline-none disabled:opacity-50"
+                      />
+                      <button
+                        type="submit"
+                        disabled={hasPendingOffer || sendingOffer || !offerDraft}
+                        className="rounded-full bg-clay px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-40"
+                      >
+                        {sendingOffer ? 'Sending…' : 'Make offer'}
+                      </button>
+                    </form>
+                  )}
+                  {offerError && (
+                    <p className="mx-4 mt-2 rounded-lg bg-red-50 p-3 text-xs text-red-600">{offerError}</p>
+                  )}
+
                   {sendError && (
-                    <p className="mx-4 mb-2 rounded-lg bg-red-50 p-3 text-xs text-red-600">{sendError}</p>
+                    <p className="mx-4 mb-2 mt-2 rounded-lg bg-red-50 p-3 text-xs text-red-600">{sendError}</p>
                   )}
                   {pendingWarning && (
                     <div className="mx-4 mb-2 rounded-lg border border-amber-200 bg-amber-50 p-3">

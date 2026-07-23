@@ -25,6 +25,8 @@ import Admin from './pages/Admin'
 import SellerProfile from './pages/SellerProfile'
 import Messages from './pages/Messages'
 import Saved from './pages/Saved'
+import VerifyPhone from './pages/VerifyPhone'
+import ChatbotWidget from './components/ChatbotWidget'
 
 export default function App() {
   return (
@@ -54,6 +56,14 @@ export default function App() {
           <Route path="/shipping-policy" element={<ShippingPolicy />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route
+            path="/verify-phone"
+            element={
+              <RequireAuth>
+                <VerifyPhone />
+              </RequireAuth>
+            }
+          />
           <Route
             path="/messages"
             element={
@@ -129,6 +139,7 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
+      <ChatbotWidget />
     </div>
   )
 }

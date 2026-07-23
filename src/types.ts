@@ -89,6 +89,22 @@ export interface ConversationSummary extends Conversation {
   lastMessageAt: string | null
 }
 
+export type ChatOfferStatus = 'pending' | 'accepted' | 'declined' | 'withdrawn' | 'consumed'
+
+// A buyer-proposed price inside a chat thread. Rendered inline in the
+// message timeline in Messages.tsx.
+export interface ChatOffer {
+  id: string
+  conversationId: string
+  listingId: string
+  buyerId: string
+  sellerId: string
+  amount: number
+  status: ChatOfferStatus
+  createdAt: string
+  updatedAt: string
+}
+
 export type VaultOrderStatus = 'funded' | 'completed' | 'cancelled'
 
 // Represents one "Buy with Vault" purchase attempt. handoverOtp is deliberately NOT a

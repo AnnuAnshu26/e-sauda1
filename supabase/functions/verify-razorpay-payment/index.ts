@@ -104,6 +104,22 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Same accepted-offer lookup as create-razorpay-order — independently
+    // re-derived here rather than trusting whatever amount the Razorpay order
+    // notes claim, so the amount actually recorded always matches a real,
+    // still-valid accepted offer (or the plain listing price if there isn't one).
+    const { data: offer } = await adminClient
+      .from('chat_offers')
+      .select('id, amount')
+      .eq('listing_id', listingId)
+      .eq('buyer_id', user.id)
+      .eq('status', 'accepted')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const amount = offer ? Number(offer.amount) : Number(listing.price)
+
     // Insert with the service-role key -- this is the only way a row can ever land in
     // razorpay_payments (see razorpay_schema.sql: no insert policy exists for the
     // authenticated/anon roles), which is what makes a row in that table trustworthy
@@ -113,7 +129,8 @@ Deno.serve(async (req) => {
       razorpay_payment_id: razorpayPaymentId,
       listing_id: listingId,
       buyer_id: user.id,
-      amount: listing.price,
+      amount,
+      offer_id: offer?.id ?? null,
     })
 
     if (insertError) {
@@ -130,6 +147,13 @@ Deno.serve(async (req) => {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
+    }
+
+    // Mark the offer used so it can never fund a second, separate vault order --
+    // same "consume on successful verification" pattern as razorpay_payments'
+    // own consumed_at, just one step earlier in the chain.
+    if (offer) {
+      await adminClient.from('chat_offers').update({ status: 'consumed' }).eq('id', offer.id)
     }
 
     return new Response(JSON.stringify({ success: true }), {

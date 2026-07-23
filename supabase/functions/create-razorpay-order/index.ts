@@ -84,8 +84,26 @@ Deno.serve(async (req) => {
 
     const keyId = Deno.env.get('RAZORPAY_KEY_ID')!
     const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET')!
+
+    // If this buyer has an accepted, not-yet-used offer for this exact listing
+    // (see chat_offers_schema.sql), honor that negotiated price instead of the
+    // listing's asking price. Re-derived from the database here — same
+    // reasoning as the listing price lookup above — never trusted from the
+    // request body, so there's no way to send a fake offer id and get a
+    // discount that was never actually accepted by the seller.
+    const { data: offer } = await adminClient
+      .from('chat_offers')
+      .select('id, amount')
+      .eq('listing_id', listingId)
+      .eq('buyer_id', user.id)
+      .eq('status', 'accepted')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const priceToCharge = offer ? Number(offer.amount) : Number(listing.price)
     // Razorpay amounts are in the smallest currency unit -- paise for INR, not rupees.
-    const amountPaise = Math.round(listing.price * 100)
+    const amountPaise = Math.round(priceToCharge * 100)
 
     const razorpayRes = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
@@ -100,7 +118,7 @@ Deno.serve(async (req) => {
         // prefix to 2 chars -- "listing_" (44 total) was over the limit, which is
         // exactly what broke this the first time.
         receipt: `l_${listing.id}`,
-        notes: { listing_id: listing.id, buyer_id: user.id },
+        notes: { listing_id: listing.id, buyer_id: user.id, offer_id: offer?.id ?? null },
       }),
     })
 

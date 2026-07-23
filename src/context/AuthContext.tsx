@@ -12,6 +12,8 @@ interface Profile {
   rating_count: number
   is_admin: boolean
   suspended: boolean
+  phone_number: string | null
+  phone_verified: boolean
 }
 
 interface AuthContextValue {
@@ -19,7 +21,12 @@ interface AuthContextValue {
   user: User | null
   profile: Profile | null
   loading: boolean
-  signUp: (email: string, password: string, displayName: string) => Promise<{ error: string | null }>
+  signUp: (
+    email: string,
+    password: string,
+    displayName: string,
+    phoneNumber: string,
+  ) => Promise<{ error: string | null }>
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
@@ -52,7 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function loadProfile(userId: string) {
     const { data } = await supabase
       .from('profiles')
-      .select('id, display_name, city, trust_score, verified, rating_avg, rating_count, is_admin, suspended')
+      .select(
+        'id, display_name, city, trust_score, verified, rating_avg, rating_count, is_admin, suspended, phone_number, phone_verified',
+      )
       .eq('id', userId)
       .single()
     setProfile(data)
@@ -72,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (session?.user) await loadProfile(session.user.id)
   }
 
-  async function signUp(email: string, password: string, displayName: string) {
+  async function signUp(email: string, password: string, displayName: string, phoneNumber: string) {
     // Passing display_name here is what makes it available to the `handle_new_user`
     // trigger (supabase/schema.sql) as `raw_user_meta_data->>'display_name'` — without
     // this, the trigger's coalesce() always falls through to its 'New user' fallback,
@@ -89,11 +98,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // fallback (e.g. if this signup form is used against an older-schema project).
     // Using upsert (not insert) is what makes this actually take effect — a plain
     // insert here would just fail silently on the row the trigger already created.
+    // phone_number is stored now but phone_verified stays false until the OTP step —
+    // RequireAuth redirects to /verify-phone until that actually happens (see
+    // phone_otp_schema.sql), so this is never trusted as "verified" on its own.
     if (data.user) {
       await supabase
         .from('profiles')
         .upsert(
-          { id: data.user.id, display_name: displayName, trust_score: 50, verified: false },
+          { id: data.user.id, display_name: displayName, trust_score: 50, verified: false, phone_number: phoneNumber },
           { onConflict: 'id' },
         )
     }
