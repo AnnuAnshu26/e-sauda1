@@ -195,9 +195,9 @@ export async function updateListingPhotos(id: string, photoUrls: string[]): Prom
   return mapRow(data)
 }
 
-// Separate from updateListing() for the same reason updateListingPhotos() is --
-// the video attach/remove flow fires immediately from its own upload/delete
-// controls on the edit page, not as part of the title/price/etc form submit.
+// Separate from updateListing()/updateListingPhotos() for the same reason those two
+// are already split apart — video changes save immediately from EditListing's own
+// upload/remove handlers, not as part of the title/price/etc form submit.
 export async function updateListingVideo(id: string, videoUrl: string | null): Promise<Listing> {
   const { data, error } = await supabase
     .from('listings')

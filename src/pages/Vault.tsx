@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, ShieldCheck, AlertTriangle, X, Star, Truck } from "lucide-react";
+import { Lock, ShieldCheck, AlertTriangle, X, Star, Truck, Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
   fetchMyPurchases,
@@ -12,6 +12,7 @@ import {
 import { fetchMyRatingForOrder, submitRating } from "../lib/ratings";
 import { arrangeDelivery, markDelivered, fetchDeliveryForOrder } from "../lib/delivery";
 import MeetupPlanner from "../components/MeetupPlanner";
+import { downloadOrderReceipt } from "../lib/receipt";
 import { VaultOrder, Rating, Delivery } from "../types";
 
 const tabs = ["Buying", "Selling"] as const;
@@ -409,6 +410,21 @@ function HistoryRow({ order, currentUserId }: { order: VaultOrder; currentUserId
   const [myRating, setMyRating] = useState<Rating | null>(null);
   const [checked, setChecked] = useState(false);
   const [ratingOpen, setRatingOpen] = useState(false);
+  const [downloadingReceipt, setDownloadingReceipt] = useState(false);
+  const [receiptError, setReceiptError] = useState<string | null>(null);
+
+  async function handleDownloadReceipt() {
+    if (!currentUserId) return;
+    setDownloadingReceipt(true);
+    setReceiptError(null);
+    try {
+      await downloadOrderReceipt(order, currentUserId);
+    } catch (err: any) {
+      setReceiptError(err.message || "Couldn't generate the receipt.");
+    } finally {
+      setDownloadingReceipt(false);
+    }
+  }
 
   useEffect(() => {
     if (!isCompleted || !currentUserId) {
@@ -445,6 +461,16 @@ function HistoryRow({ order, currentUserId }: { order: VaultOrder; currentUserId
           )}
         </p>
       )}
+
+      <button
+        onClick={handleDownloadReceipt}
+        disabled={downloadingReceipt}
+        className="mt-2 flex items-center gap-1 text-xs font-semibold text-clay hover:underline disabled:opacity-50"
+      >
+        <Download size={13} />
+        {downloadingReceipt ? 'Generating…' : 'Download receipt'}
+      </button>
+      {receiptError && <p className="mt-1 text-xs text-red-600">{receiptError}</p>}
 
       {isCompleted && checked && (
         <div className="mt-3 border-t border-black/5 pt-3">

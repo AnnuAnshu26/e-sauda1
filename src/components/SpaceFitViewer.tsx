@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js'
+import ArQrCode from './ArQrCode'
 
 interface SpaceFitViewerProps {
   widthCm: number
@@ -14,6 +15,10 @@ interface SpaceFitViewerProps {
   // (CORS hiccup, broken URL, etc.) — a broken texture should never break the whole
   // size-check feature.
   photoUrls?: string[]
+  // Optional — when provided, shows a "scan to try AR on your phone" QR code linking
+  // straight to this listing. Omit it and that section just doesn't render (matches
+  // how photoUrls degrades gracefully rather than requiring every caller to update).
+  listingId?: string
 }
 
 // Loads a texture without ever rejecting — a broken URL, CORS hiccup, or slow network
@@ -132,7 +137,7 @@ async function buildBoxGlb(
 // button — it uses Three.js internally, so this component's only job is producing
 // a correctly-scaled GLB for it to display. Fully client-side: no API key, no
 // account, no daily quota, works offline once the page and script are cached.
-export default function SpaceFitViewer({ widthCm, heightCm, depthCm, title, photoUrls = [] }: SpaceFitViewerProps) {
+export default function SpaceFitViewer({ widthCm, heightCm, depthCm, title, photoUrls = [], listingId }: SpaceFitViewerProps) {
   const [glbUrl, setGlbUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const urlRef = useRef<string | null>(null)
@@ -193,6 +198,7 @@ export default function SpaceFitViewer({ widthCm, heightCm, depthCm, title, phot
           </div>
         )}
       </div>
+      {listingId && <ArQrCode url={`${window.location.origin}/listing/${listingId}`} />}
     </div>
   )
 }
