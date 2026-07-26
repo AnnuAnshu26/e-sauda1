@@ -1,7 +1,10 @@
 // Deploy: supabase functions deploy chat-assistant
-// Requires an ANTHROPIC_API_KEY secret: supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+// Requires a GROQ_API_KEY secret: supabase secrets set GROQ_API_KEY=gsk_...
+// Free, no-credit-card key from https://console.groq.com -- Groq's API is
+// OpenAI-compatible, which is why the request/response shapes below look
+// different from a typical Anthropic Messages API call.
 //
-// This is a real (not mocked) integration -- it calls Anthropic's actual API. What's
+// This is a real (not mocked) integration -- it calls Groq's actual API. What's
 // "grounding" rather than a generic chatbot is that every request re-fetches this
 // specific user's own listings, vault orders, and conversation count server-side
 // (never trusted from the client) and folds a compact summary of that real data into
@@ -117,34 +120,33 @@ upfront that you're only suggesting a category/type of item, not a specific real
 unless one of the above lists actually contains one.
 `.trim()
 
-    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': Deno.env.get('ANTHROPIC_API_KEY')!,
-        'anthropic-version': '2023-06-01',
+        Authorization: `Bearer ${Deno.env.get('GROQ_API_KEY')!}`,
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        // Free-tier model on Groq as of writing -- check console.groq.com/docs/models
+        // if this ever gets deprecated and swap the name here, nothing else changes.
+        model: 'llama-3.3-70b-versatile',
         max_tokens: 500,
-        system: context,
-        messages: recentMessages.map((m) => ({ role: m.role, content: m.content })),
+        // OpenAI-style chat format: the system prompt is just another message with
+        // role 'system', not a separate top-level field like Anthropic's API.
+        messages: [{ role: 'system', content: context }, ...recentMessages],
       }),
     })
 
-    const data = await anthropicRes.json()
-    if (!anthropicRes.ok) {
-      console.error('Anthropic API error:', data)
+    const data = await groqRes.json()
+    if (!groqRes.ok) {
+      console.error('Groq API error:', data)
       return new Response(JSON.stringify({ error: 'Assistant is unavailable right now.' }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    const reply = (data.content ?? [])
-      .map((block: any) => (block.type === 'text' ? block.text : ''))
-      .filter(Boolean)
-      .join('\n')
+    const reply = data.choices?.[0]?.message?.content ?? ''
 
     return new Response(JSON.stringify({ reply }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
