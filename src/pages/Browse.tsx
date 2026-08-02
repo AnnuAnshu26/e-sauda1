@@ -17,6 +17,7 @@ export default function Browse() {
   );
   const [min, setMin] = useState("");
   const [max, setMax] = useState("");
+  const [city, setCity] = useState("All cities");
   const [sort, setSort] = useState("Relevance");
   const [searchInput, setSearchInput] = useState(params.get("q") || "");
   const [search, setSearch] = useState(params.get("q") || "");
@@ -54,6 +55,7 @@ export default function Browse() {
       minPrice: min ? Number(min) : undefined,
       maxPrice: max ? Number(max) : undefined,
       search,
+      city: city !== "All cities" ? city : undefined,
     })
       .then((data) => {
         if (!cancelled) setListings(data);
@@ -67,7 +69,7 @@ export default function Browse() {
     return () => {
       cancelled = true;
     };
-  }, [active, min, max, search]);
+  }, [active, min, max, search, city]);
 
   const filtered = useMemo(() => {
     let result = listings;
@@ -121,7 +123,11 @@ export default function Browse() {
             <label className="text-xs font-semibold uppercase tracking-wide text-ink/50">
               City
             </label>
-            <select className="mt-2 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm">
+            <select
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm"
+            >
               <option>All cities</option>
               <option>Bengaluru</option>
               <option>Mumbai</option>
@@ -220,7 +226,7 @@ export default function Browse() {
               Have something to sell?
             </p>
             <p className="mt-1 text-sm text-ink/60">
-              Post it in under 20 seconds using our voice-first listing flow.
+              It only takes a few minutes to list an item.
             </p>
             <a
               href="/sell"

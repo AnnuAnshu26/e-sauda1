@@ -12,7 +12,6 @@ import { useSavedListings } from '../hooks/useSavedListings'
 import { Listing, VaultOrderWithOtp, ChatOffer } from '../types'
 import ReportButton from '../components/ReportButton'
 import ListingCard from '../components/ListingCard'
-import SpaceFitViewer from '../components/SpaceFitViewer'
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>()
@@ -187,17 +186,6 @@ export default function ListingDetail() {
                 className="mt-2 aspect-video w-full rounded-xl2 bg-black"
               />
             </div>
-          )}
-
-          {listing.ar && listing.widthCm && listing.heightCm && listing.depthCm && (
-            <SpaceFitViewer
-              widthCm={listing.widthCm}
-              heightCm={listing.heightCm}
-              depthCm={listing.depthCm}
-              title={listing.title}
-              photoUrls={listing.photoUrls}
-              listingId={listing.id}
-            />
           )}
         </div>
 

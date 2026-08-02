@@ -225,9 +225,16 @@ export default function Profile() {
             on all your ads.
           </p>
         </div>
-        <button className="flex items-center gap-2 rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream hover:bg-forest-light">
-          <Lock size={15} /> Verify with DigiLocker
-        </button>
+        <div className="flex flex-col items-end gap-1">
+          <button
+            disabled
+            title="DigiLocker verification is coming soon"
+            className="flex items-center gap-2 rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream opacity-50 cursor-not-allowed"
+          >
+            <Lock size={15} /> Verify with DigiLocker
+          </button>
+          <span className="text-xs text-ink/40">Coming soon</span>
+        </div>
       </div>
 
       <h2 className="mt-8 font-display text-lg font-semibold">Badges</h2>

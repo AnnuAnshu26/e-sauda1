@@ -1,4 +1,4 @@
-import { Heart, Lock, Camera, RotateCw } from 'lucide-react'
+import { Heart, Lock } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Listing } from '../types'
@@ -33,16 +33,6 @@ export default function ListingCard({ listing, saved: savedProp, onToggleSaved }
           {listing.escrow && (
             <span className="flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-[11px] font-medium text-ink">
               <Lock size={11} /> Escrow
-            </span>
-          )}
-          {listing.ar && (
-            <span className="flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-[11px] font-medium text-ink">
-              <Camera size={11} /> AR
-            </span>
-          )}
-          {listing.spin360 && (
-            <span className="flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-[11px] font-medium text-ink">
-              <RotateCw size={11} /> 360°
             </span>
           )}
         </div>

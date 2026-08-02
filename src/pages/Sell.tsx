@@ -5,13 +5,20 @@ import {
   countActiveListingsInCategory,
   createListing,
   attachPhotos,
+  updateListingVideo,
 } from "../lib/listings";
-import { uploadListingPhotos, validatePhotoFiles } from "../lib/storage";
+import {
+  uploadListingPhotos,
+  validatePhotoFiles,
+  uploadListingVideo,
+  validateVideoFile,
+  validateVideoDuration,
+} from "../lib/storage";
 import { payListingFee } from "../lib/listingFee";
 import { suggestPrice, PriceSuggestion } from "../lib/pricing";
 import { Category } from "../types";
 import { useAuth } from "../context/AuthContext";
-import { Mic, Upload, Check, X } from "lucide-react";
+import { Upload, Video, Check, X } from "lucide-react";
 
 const stepNames = ["Category", "Details", "Media", "Review"];
 const LISTING_CAP_PER_CATEGORY = 2; // matches the flat cap new users start with; grows with trust score later
@@ -26,18 +33,23 @@ export default function Sell() {
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [condition, setCondition] = useState("Good");
-  // Optional — leave blank to skip the size-check/AR viewer entirely for this listing.
-  const [widthCm, setWidthCm] = useState("");
-  const [heightCm, setHeightCm] = useState("");
-  const [depthCm, setDepthCm] = useState("");
+  const [city, setCity] = useState("");
   const [posted, setPosted] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [photoWarning, setPhotoWarning] = useState<string | null>(null);
+  const [videoWarning, setVideoWarning] = useState<string | null>(null);
   const [activeInCategory, setActiveInCategory] = useState<number | null>(null);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  // A video is mandatory before a new listing can be published — see the Media
+  // step below. videoFile only gets set once size/type/duration all pass.
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [checkingVideo, setCheckingVideo] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [priceSuggestion, setPriceSuggestion] = useState<PriceSuggestion | null>(null);
   const [priceSuggestionLoading, setPriceSuggestionLoading] = useState(false);
 
@@ -67,6 +79,46 @@ export default function Sell() {
   function removePhoto(index: number) {
     setPhotoFiles((prev) => prev.filter((_, i) => i !== index));
     setPhotoError(null);
+  }
+
+  // Same object-URL preview pattern as photos above — created on selection,
+  // revoked on change/unmount so it doesn't leak memory.
+  useEffect(() => {
+    if (!videoFile) {
+      setVideoPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(videoFile);
+    setVideoPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [videoFile]);
+
+  async function onVideoSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file after removing it
+    if (!file) return;
+    setVideoError(null);
+    const sizeError = validateVideoFile(file);
+    if (sizeError) {
+      setVideoError(sizeError);
+      return;
+    }
+    setCheckingVideo(true);
+    try {
+      const durationError = await validateVideoDuration(file);
+      if (durationError) {
+        setVideoError(durationError);
+        return;
+      }
+      setVideoFile(file);
+    } finally {
+      setCheckingVideo(false);
+    }
+  }
+
+  function removeVideo() {
+    setVideoFile(null);
+    setVideoError(null);
   }
 
   // Once a category is picked, check how many active listings this user already
@@ -133,6 +185,12 @@ export default function Sell() {
 
   async function publish() {
     if (!user || !category) return;
+    if (!videoFile) {
+      // Belt-and-braces: the Next button already blocks getting here without a
+      // video, but publish() is a separate code path so it checks again too.
+      setPublishError("A video of the item is required before publishing.");
+      return;
+    }
     setPublishing(true);
     setPublishError(null);
     try {
@@ -150,12 +208,8 @@ export default function Sell() {
           subCategory: subCategory || undefined,
           condition,
           description: description || undefined,
-          city: profile?.city || undefined,
-          // All-or-nothing: a partial set can't scale the size-check box correctly,
-          // so only send dimensions once every field has a valid positive number.
-          widthCm: widthCm && heightCm && depthCm ? Number(widthCm) : undefined,
-          heightCm: widthCm && heightCm && depthCm ? Number(heightCm) : undefined,
-          depthCm: widthCm && heightCm && depthCm ? Number(depthCm) : undefined,
+          city: city.trim() || profile?.city || undefined,
+          location: city.trim() || undefined,
         },
         razorpayOrderId,
       );
@@ -174,6 +228,21 @@ export default function Sell() {
         } finally {
           setUploadingPhotos(false);
         }
+      }
+
+      setUploadingVideo(true);
+      try {
+        const url = await uploadListingVideo(user.id, listing.id, videoFile);
+        await updateListingVideo(listing.id, url);
+      } catch (videoErr) {
+        // Same reasoning as the photo failure above — the listing already exists,
+        // so don't roll it back over a transient upload hiccup. Point to Edit
+        // Listing, which has its own add/replace video section, as the recovery path.
+        setVideoWarning(
+          "Listing published, but the video upload failed. Add it from My Listings → Edit.",
+        );
+      } finally {
+        setUploadingVideo(false);
       }
 
       setPosted(true);
@@ -218,6 +287,11 @@ export default function Sell() {
             {photoWarning}
           </p>
         )}
+        {videoWarning && (
+          <p className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
+            {videoWarning}
+          </p>
+        )}
         <button
           onClick={() => navigate("/orders")}
           className="mt-8 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light"
@@ -232,7 +306,7 @@ export default function Sell() {
     <div className="mx-auto max-w-3xl px-6 py-10">
       <h1 className="font-display text-3xl font-semibold">Post a listing</h1>
       <p className="mt-1 text-sm text-ink/60">
-        Voice-first flow. Photos auto-cleaned. Fair-price check baked in.
+        A quick, guided flow. Fair-price check baked in.
       </p>
 
       <div className="mt-6 rounded-xl2 border border-black/5 bg-white p-4">
@@ -322,12 +396,7 @@ export default function Sell() {
 
         {step === 1 && (
           <div>
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-ink">Tell us about the item</h2>
-              <button className="flex items-center gap-2 rounded-full bg-clay/10 px-3 py-1.5 text-xs font-semibold text-clay">
-                <Mic size={13} /> Speak instead
-              </button>
-            </div>
+            <h2 className="font-semibold text-ink">Tell us about the item</h2>
             <div className="mt-4 space-y-4">
               <div>
                 <label className="text-sm font-medium text-ink">Title</label>
@@ -404,40 +473,17 @@ export default function Sell() {
               </div>
               <div>
                 <label className="text-sm font-medium text-ink">
-                  Dimensions (optional)
+                  Location (city / area)
                 </label>
+                <input
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="e.g. Koramangala, Bengaluru"
+                  className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+                />
                 <p className="mt-1 text-xs text-ink/50">
-                  Add all three to let buyers preview it in their own space in 3D/AR.
+                  Shown on your listing and used for the City filter on Browse.
                 </p>
-                <div className="mt-2 grid grid-cols-3 gap-2">
-                  <input
-                    type="number"
-                    min="0"
-                    inputMode="decimal"
-                    value={widthCm}
-                    onChange={(e) => setWidthCm(e.target.value)}
-                    placeholder="Width cm"
-                    className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    inputMode="decimal"
-                    value={heightCm}
-                    onChange={(e) => setHeightCm(e.target.value)}
-                    placeholder="Height cm"
-                    className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    inputMode="decimal"
-                    value={depthCm}
-                    onChange={(e) => setDepthCm(e.target.value)}
-                    placeholder="Depth cm"
-                    className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
-                  />
-                </div>
               </div>
             </div>
           </div>
@@ -496,6 +542,44 @@ export default function Sell() {
                 will just show a category icon instead.
               </p>
             )}
+
+            <h2 className="mt-8 font-semibold text-ink">Add a video</h2>
+            <p className="mt-1 text-sm text-ink/60">
+              Required — a short clip actually showing the item. Under 50MB and 60
+              seconds.
+            </p>
+            {videoPreviewUrl ? (
+              <div className="group relative mt-4 aspect-video w-full max-w-sm overflow-hidden rounded-xl2 bg-black">
+                <video src={videoPreviewUrl} controls className="h-full w-full" />
+                <button
+                  type="button"
+                  onClick={removeVideo}
+                  className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition group-hover:opacity-100"
+                  aria-label="Remove video"
+                >
+                  <X size={13} />
+                </button>
+              </div>
+            ) : (
+              <label className="mt-4 flex aspect-video w-full max-w-sm cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl2 border-2 border-dashed border-black/15 text-ink/40 hover:border-clay/40">
+                <Video size={20} />
+                <span className="text-xs">
+                  {checkingVideo ? "Checking video…" : "Upload a video"}
+                </span>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="video/*"
+                  disabled={checkingVideo}
+                  onChange={onVideoSelected}
+                />
+              </label>
+            )}
+            {videoError && (
+              <p className="mt-3 rounded-lg bg-red-50 p-3 text-xs text-red-600">
+                {videoError}
+              </p>
+            )}
           </div>
         )}
 
@@ -512,6 +596,7 @@ export default function Sell() {
                 }
               />
               <Row label="Title" value={title || "—"} />
+              <Row label="Location" value={city || "—"} />
               <Row label="Price" value={price ? `₹${price}` : "—"} />
               <Row label="Condition" value={condition} />
               <Row label="Description" value={description || "—"} />
@@ -523,6 +608,7 @@ export default function Sell() {
                     : "None"
                 }
               />
+              <Row label="Video" value={videoFile ? videoFile.name : "—"} />
               <Row label="Anti-bot fee due now" value={`₹${nextListingFee}`} />
             </div>
             {publishError && (
@@ -547,7 +633,8 @@ export default function Sell() {
             onClick={next}
             disabled={
               (step === 0 && (!category || atCap)) ||
-              (step === 1 && (!title || !price))
+              (step === 1 && (!title || !price || !city.trim())) ||
+              (step === 2 && (!videoFile || checkingVideo))
             }
             className="rounded-full bg-forest px-6 py-2.5 text-sm font-semibold text-cream disabled:opacity-40"
           >
@@ -561,9 +648,11 @@ export default function Sell() {
           >
             {uploadingPhotos
               ? "Uploading photos…"
-              : publishing
-                ? "Publishing…"
-                : `Pay ₹${nextListingFee} & publish`}
+              : uploadingVideo
+                ? "Uploading video…"
+                : publishing
+                  ? "Publishing…"
+                  : `Pay ₹${nextListingFee} & publish`}
           </button>
         )}
       </div>

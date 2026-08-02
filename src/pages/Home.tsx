@@ -5,9 +5,7 @@ import {
   Lock,
   ShieldCheck,
   Truck,
-  Camera,
   Sparkles,
-  Mic,
 } from "lucide-react";
 import { categories } from "../data/listings";
 import { fetchListings } from "../lib/listings";
@@ -55,19 +53,9 @@ const features = [
     desc: "Rapido, Uber & Dunzo baked into checkout. Price, ETA and rider — all locked in one tap.",
   },
   {
-    icon: Camera,
-    title: "AR try-on & 360° spins",
-    desc: "See if the sofa fits before you buy. Orbit around a bike on your phone. No more grainy photos.",
-  },
-  {
     icon: Sparkles,
     title: "AI-cleaned photos",
     desc: "Snap it messy. We segment the background, block stock-photo scams and suggest a fair price.",
-  },
-  {
-    icon: Mic,
-    title: "Bolo, aur bech do",
-    desc: "Speak in Hindi, Tamil, Bangla — our voice engine fills the form. Listing done in 20 seconds.",
   },
 ];
 

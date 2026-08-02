@@ -22,17 +22,6 @@ export interface Listing {
   distanceKm: number
   verified: boolean
   escrow: boolean
-  // True when all three dimensions are present. Not stored directly — mapRow()
-  // computes it from widthCm/heightCm/depthCm so it can never drift from the data
-  // that actually drives the size-check viewer.
-  ar?: boolean
-  spin360?: boolean
-  // Real-world size in centimetres, entered by the seller in Sell/EditListing.
-  // All three (or none) — a box with only two dimensions can't be scaled correctly,
-  // so SpaceFitViewer requires the full set before it'll render.
-  widthCm?: number | null
-  heightCm?: number | null
-  depthCm?: number | null
   emoji: string
   bg: string
   photoUrls: string[]
@@ -55,9 +44,6 @@ export interface NewListingInput {
   description?: string
   city?: string
   location?: string
-  widthCm?: number
-  heightCm?: number
-  depthCm?: number
 }
 
 export interface Conversation {

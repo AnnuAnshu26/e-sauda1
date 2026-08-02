@@ -16,7 +16,7 @@ import { useAuth } from '../context/AuthContext'
 import { Listing } from '../types'
 
 // Deliberately a standalone lightweight form rather than reusing the Sell wizard --
-// Sell's multi-step voice-first flow (with the listing-cap/fee-tier logic baked into
+// Sell's multi-step flow (with the listing-cap/fee-tier logic baked into
 // its category step) is built for *creating* a listing, not fixing a typo in one that
 // already exists. Category is intentionally not editable here; see the comment on
 // ListingUpdateInput in lib/listings.ts for why.
@@ -35,9 +35,6 @@ export default function EditListing() {
   const [condition, setCondition] = useState('Good')
   const [description, setDescription] = useState('')
   const [city, setCity] = useState('')
-  const [widthCm, setWidthCm] = useState('')
-  const [heightCm, setHeightCm] = useState('')
-  const [depthCm, setDepthCm] = useState('')
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -71,9 +68,6 @@ export default function EditListing() {
         setCondition(data.condition)
         setDescription(data.description || '')
         setCity(data.city || '')
-        setWidthCm(data.widthCm != null ? String(data.widthCm) : '')
-        setHeightCm(data.heightCm != null ? String(data.heightCm) : '')
-        setDepthCm(data.depthCm != null ? String(data.depthCm) : '')
         setPhotos(data.photoUrls || [])
         setVideoUrl(data.videoUrl)
       })
@@ -204,9 +198,6 @@ export default function EditListing() {
         description: description.trim(),
         city: city.trim(),
         location: city.trim(),
-        widthCm: widthCm && heightCm && depthCm ? Number(widthCm) : null,
-        heightCm: widthCm && heightCm && depthCm ? Number(heightCm) : null,
-        depthCm: widthCm && heightCm && depthCm ? Number(depthCm) : null,
       })
       setSaved(true)
       setTimeout(() => navigate(`/listing/${id}`), 900)
@@ -395,42 +386,6 @@ export default function EditListing() {
             placeholder="Any dents, accessories included, reason for selling..."
             className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
           />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-ink">Dimensions (optional)</label>
-          <p className="mt-1 text-xs text-ink/50">
-            Add all three to let buyers preview it in their own space in 3D/AR.
-          </p>
-          <div className="mt-2 grid grid-cols-3 gap-2">
-            <input
-              type="number"
-              min="0"
-              inputMode="decimal"
-              value={widthCm}
-              onChange={(e) => setWidthCm(e.target.value)}
-              placeholder="Width cm"
-              className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
-            />
-            <input
-              type="number"
-              min="0"
-              inputMode="decimal"
-              value={heightCm}
-              onChange={(e) => setHeightCm(e.target.value)}
-              placeholder="Height cm"
-              className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
-            />
-            <input
-              type="number"
-              min="0"
-              inputMode="decimal"
-              value={depthCm}
-              onChange={(e) => setDepthCm(e.target.value)}
-              placeholder="Depth cm"
-              className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
-            />
-          </div>
         </div>
 
         {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>}
