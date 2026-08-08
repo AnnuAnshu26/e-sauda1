@@ -63,7 +63,7 @@ export default function Navbar() {
           className="flex flex-1 items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 max-w-xl"
         >
           <MapPin size={16} className="shrink-0 text-ink/60" />
-          <span className="shrink-0 text-sm text-ink/80">{profile?.city || 'Bengaluru'}</span>
+          <span className="shrink-0 text-sm text-ink/80">{profile?.city || 'Delhi'}</span>
           <span className="h-4 w-px shrink-0 bg-black/10" />
           <Search size={16} className="shrink-0 text-ink/40" />
           <input
