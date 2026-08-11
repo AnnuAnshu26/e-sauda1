@@ -26,7 +26,7 @@ interface AuthContextValue {
     password: string,
     displayName: string,
     phoneNumber: string,
-  ) => Promise<{ error: string | null; sessionCreated?: boolean }>
+  ) => Promise<{ error: string | null }>
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
@@ -56,30 +56,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => listener.subscription.unsubscribe()
   }, [])
 
-  async function loadProfile(userId: string, attempt = 1) {
-    const { data, error } = await supabase
+  async function loadProfile(userId: string) {
+    const { data } = await supabase
       .from('profiles')
       .select(
         'id, display_name, city, trust_score, verified, rating_avg, rating_count, is_admin, suspended, phone_number, phone_verified',
       )
       .eq('id', userId)
       .single()
-
-    // The profiles row is created by a DB trigger (handle_new_user) AND a
-    // client-side upsert fallback in signUp() below -- both asynchronous, and this
-    // fetch can be triggered independently by the auth-state-change listener the
-    // moment a session appears, which can race ahead of either of them completing.
-    // Without retrying, landing in that gap leaves `profile` stuck at null forever:
-    // no error shown anywhere, but RequireAuth's `if (profile && ...)` phone-
-    // verification gate silently never fires since profile is falsy, and
-    // VerifyPhone's auto-send effect never fires either since phone_number is
-    // undefined. A few short retries closes this gap without a real user ever
-    // noticing the delay.
-    if ((error || !data) && attempt < 5) {
-      await new Promise((resolve) => setTimeout(resolve, attempt * 250))
-      return loadProfile(userId, attempt + 1)
-    }
-
     setProfile(data)
   }
 
@@ -98,34 +82,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signUp(email: string, password: string, displayName: string, phoneNumber: string) {
-    // Passing display_name here is what makes it available to the `handle_new_user`
-    // trigger (supabase/schema.sql) as `raw_user_meta_data->>'display_name'` — without
-    // this, the trigger's coalesce() always falls through to its 'New user' fallback,
-    // because it fires before any client-side code gets a chance to run.
+    // Passing display_name AND phone_number here is what makes them available to the
+    // `handle_new_user` trigger (supabase/phone_otp_schema.sql) as
+    // `raw_user_meta_data->>'display_name'` / `->>'phone_number'`. This is the ONLY
+    // reliable place to persist them: email confirmation is enabled on this project,
+    // so right after this call resolves there is no session yet (auth.uid() is null
+    // until the confirmation link is clicked). A client-side profiles upsert at this
+    // point would be silently blocked by the "auth.uid() = id" RLS policy — which is
+    // exactly what used to happen here, leaving phone_number permanently unset and
+    // users stuck in an infinite /verify-phone redirect (see RequireAuth.tsx) because
+    // the OTP step had no number to send a code to.
+    const normalizedPhone = `+91${phoneNumber.replace(/\D/g, '')}`
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName } },
+      options: { data: { display_name: displayName, phone_number: normalizedPhone } },
     })
     if (error) return { error: error.message }
 
-    // Belt-and-suspenders fallback for setups without the SQL trigger installed, and to
-    // correct the name if the trigger already created the row with its 'New user'
-    // fallback (e.g. if this signup form is used against an older-schema project).
-    // Using upsert (not insert) is what makes this actually take effect — a plain
-    // insert here would just fail silently on the row the trigger already created.
-    // phone_number is stored now but phone_verified stays false until the OTP step —
+    // Belt-and-suspenders fallback for setups without the SQL trigger installed, or
+    // for the case where signUp() DOES return an active session (i.e. email
+    // confirmation is off for this project) and we can write immediately. This is
+    // best-effort only — if it fails (e.g. no session yet), the trigger above is
+    // what actually guarantees the row gets created with the right data, so we don't
+    // surface this particular failure as a signup error to the user.
+    // phone_number is stored but phone_verified stays false until the OTP step —
     // RequireAuth redirects to /verify-phone until that actually happens (see
     // phone_otp_schema.sql), so this is never trusted as "verified" on its own.
     if (data.user) {
-      await supabase
+      const { error: profileError } = await supabase
         .from('profiles')
         .upsert(
-          { id: data.user.id, display_name: displayName, trust_score: 50, verified: false, phone_number: phoneNumber },
+          { id: data.user.id, display_name: displayName, trust_score: 50, verified: false, phone_number: normalizedPhone },
           { onConflict: 'id' },
         )
+      if (profileError) {
+        console.warn(
+          'Client-side profile upsert failed (expected when email confirmation is pending — the handle_new_user trigger already stored this data):',
+          profileError.message,
+        )
+      }
     }
-    return { error: null, sessionCreated: !!data.session }
+    return { error: null }
   }
 
   async function signIn(email: string, password: string) {

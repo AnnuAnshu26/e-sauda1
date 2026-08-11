@@ -27,7 +27,7 @@ export default function Signup() {
     }
 
     setLoading(true)
-    const { error, sessionCreated } = await signUp(email, password, name, phoneNumber)
+    const { error } = await signUp(email, password, name, phoneNumber)
     setLoading(false)
 
     if (error) {
@@ -35,19 +35,9 @@ export default function Signup() {
       return
     }
 
-    if (sessionCreated) {
-      // Email confirmation isn't required on this project (that's a Supabase Auth
-      // dashboard setting, not something this code controls) -- signUp already
-      // created a live session, so there's no email to "go check". Head straight to
-      // phone verification, which RequireAuth will enforce on every other route
-      // anyway since phone_verified is always false immediately after signup.
-      navigate('/verify-phone')
-      return
-    }
-
-    // No session yet -- this project DOES require clicking an email confirmation
-    // link first (supabase.auth.signUp() returns no session in that case). Only show
-    // this screen when it's actually true, not unconditionally.
+    // Supabase sends a confirmation email by default. Until the user clicks it, there's no
+    // active session — so we tell them to check their inbox instead of redirecting in as if
+    // they're logged in.
     setCheckEmail(true)
   }
 
