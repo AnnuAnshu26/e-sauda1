@@ -27,7 +27,7 @@ export default function ForgotPassword() {
   if (sent) {
     return (
       <div className="mx-auto flex max-w-sm flex-col px-6 py-24 text-center">
-        <h1 className="font-display text-2xl font-semibold">Check your email</h1>
+        <h1 className="font-display text-3xl italic text-ink">Check your email</h1>
         <p className="mt-2 text-sm text-ink/60">
           If an account exists for <span className="font-medium text-ink">{email}</span>, we've sent a
           link to reset your password.
@@ -41,27 +41,27 @@ export default function ForgotPassword() {
 
   return (
     <div className="mx-auto flex max-w-sm flex-col px-6 py-20">
-      <h1 className="font-display text-3xl font-semibold">Reset your password</h1>
-      <p className="mt-1 text-sm text-ink/60">We'll email you a link to set a new one.</p>
+      <h1 className="font-display text-4xl italic text-ink">Reset your password</h1>
+      <p className="mt-2 text-sm text-ink/50">We'll email you a link to set a new one.</p>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <div>
-          <label className="text-sm font-medium text-ink">Email</label>
+          <label className="text-xs uppercase tracking-widest2 text-ink/40">Email</label>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="mt-2 w-full rounded-lg border border-ink/10 bg-cream px-3 py-2.5 text-sm text-ink"
           />
         </div>
 
-        {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>}
+        {error && <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light disabled:opacity-50"
+          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-medium text-cream hover:bg-forest-light disabled:opacity-50"
         >
           {loading ? 'Sending…' : 'Send reset link'}
         </button>

@@ -36,7 +36,7 @@ export default function Saved() {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
-      <h1 className="font-display text-3xl font-semibold">Saved</h1>
+      <h1 className="font-display text-3xl italic">Saved</h1>
       <p className="mt-1 text-sm text-ink/60">Listings you've saved to look at again.</p>
 
       {loading ? (
@@ -52,7 +52,7 @@ export default function Saved() {
           <p className="text-sm text-ink/50">Tap the ❤️ on any listing to keep it here.</p>
           <Link
             to="/browse"
-            className="mt-4 rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm font-semibold text-ink hover:bg-cream-dark"
+            className="mt-4 rounded-full border border-ink/10 bg-cream px-5 py-2.5 text-sm font-semibold text-ink hover:bg-cream-dark"
           >
             Browse listings
           </Link>

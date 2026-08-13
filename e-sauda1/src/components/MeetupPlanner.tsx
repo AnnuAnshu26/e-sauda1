@@ -133,7 +133,7 @@ export default function MeetupPlanner({
   const isProposer = meetup?.proposedBy === user?.id
 
   return (
-    <div className="mt-4 border-t border-black/5 pt-3">
+    <div className="mt-4 border-t border-ink/10 pt-3">
       <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink/50">
         <Calendar size={12} /> Meetup
       </p>
@@ -145,21 +145,21 @@ export default function MeetupPlanner({
             required
             value={dateInput}
             onChange={(e) => setDateInput(e.target.value)}
-            className="w-full rounded-lg border border-black/10 px-3 py-2 text-xs"
+            className="w-full rounded-lg border border-ink/10 px-3 py-2 text-xs"
           />
           <input
             required
             value={locationInput}
             onChange={(e) => setLocationInput(e.target.value)}
             placeholder="Where? e.g. Cafe Coffee Day, Sector 18 metro gate"
-            className="w-full rounded-lg border border-black/10 px-3 py-2 text-xs"
+            className="w-full rounded-lg border border-ink/10 px-3 py-2 text-xs"
           />
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleUseCurrentLocation}
               disabled={locating}
-              className="flex items-center gap-1 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-ink/60 hover:bg-cream-dark disabled:opacity-50"
+              className="flex items-center gap-1 rounded-full border border-ink/10 bg-cream px-3 py-1.5 text-xs font-medium text-ink/60 hover:bg-cream-dark disabled:opacity-50"
             >
               <Navigation size={11} /> {locating ? 'Locating…' : coords ? 'Location attached ✓' : 'Attach my current location'}
             </button>
@@ -180,7 +180,7 @@ export default function MeetupPlanner({
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="rounded-full border border-black/10 px-4 py-1.5 text-xs font-semibold text-ink/60"
+              className="rounded-full border border-ink/10 px-4 py-1.5 text-xs font-semibold text-ink/60"
             >
               Never mind
             </button>
@@ -193,7 +193,7 @@ export default function MeetupPlanner({
           )}
           <button
             onClick={startEditing}
-            className="mt-2 flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-cream-dark"
+            className="mt-2 flex items-center gap-1.5 rounded-full border border-ink/10 bg-cream px-3 py-1.5 text-xs font-semibold text-ink hover:bg-cream-dark"
           >
             <MapPin size={12} /> Propose a time &amp; place to meet
           </button>
@@ -224,7 +224,7 @@ export default function MeetupPlanner({
             )}
             <button
               onClick={startEditing}
-              className="rounded-full border border-black/10 px-3 py-1.5 text-xs font-semibold text-ink/70 hover:bg-cream-dark"
+              className="rounded-full border border-ink/10 px-3 py-1.5 text-xs font-semibold text-ink/70 hover:bg-cream-dark"
             >
               Propose different time
             </button>
@@ -242,7 +242,7 @@ export default function MeetupPlanner({
               <button
                 onClick={() => handleGetUberRide(meetup.locationLat!, meetup.locationLng!, meetup.locationName)}
                 disabled={gettingRide}
-                className="flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-cream-dark disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-full border border-ink/10 bg-cream px-3 py-1.5 text-xs font-semibold text-ink hover:bg-cream-dark disabled:opacity-50"
               >
                 <Car size={12} /> {gettingRide ? 'Getting your location…' : 'Get an Uber there'}
               </button>
@@ -255,7 +255,7 @@ export default function MeetupPlanner({
               href={getRapidoLink()}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-cream-dark"
+              className="flex items-center gap-1.5 rounded-full border border-ink/10 bg-cream px-3 py-1.5 text-xs font-semibold text-ink hover:bg-cream-dark"
             >
               <Car size={12} /> Open Rapido
             </a>

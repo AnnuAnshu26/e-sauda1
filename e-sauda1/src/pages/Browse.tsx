@@ -83,16 +83,16 @@ export default function Browse() {
   }, [listings, sort]);
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-8">
-      <div className="mb-6 flex flex-wrap gap-2">
+    <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mb-8 flex flex-wrap gap-2 border-b border-ink/10 pb-6">
         {tabs.map((t) => (
           <button
             key={t}
             onClick={() => setActive(t)}
-            className={`rounded-full px-4 py-2 text-sm font-medium ${
+            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
               active === t
                 ? "bg-forest text-cream"
-                : "border border-black/10 bg-white text-ink/80"
+                : "border border-ink/10 text-ink/70 hover:border-ink/30"
             }`}
           >
             {t}
@@ -101,14 +101,15 @@ export default function Browse() {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr]">
-        <aside className="h-fit rounded-xl2 border border-black/5 bg-white p-5">
-          <h3 className="font-display text-lg font-semibold">Filters</h3>
+        <aside className="h-fit rounded-xl2 border border-ink/10 bg-cream-dark/40 p-6">
+          <span className="text-xs uppercase tracking-widest2 text-ink/40">(Refine)</span>
+          <h3 className="mt-1 font-display text-2xl italic text-ink">Filters</h3>
 
-          <div className="mt-5">
-            <label className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+          <div className="mt-6">
+            <label className="text-xs uppercase tracking-widest2 text-ink/40">
               Search
             </label>
-            <div className="mt-2 flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2">
+            <div className="mt-2 flex items-center gap-2 rounded-lg border border-ink/10 bg-cream px-3 py-2">
               <Search size={16} className="shrink-0 text-ink/40" />
               <input
                 value={searchInput}
@@ -120,13 +121,13 @@ export default function Browse() {
           </div>
 
           <div className="mt-5">
-            <label className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+            <label className="text-xs uppercase tracking-widest2 text-ink/40">
               City
             </label>
             <select
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm"
+              className="mt-2 w-full rounded-lg border border-ink/10 bg-cream px-3 py-2 text-sm text-ink"
             >
               <option>All cities</option>
               <option>Bengaluru</option>
@@ -136,7 +137,7 @@ export default function Browse() {
           </div>
 
           <div className="mt-5">
-            <label className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+            <label className="text-xs uppercase tracking-widest2 text-ink/40">
               Price (₹)
             </label>
             <div className="mt-2 flex gap-2">
@@ -144,25 +145,25 @@ export default function Browse() {
                 value={min}
                 onChange={(e) => setMin(e.target.value)}
                 placeholder="Min"
-                className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-ink/10 bg-cream px-3 py-2 text-sm text-ink"
               />
               <input
                 value={max}
                 onChange={(e) => setMax(e.target.value)}
                 placeholder="Max"
-                className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-ink/10 bg-cream px-3 py-2 text-sm text-ink"
               />
             </div>
           </div>
 
           <div className="mt-5">
-            <label className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+            <label className="text-xs uppercase tracking-widest2 text-ink/40">
               Sort by
             </label>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm"
+              className="mt-2 w-full rounded-lg border border-ink/10 bg-cream px-3 py-2 text-sm text-ink"
             >
               <option>Relevance</option>
               <option>Price: Low to High</option>
@@ -171,22 +172,23 @@ export default function Browse() {
             </select>
           </div>
 
-          <div className="mt-5 rounded-lg bg-clay/10 p-3 text-xs text-clay">
-            <strong>Trust filter is on.</strong> Only sellers within their
-            listing cap. Bulk resellers are automatically hidden.
+          <div className="mt-6 rounded-lg border border-clay/20 bg-clay/5 p-3 text-xs leading-relaxed text-clay">
+            <strong className="font-medium">Trust filter is on.</strong> Only
+            sellers within their listing cap. Bulk resellers are
+            automatically hidden.
           </div>
         </aside>
 
         <div>
-          <p className="mb-4 font-display text-xl font-semibold">
+          <p className="mb-5 font-display text-2xl italic text-ink">
             {search ? `Results for "${search}"` : active === "All" ? "All listings" : active}{" "}
-            <span className="text-base font-normal text-ink/50">
+            <span className="text-sm not-italic font-sans text-ink/45">
               · {loading ? "…" : filtered.length} results across India
             </span>
           </p>
 
           {error && (
-            <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+            <p className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
               Couldn't load listings: {error}
             </p>
           )}
@@ -221,16 +223,19 @@ export default function Browse() {
             </p>
           )}
 
-          <div className="mt-10 rounded-xl2 bg-clay/10 p-8 text-center">
-            <p className="font-display text-xl font-semibold">
+          <div className="mt-10 rounded-xl3 bg-forest px-8 py-12 text-center text-cream">
+            <span className="text-xs uppercase tracking-widest2 text-cream/40">
+              (List with us)
+            </span>
+            <p className="mt-3 font-display text-2xl italic">
               Have something to sell?
             </p>
-            <p className="mt-1 text-sm text-ink/60">
+            <p className="mt-1 text-sm text-cream/60">
               It only takes a few minutes to list an item.
             </p>
             <a
               href="/sell"
-              className="mt-4 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light"
+              className="mt-5 inline-block rounded-full bg-cream px-6 py-3 text-sm font-medium text-forest hover:bg-cream-dark"
             >
               Post a listing
             </a>

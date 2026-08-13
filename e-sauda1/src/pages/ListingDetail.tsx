@@ -139,9 +139,9 @@ export default function ListingDetail() {
   if (notFound || !listing) {
     return (
       <div className="mx-auto max-w-lg px-6 py-24 text-center">
-        <p className="font-display text-2xl font-semibold">Listing not found</p>
+        <p className="font-display text-3xl italic text-ink">Listing not found</p>
         <p className="mt-2 text-sm text-ink/60">It may have been removed or sold.</p>
-        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
+        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-medium text-cream">
           Back to Browse
         </Link>
       </div>
@@ -201,13 +201,13 @@ export default function ListingDetail() {
                 <ShieldCheck size={11} /> Verified
               </span>
             )}
-            <span className="rounded-full bg-black/5 px-2.5 py-1 text-xs font-medium text-ink/60">
+            <span className="rounded-full bg-ink/5 px-2.5 py-1 text-xs font-medium text-ink/60">
               {listing.status !== 'active' ? listing.status.toUpperCase() : listing.category}
             </span>
           </div>
 
-          <h1 className="mt-4 font-display text-3xl font-semibold text-ink">{listing.title}</h1>
-          <p className="mt-2 font-display text-2xl font-semibold text-clay">
+          <h1 className="mt-4 font-display text-3xl italic text-ink">{listing.title}</h1>
+          <p className="mt-2 font-display text-3xl italic text-clay">
             ₹{listing.price.toLocaleString('en-IN')}
           </p>
 
@@ -224,12 +224,12 @@ export default function ListingDetail() {
           )}
 
           <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-lg bg-white p-3">
-              <p className="text-xs text-ink/50">Condition</p>
+            <div className="rounded-lg border border-ink/10 p-3">
+              <p className="text-xs text-ink/45">Condition</p>
               <p className="font-medium text-ink">{listing.condition}</p>
             </div>
-            <div className="rounded-lg bg-white p-3">
-              <p className="text-xs text-ink/50">Category</p>
+            <div className="rounded-lg border border-ink/10 p-3">
+              <p className="text-xs text-ink/45">Category</p>
               <p className="font-medium text-ink">
                 {listing.category}
                 {listing.subCategory ? ` · ${listing.subCategory}` : ''}
@@ -239,47 +239,47 @@ export default function ListingDetail() {
 
           {listing.description && (
             <div className="mt-6">
-              <p className="text-sm font-semibold text-ink">Description</p>
-              <p className="mt-1 whitespace-pre-wrap text-sm text-ink/70">{listing.description}</p>
+              <p className="text-xs uppercase tracking-widest2 text-ink/40">Description</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink/70">{listing.description}</p>
             </div>
           )}
 
-          {chatError && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{chatError}</p>}
-          {buyError && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{buyError}</p>}
+          {chatError && <p className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{chatError}</p>}
+          {buyError && <p className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{buyError}</p>}
 
           <div className="mt-8">
             {isOwner ? (
-              <div className="flex items-center justify-between gap-3 rounded-lg bg-black/5 p-4 text-sm text-ink/60">
+              <div className="flex items-center justify-between gap-3 rounded-lg border border-ink/10 p-4 text-sm text-ink/60">
                 This is your own listing.
                 <Link
                   to={`/listing/${listing.id}/edit`}
-                  className="shrink-0 rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-ink hover:bg-cream-dark"
+                  className="shrink-0 rounded-full border border-ink/10 bg-cream px-4 py-2 text-xs font-medium text-ink hover:bg-cream-dark"
                 >
                   Edit listing
                 </Link>
               </div>
             ) : purchase ? (
               <div className="rounded-xl2 border border-emerald-200 bg-emerald-50 p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
+                <p className="flex items-center gap-2 text-sm font-medium text-emerald-700">
                   <ShieldCheck size={16} /> Funds secured in the Vault
                 </p>
-                <p className="mt-3 text-xs uppercase tracking-wide text-ink/50">Your handover OTP</p>
-                <p className="mt-1 font-display text-3xl font-semibold tracking-widest text-ink">
+                <p className="mt-3 text-xs uppercase tracking-widest2 text-ink/45">Your handover OTP</p>
+                <p className="mt-1 font-display text-3xl italic tracking-widest text-ink">
                   {purchase.handoverOtp}
                 </p>
-                <p className="mt-2 text-xs text-ink/50">
+                <p className="mt-2 text-xs leading-relaxed text-ink/50">
                   Only share this with the seller in person, after you've inspected the item.
                   Never send it over chat, SMS, or a screenshot.
                 </p>
                 <Link
                   to="/vault"
-                  className="mt-4 inline-block rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream hover:bg-forest-light"
+                  className="mt-4 inline-block rounded-full bg-forest px-5 py-2.5 text-sm font-medium text-cream hover:bg-forest-light"
                 >
                   Go to Sauda Vault
                 </Link>
               </div>
             ) : listing.status !== 'active' ? (
-              <div className="rounded-lg bg-black/5 p-4 text-sm text-ink/60">
+              <div className="rounded-lg border border-ink/10 p-4 text-sm text-ink/60">
                 This listing is no longer available.
               </div>
             ) : (
@@ -295,7 +295,7 @@ export default function ListingDetail() {
                   <button
                     onClick={handleChat}
                     disabled={startingChat}
-                    className="flex items-center gap-2 rounded-full border border-black/10 bg-surface px-6 py-3 text-sm font-semibold text-ink hover:bg-cream-dark disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-full border border-ink/10 px-6 py-3 text-sm font-medium text-ink hover:bg-cream-dark disabled:opacity-50"
                   >
                     <MessageCircle size={16} />
                     {startingChat ? 'Starting chat…' : 'Chat with seller'}
@@ -303,7 +303,7 @@ export default function ListingDetail() {
                   <button
                     onClick={handleBuy}
                     disabled={buying}
-                    className="flex items-center gap-2 rounded-full bg-clay px-6 py-3 text-sm font-semibold text-white hover:bg-clay-light disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-full bg-forest px-6 py-3 text-sm font-medium text-cream hover:bg-forest-light disabled:opacity-50"
                   >
                     <Lock size={16} />
                     {buying
@@ -320,7 +320,8 @@ export default function ListingDetail() {
 
         {recommended.length > 0 && (
           <div className="mt-12">
-            <p className="font-display text-xl font-semibold text-ink">You might also need</p>
+            <span className="text-xs uppercase tracking-widest2 text-ink/40">(Related)</span>
+            <p className="mt-1 font-display text-2xl italic text-ink">You might also need</p>
             <p className="mt-1 text-sm text-ink/50">
               Other active listings that often go with a {listing.category.toLowerCase()} purchase.
             </p>

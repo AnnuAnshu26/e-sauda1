@@ -71,7 +71,7 @@ export default function MyListings() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl font-semibold">My listings</h1>
+        <h1 className="font-display text-3xl italic">My listings</h1>
         <Link to="/sell" className="rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream hover:bg-forest-light">
           + Sell something
         </Link>
@@ -83,7 +83,7 @@ export default function MyListings() {
         {loading ? (
           [...Array(3)].map((_, i) => <div key={i} className="h-24 animate-pulse rounded-xl2 bg-cream-dark" />)
         ) : listings.length === 0 ? (
-          <div className="flex flex-col items-center rounded-xl2 border border-black/5 bg-white py-16 text-center">
+          <div className="flex flex-col items-center rounded-xl2 border border-ink/10 bg-cream py-16 text-center">
             <Package size={28} className="text-ink/25" />
             <p className="mt-3 text-sm text-ink/50">You haven't posted anything yet.</p>
             <Link to="/sell" className="mt-4 text-sm font-medium text-clay hover:underline">
@@ -92,7 +92,7 @@ export default function MyListings() {
           </div>
         ) : (
           listings.map((l) => (
-            <div key={l.id} className="flex items-center gap-4 rounded-xl2 border border-black/5 bg-white p-4">
+            <div key={l.id} className="flex items-center gap-4 rounded-xl2 border border-ink/10 bg-cream p-4">
               <Link
                 to={`/listing/${l.id}`}
                 className={`flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg text-2xl ${l.bg}`}
@@ -119,7 +119,7 @@ export default function MyListings() {
                   <>
                     <Link
                       to={`/listing/${l.id}/edit`}
-                      className="flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-ink/70 hover:bg-cream-dark"
+                      className="flex items-center gap-1.5 rounded-full border border-ink/10 bg-cream px-3 py-1.5 text-xs font-semibold text-ink/70 hover:bg-cream-dark"
                     >
                       <Pencil size={12} /> Edit
                     </Link>
@@ -136,7 +136,7 @@ export default function MyListings() {
                   <button
                     onClick={() => handleRelist(l)}
                     disabled={statusChangingId === l.id}
-                    className="flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-ink/70 hover:bg-cream-dark disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded-full border border-ink/10 bg-cream px-3 py-1.5 text-xs font-semibold text-ink/70 hover:bg-cream-dark disabled:opacity-50"
                   >
                     <RotateCcw size={12} /> Relist
                   </button>

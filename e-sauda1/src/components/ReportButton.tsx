@@ -59,7 +59,7 @@ export default function ReportButton({ listingId, reportedUserId, label = 'Repor
     <>
       <button
         onClick={openModal}
-        className="flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-ink/60 hover:bg-cream-dark"
+        className="flex items-center gap-1.5 rounded-full border border-ink/10 bg-cream px-4 py-2 text-xs font-semibold text-ink/60 hover:bg-cream-dark"
       >
         <Flag size={13} /> {label}
       </button>
@@ -67,11 +67,11 @@ export default function ReportButton({ listingId, reportedUserId, label = 'Repor
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={close}>
           <div
-            className="w-full max-w-sm rounded-xl2 bg-white p-6 shadow-xl"
+            className="w-full max-w-sm rounded-xl2 bg-cream p-6 shadow-none"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
-              <h3 className="font-display text-lg font-semibold">{label}</h3>
+              <h3 className="font-display text-lg italic">{label}</h3>
               <button onClick={close} className="text-ink/40 hover:text-ink" aria-label="Close">
                 <X size={18} />
               </button>
@@ -100,7 +100,7 @@ export default function ReportButton({ listingId, reportedUserId, label = 'Repor
                   <select
                     value={reason}
                     onChange={(e) => setReason(e.target.value as ReportReason)}
-                    className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+                    className="mt-2 w-full rounded-lg border border-ink/10 px-3 py-2.5 text-sm"
                   >
                     {Object.entries(reportReasonLabels).map(([value, text]) => (
                       <option key={value} value={value}>
@@ -117,7 +117,7 @@ export default function ReportButton({ listingId, reportedUserId, label = 'Repor
                     onChange={(e) => setDetails(e.target.value)}
                     rows={3}
                     placeholder="Anything that'll help us look into this"
-                    className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+                    className="mt-2 w-full rounded-lg border border-ink/10 px-3 py-2.5 text-sm"
                   />
                 </div>
 

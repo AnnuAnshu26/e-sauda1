@@ -117,7 +117,7 @@ export default function Profile() {
                       if (e.key === "Escape") setEditingName(false);
                     }}
                     placeholder="Your name"
-                    className="rounded-lg border border-black/10 bg-white px-3 py-1.5 font-display text-xl font-semibold"
+                    className="rounded-lg border border-ink/10 bg-cream px-3 py-1.5 font-display text-xl italic"
                   />
                   <button
                     onClick={saveName}
@@ -129,14 +129,14 @@ export default function Profile() {
                   </button>
                   <button
                     onClick={() => setEditingName(false)}
-                    className="rounded-full border border-black/10 p-1.5 text-ink/60 hover:bg-black/5"
+                    className="rounded-full border border-ink/10 p-1.5 text-ink/60 hover:bg-black/5"
                     aria-label="Cancel"
                   >
                     <X size={14} />
                   </button>
                 </div>
               ) : (
-                <h1 className="flex items-center gap-2 font-display text-2xl font-semibold">
+                <h1 className="flex items-center gap-2 font-display text-2xl italic">
                   {displayName}
                   <button
                     onClick={startEditingName}
@@ -160,7 +160,7 @@ export default function Profile() {
                 {user?.id && (
                   <button
                     onClick={() => navigator.clipboard.writeText(user.id)}
-                    className="rounded border border-black/10 px-1.5 py-0.5 text-[10px] font-medium text-ink/50 hover:bg-black/5"
+                    className="rounded border border-ink/10 px-1.5 py-0.5 text-[10px] font-medium text-ink/50 hover:bg-black/5"
                   >
                     Copy full ID
                   </button>
@@ -179,7 +179,7 @@ export default function Profile() {
             <p className="text-xs uppercase tracking-wide text-ink/50">
               Trust score
             </p>
-            <p className="font-display text-4xl font-semibold text-clay">
+            <p className="font-display text-4xl italic text-clay">
               {trustScore}
             </p>
             <p className="mt-1 flex items-center justify-end gap-1 text-xs text-ink/50">
@@ -194,7 +194,7 @@ export default function Profile() {
             </p>
           </div>
         </div>
-        <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-white/60">
+        <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-cream/60">
           <div
             className="h-full bg-forest"
             style={{ width: `${trustScore}%` }}
@@ -217,7 +217,7 @@ export default function Profile() {
         <Stat label="Saved items" value={savedCount} />
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl2 border-2 border-dashed border-clay/40 bg-white p-6">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl2 border-2 border-dashed border-clay/40 bg-cream p-6">
         <div>
           <p className="font-semibold text-ink">Unlock full trust</p>
           <p className="mt-1 text-sm text-ink/60">
@@ -237,13 +237,13 @@ export default function Profile() {
         </div>
       </div>
 
-      <h2 className="mt-8 font-display text-lg font-semibold">Badges</h2>
+      <h2 className="mt-8 font-display text-lg italic">Badges</h2>
       <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {badges.map((b) => (
           <div
             key={b.label}
             className={`flex flex-col items-center gap-2 rounded-xl2 border p-6 text-center ${
-              b.unlocked ? "border-clay bg-clay/5" : "border-black/10"
+              b.unlocked ? "border-clay bg-clay/5" : "border-ink/10"
             }`}
           >
             <b.icon
@@ -261,13 +261,13 @@ export default function Profile() {
       <div className="mt-8 flex flex-wrap gap-3">
         <button
           onClick={() => navigate("/orders")}
-          className="rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm font-semibold hover:bg-cream-dark"
+          className="rounded-full border border-ink/10 bg-cream px-5 py-2.5 text-sm font-semibold hover:bg-cream-dark"
         >
           My orders
         </button>
         <button
           onClick={() => navigate("/vault")}
-          className="rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm font-semibold hover:bg-cream-dark"
+          className="rounded-full border border-ink/10 bg-cream px-5 py-2.5 text-sm font-semibold hover:bg-cream-dark"
         >
           Sauda Vault
         </button>
@@ -280,7 +280,7 @@ export default function Profile() {
       </div>
 
       <div className="mt-10 rounded-xl2 border border-red-200 bg-red-50/50 p-6">
-        <h2 className="font-display text-lg font-semibold text-red-700">Danger zone</h2>
+        <h2 className="font-display text-lg italic text-red-700">Danger zone</h2>
         {!showDeleteConfirm ? (
           <>
             <p className="mt-1 text-sm text-ink/60">
@@ -290,7 +290,7 @@ export default function Profile() {
             </p>
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="mt-4 rounded-full border border-red-300 bg-white px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+              className="mt-4 rounded-full border border-red-300 bg-cream px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"
             >
               Delete my account
             </button>
@@ -325,7 +325,7 @@ export default function Profile() {
                   setDeleteConfirmText("");
                   setDeleteError(null);
                 }}
-                className="rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm font-semibold text-ink/70 hover:bg-cream-dark"
+                className="rounded-full border border-ink/10 bg-cream px-5 py-2.5 text-sm font-semibold text-ink/70 hover:bg-cream-dark"
               >
                 Never mind
               </button>
@@ -347,9 +347,9 @@ function Stat({
   suffix?: string;
 }) {
   return (
-    <div className="rounded-xl2 border border-black/5 bg-white p-5">
+    <div className="rounded-xl2 border border-ink/10 bg-cream p-5">
       <p className="text-sm text-ink/50">{label}</p>
-      <p className="font-display text-3xl font-semibold text-ink">{value}</p>
+      <p className="font-display text-3xl italic text-ink">{value}</p>
       {suffix && <p className="text-xs text-ink/40">{suffix}</p>}
     </div>
   );

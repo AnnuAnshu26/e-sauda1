@@ -26,11 +26,18 @@ export default {
         ink: 'rgb(var(--color-ink) / <alpha-value>)',
       },
       fontFamily: {
-        display: ['"Fraunces"', 'serif'],
+        // A thin, high-contrast editorial serif for display type — the single most
+        // important lever for reading as "premium" instead of "template". Used large
+        // and sparingly, never for body copy or UI chrome (that stays on Inter).
+        display: ['"Instrument Serif"', 'serif'],
         sans: ['"Inter"', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         xl2: '1.25rem',
+        xl3: '1.75rem',
+      },
+      letterSpacing: {
+        widest2: '0.18em',
       },
     },
   },

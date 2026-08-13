@@ -13,13 +13,14 @@ export default function LegalLayout({
   children: ReactNode
 }) {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-12">
-      <Link to="/" className="text-sm text-ink/50 hover:text-ink">
+    <div className="mx-auto max-w-3xl px-6 py-16">
+      <Link to="/" className="text-xs uppercase tracking-widest2 text-ink/40 hover:text-ink">
         ← Back to e-Sauda
       </Link>
-      <h1 className="mt-3 font-display text-3xl font-semibold">{title}</h1>
-      <p className="mt-1 text-sm text-ink/50">Last updated: {lastUpdated}</p>
-      <div className="mt-8 max-w-none text-ink/80 [&_h2]:font-display [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-ink [&_p]:mt-3 [&_p]:leading-relaxed [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mt-1">
+      <span className="mt-8 block text-xs uppercase tracking-widest2 text-ink/40">(Legal)</span>
+      <h1 className="mt-2 font-display text-4xl italic text-ink">{title}</h1>
+      <p className="mt-2 text-sm text-ink/45">Last updated: {lastUpdated}</p>
+      <div className="mt-8 max-w-none border-t border-ink/10 pt-8 text-sm leading-relaxed text-ink/70 [&_h2]:font-display [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:italic [&_h2]:text-ink [&_p]:mt-3 [&_p]:leading-relaxed [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mt-1">
         {children}
       </div>
     </div>

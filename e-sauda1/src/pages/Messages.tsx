@@ -272,7 +272,7 @@ export default function Messages() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl font-semibold">Messages</h1>
+        <h1 className="font-display text-3xl italic">Messages</h1>
         <button
           onClick={() => {
             setShowBlockedList((v) => !v)
@@ -285,7 +285,7 @@ export default function Messages() {
       </div>
 
       {showBlockedList && (
-        <div className="mt-3 rounded-xl2 border border-black/5 bg-white p-4">
+        <div className="mt-3 rounded-xl2 border border-ink/10 bg-cream p-4">
           {blockedUsers.length === 0 ? (
             <p className="text-sm text-ink/50">You haven't blocked anyone.</p>
           ) : (
@@ -306,9 +306,9 @@ export default function Messages() {
         </div>
       )}
 
-      <div className="mt-6 grid grid-cols-1 gap-0 overflow-hidden rounded-xl2 border border-black/5 bg-white md:grid-cols-[320px_1fr]">
+      <div className="mt-6 grid grid-cols-1 gap-0 overflow-hidden rounded-xl2 border border-ink/10 bg-cream md:grid-cols-[320px_1fr]">
         {/* Conversation list */}
-        <div className="border-b border-black/5 md:border-b-0 md:border-r">
+        <div className="border-b border-ink/10 md:border-b-0 md:border-r">
           {loadingList ? (
             <div className="space-y-3 p-4">
               {[...Array(4)].map((_, i) => (
@@ -365,7 +365,7 @@ export default function Messages() {
           ) : (
             <>
               {activeConversation && (
-                <div className="flex items-center justify-between border-b border-black/5 p-4">
+                <div className="flex items-center justify-between border-b border-ink/10 p-4">
                   <div>
                     <p className="text-sm font-semibold text-ink">{activeConversation.listingTitle}</p>
                     <p className="text-xs text-ink/50">₹{activeConversation.listingPrice.toLocaleString('en-IN')}</p>
@@ -376,7 +376,7 @@ export default function Messages() {
                     className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold disabled:opacity-50 ${
                       isBlocked
                         ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                        : 'border-black/10 bg-white text-ink/60 hover:bg-cream-dark'
+                        : 'border-ink/10 bg-cream text-ink/60 hover:bg-cream-dark'
                     }`}
                   >
                     <Ban size={13} /> {isBlocked ? 'Unblock' : 'Block'}
@@ -453,7 +453,7 @@ export default function Messages() {
                                   <button
                                     onClick={() => handleDeclineOffer(o.id)}
                                     disabled={acting}
-                                    className="flex items-center gap-1 rounded-full border border-black/10 bg-surface px-3 py-1 text-xs font-semibold text-ink/60 disabled:opacity-50"
+                                    className="flex items-center gap-1 rounded-full border border-ink/10 bg-surface px-3 py-1 text-xs font-semibold text-ink/60 disabled:opacity-50"
                                   >
                                     <X size={12} /> Decline
                                   </button>
@@ -463,7 +463,7 @@ export default function Messages() {
                                 <button
                                   onClick={() => handleWithdrawOffer(o.id)}
                                   disabled={acting}
-                                  className="rounded-full border border-black/10 bg-surface px-3 py-1 text-xs font-semibold text-ink/60 disabled:opacity-50"
+                                  className="rounded-full border border-ink/10 bg-surface px-3 py-1 text-xs font-semibold text-ink/60 disabled:opacity-50"
                                 >
                                   Withdraw
                                 </button>
@@ -479,11 +479,11 @@ export default function Messages() {
               </div>
 
               {profile?.suspended ? (
-                <p className="border-t border-black/5 p-4 text-center text-sm text-red-600">
+                <p className="border-t border-ink/10 p-4 text-center text-sm text-red-600">
                   Your account is suspended and can't send messages.
                 </p>
               ) : isBlocked ? (
-                <p className="border-t border-black/5 p-4 text-center text-sm text-ink/50">
+                <p className="border-t border-ink/10 p-4 text-center text-sm text-ink/50">
                   You've blocked this user.{' '}
                   <button onClick={handleToggleBlock} className="font-medium text-clay hover:underline">
                     Unblock
@@ -495,7 +495,7 @@ export default function Messages() {
                   {isBuyer && (
                     <form
                       onSubmit={handleMakeOffer}
-                      className="flex items-center gap-2 border-t border-black/5 bg-clay/5 px-4 py-2.5"
+                      className="flex items-center gap-2 border-t border-ink/10 bg-clay/5 px-4 py-2.5"
                     >
                       <IndianRupee size={14} className="shrink-0 text-ink/40" />
                       <input
@@ -505,7 +505,7 @@ export default function Messages() {
                         onChange={(e) => setOfferDraft(e.target.value)}
                         placeholder={hasPendingOffer ? 'Waiting on your current offer…' : 'Offer a different price'}
                         disabled={hasPendingOffer || sendingOffer}
-                        className="flex-1 rounded-full border border-black/10 bg-surface px-3 py-1.5 text-sm focus:outline-none disabled:opacity-50"
+                        className="flex-1 rounded-full border border-ink/10 bg-surface px-3 py-1.5 text-sm focus:outline-none disabled:opacity-50"
                       />
                       <button
                         type="submit"
@@ -547,7 +547,7 @@ export default function Messages() {
                     </div>
                   )}
 
-                  <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-black/5 p-4">
+                  <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-ink/10 p-4">
                     <input
                       value={draft}
                       onChange={(e) => {
@@ -555,7 +555,7 @@ export default function Messages() {
                         if (pendingWarning) setPendingWarning(null)
                       }}
                       placeholder="Type a message…"
-                      className="flex-1 rounded-full border border-black/10 px-4 py-2.5 text-sm focus:outline-none"
+                      className="flex-1 rounded-full border border-ink/10 px-4 py-2.5 text-sm focus:outline-none"
                     />
                     <button
                       type="submit"
@@ -568,7 +568,7 @@ export default function Messages() {
                   </form>
                 </>
               )}
-              <p className="border-t border-black/5 px-4 py-2 text-center text-[11px] text-ink/40">
+              <p className="border-t border-ink/10 px-4 py-2 text-center text-[11px] text-ink/40">
                 Never share OTPs or accept payment outside the e-Sauda Vault.
               </p>
             </>

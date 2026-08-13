@@ -47,13 +47,13 @@ export default function Vault() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="font-display text-3xl font-semibold">Sauda Vault</h1>
+      <h1 className="font-display text-3xl italic">Sauda Vault</h1>
       <p className="mt-1 text-sm text-ink/60">
         Funds locked until handover. Never accept a screenshot as proof of payment —
         only trust what this page shows you.
       </p>
 
-      <div className="mt-6 inline-flex rounded-full border border-black/10 bg-white p-1">
+      <div className="mt-6 inline-flex rounded-full border border-ink/10 bg-cream p-1">
         {tabs.map((t) => (
           <button
             key={t}
@@ -78,7 +78,7 @@ export default function Vault() {
           <span className="flex h-14 w-14 items-center justify-center rounded-full bg-clay/10 text-clay">
             <Lock size={26} />
           </span>
-          <h2 className="mt-6 font-display text-xl font-semibold">
+          <h2 className="mt-6 font-display text-xl italic">
             {tab === "Buying" ? "Your Sauda Vault is empty" : "Nothing in escrow yet"}
           </h2>
           <p className="mt-2 max-w-md text-sm text-ink/60">
@@ -226,7 +226,7 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
       {otp ? (
         <div className="mt-3">
           <p className="text-xs uppercase tracking-wide text-ink/50">Handover OTP</p>
-          <p className="mt-1 font-display text-2xl font-semibold tracking-widest text-ink">{otp}</p>
+          <p className="mt-1 font-display text-2xl italic tracking-widest text-ink">{otp}</p>
           <p className="mt-1 text-xs text-ink/50">
             Share this only after inspecting the item in person.
           </p>
@@ -235,7 +235,7 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
         <button
           onClick={reveal}
           disabled={revealing}
-          className="mt-3 rounded-full border border-emerald-300 bg-white px-4 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+          className="mt-3 rounded-full border border-emerald-300 bg-cream px-4 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
         >
           {revealing ? "Loading…" : "Reveal handover OTP"}
         </button>
@@ -246,7 +246,7 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
       {deliveryChecked && (
         <div className="mt-4 border-t border-emerald-100 pt-3">
           {delivery ? (
-            <div className="rounded-lg bg-white p-3">
+            <div className="rounded-lg bg-cream p-3">
               <p className="flex items-center gap-2 text-xs font-semibold text-ink">
                 <Truck size={13} className="text-clay" /> {delivery.partner} rider{" "}
                 {delivery.status === "delivered" ? "delivered" : "assigned"}
@@ -258,7 +258,7 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
                 <button
                   onClick={handleMarkDelivered}
                   disabled={confirmingDelivered}
-                  className="mt-2 rounded-full border border-emerald-300 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+                  className="mt-2 rounded-full border border-emerald-300 bg-cream px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
                 >
                   {confirmingDelivered ? "Confirming…" : "Mark as delivered"}
                 </button>
@@ -273,7 +273,7 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
             <button
               onClick={handleArrangeDelivery}
               disabled={arranging}
-              className="flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-ink hover:bg-cream-dark disabled:opacity-50"
+              className="flex items-center gap-2 rounded-full border border-ink/10 bg-cream px-4 py-2 text-xs font-semibold text-ink hover:bg-cream-dark disabled:opacity-50"
             >
               <Truck size={13} />
               {arranging ? "Arranging…" : "Arrange delivery instead of meeting up"}
@@ -297,7 +297,7 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Reason (e.g. item didn't match the listing)"
-              className="w-full rounded-lg border border-black/10 px-3 py-2 text-xs"
+              className="w-full rounded-lg border border-ink/10 px-3 py-2 text-xs"
             />
             <div className="flex gap-2">
               <button
@@ -309,7 +309,7 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
               </button>
               <button
                 onClick={() => setShowCancel(false)}
-                className="rounded-full border border-black/10 px-4 py-1.5 text-xs font-semibold text-ink/60"
+                className="rounded-full border border-ink/10 px-4 py-1.5 text-xs font-semibold text-ink/60"
               >
                 Never mind
               </button>
@@ -354,7 +354,7 @@ function SellingCard({ order, onChange }: { order: VaultOrder; onChange: () => v
   }
 
   return (
-    <div className="rounded-xl2 border border-black/5 bg-white p-5">
+    <div className="rounded-xl2 border border-ink/10 bg-cream p-5">
       <OrderHeader order={order} />
 
       <div className="mt-4 flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
@@ -389,7 +389,7 @@ function SellingCard({ order, onChange }: { order: VaultOrder; onChange: () => v
           value={entered}
           onChange={(e) => setEntered(e.target.value)}
           placeholder="Enter buyer's OTP"
-          className="w-40 rounded-lg border border-black/10 px-3 py-2 text-sm tracking-widest"
+          className="w-40 rounded-lg border border-ink/10 px-3 py-2 text-sm tracking-widest"
         />
         <button
           type="submit"
@@ -438,7 +438,7 @@ function HistoryRow({ order, currentUserId }: { order: VaultOrder; currentUserId
   }, [order.id, currentUserId, isCompleted]);
 
   return (
-    <div className="rounded-xl2 border border-black/5 bg-white p-4">
+    <div className="rounded-xl2 border border-ink/10 bg-cream p-4">
       <div className="flex items-center justify-between">
         <OrderHeader order={order} />
         {isCompleted ? (
@@ -473,7 +473,7 @@ function HistoryRow({ order, currentUserId }: { order: VaultOrder; currentUserId
       {receiptError && <p className="mt-1 text-xs text-red-600">{receiptError}</p>}
 
       {isCompleted && checked && (
-        <div className="mt-3 border-t border-black/5 pt-3">
+        <div className="mt-3 border-t border-ink/10 pt-3">
           {myRating ? (
             <p className="flex items-center gap-1 text-xs text-ink/50">
               You rated this transaction
@@ -555,7 +555,7 @@ function RatingForm({ orderId, onDone }: { orderId: string; onDone: (r: Rating) 
         onChange={(e) => setComment(e.target.value)}
         rows={2}
         placeholder="Optional: how did it go? (e.g. item as described, on time, easy handover)"
-        className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2 text-xs"
+        className="mt-2 w-full rounded-lg border border-ink/10 px-3 py-2 text-xs"
       />
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
       <button

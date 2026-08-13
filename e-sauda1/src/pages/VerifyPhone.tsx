@@ -66,10 +66,11 @@ export default function VerifyPhone() {
   }
 
   return (
-    <div className="mx-auto flex max-w-sm flex-col px-6 py-20">
-      <h1 className="font-display text-2xl font-semibold">Verify your mobile number</h1>
-      <p className="mt-2 text-sm text-ink/60">
-        We sent a 6-digit code to <strong>{profile?.phone_number ?? 'your number'}</strong>. This is
+    <div className="mx-auto flex max-w-sm flex-col px-6 py-24">
+      <span className="text-xs uppercase tracking-widest2 text-ink/40">(One last step)</span>
+      <h1 className="mt-2 font-display text-3xl italic text-ink">Verify your mobile number</h1>
+      <p className="mt-3 text-sm text-ink/50">
+        We sent a 6-digit code to <strong className="text-ink">{profile?.phone_number ?? 'your number'}</strong>. This is
         required once, and is how buyers/sellers can trust it's really you.
       </p>
 
@@ -87,15 +88,15 @@ export default function VerifyPhone() {
           placeholder="6-digit code"
           inputMode="numeric"
           maxLength={6}
-          className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-center text-lg tracking-[0.4em]"
+          className="w-full rounded-lg border border-ink/10 bg-cream px-3 py-2.5 text-center text-lg tracking-[0.4em] text-ink"
         />
 
-        {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>}
+        {error && <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</p>}
 
         <button
           type="submit"
           disabled={verifying || code.length !== 6}
-          className="w-full rounded-full bg-clay px-6 py-3 text-sm font-semibold text-white hover:bg-clay-light disabled:opacity-50"
+          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-medium text-cream hover:bg-forest-light disabled:opacity-50"
         >
           {verifying ? 'Verifying…' : 'Verify'}
         </button>

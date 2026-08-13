@@ -45,8 +45,8 @@ export default function ChatbotWidget() {
   return (
     <div className="fixed bottom-5 right-5 z-50">
       {open && (
-        <div className="mb-3 flex h-[28rem] w-80 flex-col overflow-hidden rounded-2xl border border-black/10 bg-surface shadow-xl">
-          <div className="flex items-center justify-between border-b border-black/5 bg-forest px-4 py-3">
+        <div className="mb-3 flex h-[28rem] w-80 flex-col overflow-hidden rounded-2xl border border-ink/10 bg-surface shadow-none">
+          <div className="flex items-center justify-between border-b border-ink/10 bg-forest px-4 py-3">
             <p className="text-sm font-semibold text-cream">e-Sauda Assistant</p>
             <button onClick={() => setOpen(false)} aria-label="Close assistant" className="text-cream/80 hover:text-cream">
               <X size={16} />
@@ -76,12 +76,12 @@ export default function ChatbotWidget() {
             <div ref={bottomRef} />
           </div>
 
-          <form onSubmit={onSubmit} className="flex items-center gap-2 border-t border-black/5 p-3">
+          <form onSubmit={onSubmit} className="flex items-center gap-2 border-t border-ink/10 p-3">
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               placeholder="Ask something…"
-              className="flex-1 rounded-full border border-black/10 px-3 py-2 text-sm focus:outline-none"
+              className="flex-1 rounded-full border border-ink/10 px-3 py-2 text-sm focus:outline-none"
             />
             <button
               type="submit"
@@ -97,7 +97,7 @@ export default function ChatbotWidget() {
 
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-clay text-white shadow-lg hover:bg-clay-light"
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-clay text-white shadow-none hover:bg-clay-light"
         aria-label="Open assistant"
       >
         <MessageCircleQuestion size={22} />

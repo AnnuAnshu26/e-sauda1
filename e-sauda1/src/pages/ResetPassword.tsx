@@ -68,7 +68,7 @@ export default function ResetPassword() {
   if (invalidLink) {
     return (
       <div className="mx-auto flex max-w-sm flex-col px-6 py-24 text-center">
-        <h1 className="font-display text-2xl font-semibold">Link expired</h1>
+        <h1 className="font-display text-3xl italic text-ink">Link expired</h1>
         <p className="mt-2 text-sm text-ink/60">
           This password reset link is invalid or has expired. Request a new one.
         </p>
@@ -86,7 +86,7 @@ export default function ResetPassword() {
   if (done) {
     return (
       <div className="mx-auto flex max-w-sm flex-col px-6 py-24 text-center">
-        <h1 className="font-display text-2xl font-semibold">Password updated</h1>
+        <h1 className="font-display text-3xl italic text-ink">Password updated</h1>
         <p className="mt-2 text-sm text-ink/60">Taking you back to e-Sauda…</p>
       </div>
     )
@@ -94,37 +94,37 @@ export default function ResetPassword() {
 
   return (
     <div className="mx-auto flex max-w-sm flex-col px-6 py-20">
-      <h1 className="font-display text-3xl font-semibold">Set a new password</h1>
+      <h1 className="font-display text-4xl italic text-ink">Set a new password</h1>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <div>
-          <label className="text-sm font-medium text-ink">New password</label>
+          <label className="text-xs uppercase tracking-widest2 text-ink/40">New password</label>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="mt-2 w-full rounded-lg border border-ink/10 bg-cream px-3 py-2.5 text-sm text-ink"
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium text-ink">Confirm password</label>
+          <label className="text-xs uppercase tracking-widest2 text-ink/40">Confirm password</label>
           <input
             type="password"
             required
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="mt-2 w-full rounded-lg border border-ink/10 bg-cream px-3 py-2.5 text-sm text-ink"
           />
         </div>
 
-        {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>}
+        {error && <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light disabled:opacity-50"
+          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-medium text-cream hover:bg-forest-light disabled:opacity-50"
         >
           {loading ? 'Saving…' : 'Update password'}
         </button>

@@ -49,7 +49,7 @@ export default function SellerProfile() {
   if (notFound || !profile) {
     return (
       <div className="mx-auto max-w-lg px-6 py-24 text-center">
-        <p className="font-display text-2xl font-semibold">Seller not found</p>
+        <p className="font-display text-2xl italic">Seller not found</p>
         <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
           Back to Browse
         </Link>
@@ -71,7 +71,7 @@ export default function SellerProfile() {
               {profile.displayName.charAt(0).toUpperCase()}
             </span>
             <div>
-              <h1 className="font-display text-2xl font-semibold">{profile.displayName}</h1>
+              <h1 className="font-display text-2xl italic">{profile.displayName}</h1>
               <p className="flex items-center gap-1 text-sm text-ink/60">
                 {profile.city && (
                   <>
@@ -96,7 +96,7 @@ export default function SellerProfile() {
           </div>
           <div className="text-right">
             <p className="text-xs uppercase tracking-wide text-ink/50">Trust score</p>
-            <p className="font-display text-4xl font-semibold text-clay">{profile.trustScore}</p>
+            <p className="font-display text-4xl italic text-clay">{profile.trustScore}</p>
             {user && user.id !== profile.id && (
               <div className="mt-2">
                 <ReportButton reportedUserId={profile.id} label="Report user" />
@@ -106,7 +106,7 @@ export default function SellerProfile() {
         </div>
       </div>
 
-      <h2 className="mt-8 font-display text-xl font-semibold">
+      <h2 className="mt-8 font-display text-xl italic">
         Active listings <span className="text-base font-normal text-ink/50">({listings.length})</span>
       </h2>
       {listings.length === 0 ? (
@@ -124,7 +124,7 @@ export default function SellerProfile() {
         </div>
       )}
 
-      <h2 className="mt-10 font-display text-xl font-semibold">
+      <h2 className="mt-10 font-display text-xl italic">
         Reviews <span className="text-base font-normal text-ink/50">({ratings.length})</span>
       </h2>
       {ratings.length === 0 ? (
@@ -135,7 +135,7 @@ export default function SellerProfile() {
       ) : (
         <div className="mt-4 space-y-3">
           {ratings.map((r) => (
-            <div key={r.id} className="rounded-xl2 border border-black/5 bg-white p-4">
+            <div key={r.id} className="rounded-xl2 border border-ink/10 bg-cream p-4">
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <Star

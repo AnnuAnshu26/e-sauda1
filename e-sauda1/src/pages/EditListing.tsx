@@ -220,7 +220,7 @@ export default function EditListing() {
   if (notFound) {
     return (
       <div className="mx-auto max-w-lg px-6 py-24 text-center">
-        <p className="font-display text-2xl font-semibold">Listing not found</p>
+        <p className="font-display text-2xl italic">Listing not found</p>
         <p className="mt-2 text-sm text-ink/60">It may have been removed or sold.</p>
         <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
           Back to Browse
@@ -232,7 +232,7 @@ export default function EditListing() {
   if (forbidden) {
     return (
       <div className="mx-auto max-w-lg px-6 py-24 text-center">
-        <p className="font-display text-2xl font-semibold">Not your listing</p>
+        <p className="font-display text-2xl italic">Not your listing</p>
         <p className="mt-2 text-sm text-ink/60">You can only edit listings you own.</p>
         <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
           Back to Browse
@@ -248,7 +248,7 @@ export default function EditListing() {
       <Link to={`/listing/${listing.id}`} className="text-sm text-ink/50 hover:text-ink">
         ← Back to listing
       </Link>
-      <h1 className="mt-2 font-display text-3xl font-semibold">Edit listing</h1>
+      <h1 className="mt-2 font-display text-3xl italic">Edit listing</h1>
       <p className="mt-1 text-sm text-ink/60">
         Category ({listing.category}
         {listing.subCategory ? ` · ${listing.subCategory}` : ''}) can't be changed here — post a
@@ -338,7 +338,7 @@ export default function EditListing() {
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="mt-2 w-full rounded-lg border border-ink/10 px-3 py-2.5 text-sm"
           />
         </div>
 
@@ -350,7 +350,7 @@ export default function EditListing() {
             min="0"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="mt-2 w-full rounded-lg border border-ink/10 px-3 py-2.5 text-sm"
           />
         </div>
 
@@ -359,7 +359,7 @@ export default function EditListing() {
           <select
             value={condition}
             onChange={(e) => setCondition(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="mt-2 w-full rounded-lg border border-ink/10 px-3 py-2.5 text-sm"
           >
             <option>New</option>
             <option>Like new</option>
@@ -373,7 +373,7 @@ export default function EditListing() {
           <input
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="mt-2 w-full rounded-lg border border-ink/10 px-3 py-2.5 text-sm"
           />
         </div>
 
@@ -384,7 +384,7 @@ export default function EditListing() {
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             placeholder="Any dents, accessories included, reason for selling..."
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="mt-2 w-full rounded-lg border border-ink/10 px-3 py-2.5 text-sm"
           />
         </div>
 

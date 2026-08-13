@@ -53,9 +53,9 @@ export default function Orders() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
-      <h1 className="font-display text-3xl font-semibold">My orders</h1>
+      <h1 className="font-display text-3xl italic">My orders</h1>
 
-      <div className="mt-6 inline-flex rounded-full border border-black/10 bg-white p-1">
+      <div className="mt-6 inline-flex rounded-full border border-ink/10 bg-cream p-1">
         {tabs.map((t) => (
           <button
             key={t}
@@ -84,7 +84,7 @@ export default function Orders() {
             {myListings.map((l) => (
               <div
                 key={l.id}
-                className="flex items-center justify-between rounded-xl2 border border-black/5 bg-white p-4"
+                className="flex items-center justify-between rounded-xl2 border border-ink/10 bg-cream p-4"
               >
                 <div className="flex items-center gap-4">
                   <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-cream-dark text-2xl">
@@ -105,7 +105,7 @@ export default function Orders() {
                 <button
                   onClick={() => handleDelete(l.id)}
                   disabled={deletingId === l.id}
-                  className="flex items-center gap-1 rounded-full border border-black/10 px-3 py-1.5 text-xs font-semibold text-ink/60 hover:border-red-200 hover:text-red-600 disabled:opacity-40"
+                  className="flex items-center gap-1 rounded-full border border-ink/10 px-3 py-1.5 text-xs font-semibold text-ink/60 hover:border-red-200 hover:text-red-600 disabled:opacity-40"
                 >
                   <Trash2 size={13} />{" "}
                   {deletingId === l.id ? "Removing…" : "Remove"}
@@ -146,7 +146,7 @@ function EmptyState({
       <p className="mt-4 font-medium text-ink">{message}</p>
       <button
         onClick={onClick}
-        className="mt-4 flex items-center gap-2 rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm font-semibold text-ink hover:bg-cream-dark"
+        className="mt-4 flex items-center gap-2 rounded-full border border-ink/10 bg-cream px-5 py-2.5 text-sm font-semibold text-ink hover:bg-cream-dark"
       >
         {cta}
       </button>
