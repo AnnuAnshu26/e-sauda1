@@ -27,7 +27,7 @@ export default function Signup() {
     }
 
     setLoading(true)
-    const { error, sessionCreated } = await signUp(email, password, name, phoneNumber)
+    const { error } = await signUp(email, password, name, phoneNumber)
     setLoading(false)
 
     if (error) {
@@ -35,33 +35,24 @@ export default function Signup() {
       return
     }
 
-    if (sessionCreated) {
-      // Email confirmation isn't required on this project (that's a Supabase Auth
-      // dashboard setting, not something this code controls) -- signUp already
-      // created a live session, so there's no email to "go check". Head straight to
-      // phone verification, which RequireAuth will enforce on every other route
-      // anyway since phone_verified is always false immediately after signup.
-      navigate('/verify-phone')
-      return
-    }
-
-    // No session yet -- this project DOES require clicking an email confirmation
-    // link first (supabase.auth.signUp() returns no session in that case). Only show
-    // this screen when it's actually true, not unconditionally.
+    // Supabase sends a confirmation email by default. Until the user clicks it, there's no
+    // active session — so we tell them to check their inbox instead of redirecting in as if
+    // they're logged in.
     setCheckEmail(true)
   }
 
   if (checkEmail) {
     return (
       <div className="mx-auto max-w-sm px-6 py-24 text-center">
-        <h1 className="font-display text-2xl font-semibold">Check your inbox</h1>
-        <p className="mt-2 text-sm text-ink/60">
-          We sent a confirmation link to <strong>{email}</strong>. Click it, then come back and
+        <span className="text-xs uppercase tracking-widest2 text-ink/40">(Almost there)</span>
+        <h1 className="mt-2 font-display text-3xl italic text-ink">Check your inbox</h1>
+        <p className="mt-3 text-sm text-ink/60">
+          We sent a confirmation link to <strong className="text-ink">{email}</strong>. Click it, then come back and
           log in.
         </p>
         <button
           onClick={() => navigate('/login')}
-          className="mt-6 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light"
+          className="mt-6 rounded-full bg-forest px-6 py-3 text-sm font-medium text-cream hover:bg-forest-light"
         >
           Go to login
         </button>
@@ -70,47 +61,48 @@ export default function Signup() {
   }
 
   return (
-    <div className="mx-auto flex max-w-sm flex-col px-6 py-20">
-      <h1 className="font-display text-3xl font-semibold">Create an account</h1>
-      <p className="mt-1 text-sm text-ink/60">Takes under a minute. First listing is ₹1.</p>
+    <div className="mx-auto flex max-w-sm flex-col px-6 py-24">
+      <span className="text-xs uppercase tracking-widest2 text-ink/40">(Join e-Sauda)</span>
+      <h1 className="mt-2 font-display text-4xl italic text-ink">Create an account</h1>
+      <p className="mt-2 text-sm text-ink/50">Takes under a minute. First listing is ₹1.</p>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <div>
-          <label className="text-sm font-medium text-ink">Display name</label>
+          <label className="text-xs uppercase tracking-widest2 text-ink/40">Display name</label>
           <input
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="What buyers/sellers will see"
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="mt-2 w-full rounded-lg border border-ink/10 bg-cream px-3 py-2.5 text-sm text-ink"
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-ink">Email</label>
+          <label className="text-xs uppercase tracking-widest2 text-ink/40">Email</label>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="mt-2 w-full rounded-lg border border-ink/10 bg-cream px-3 py-2.5 text-sm text-ink"
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-ink">Password</label>
+          <label className="text-xs uppercase tracking-widest2 text-ink/40">Password</label>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="At least 6 characters"
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="mt-2 w-full rounded-lg border border-ink/10 bg-cream px-3 py-2.5 text-sm text-ink"
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium text-ink">Mobile number</label>
-          <div className="mt-2 flex items-center overflow-hidden rounded-lg border border-black/10">
-            <span className="border-r border-black/10 bg-cream-dark px-3 py-2.5 text-sm text-ink/60">+91</span>
+          <label className="text-xs uppercase tracking-widest2 text-ink/40">Mobile number</label>
+          <div className="mt-2 flex items-center overflow-hidden rounded-lg border border-ink/10">
+            <span className="border-r border-ink/10 bg-cream-dark px-3 py-2.5 text-sm text-ink/60">+91</span>
             <input
               type="tel"
               required
@@ -118,26 +110,26 @@ export default function Signup() {
               onChange={(e) => setPhoneNumber(e.target.value)}
               placeholder="10-digit number"
               maxLength={10}
-              className="flex-1 px-3 py-2.5 text-sm focus:outline-none"
+              className="flex-1 bg-cream px-3 py-2.5 text-sm text-ink focus:outline-none"
             />
           </div>
           <p className="mt-1 text-xs text-ink/40">We'll text you a one-time code to verify this.</p>
         </div>
 
-        {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>}
+        {error && <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full bg-clay px-6 py-3 text-sm font-semibold text-white hover:bg-clay-light disabled:opacity-50"
+          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-medium text-cream hover:bg-forest-light disabled:opacity-50"
         >
           {loading ? 'Creating account...' : 'Create account'}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-ink/60">
+      <p className="mt-6 text-center text-sm text-ink/50">
         Already have an account?{' '}
-        <Link to="/login" className="font-semibold text-clay hover:underline">
+        <Link to="/login" className="font-medium text-clay hover:underline">
           Log in
         </Link>
       </p>
