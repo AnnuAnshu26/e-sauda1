@@ -29,11 +29,21 @@ create policy "Users can insert their own profile"
 -- 3. Auto-create a profile row whenever someone signs up, so you don't have to do it
 --    manually from the client (the AuthContext.tsx signUp function does this too as a
 --    fallback — having both is fine, the insert will just no-op if the row already exists).
+--    Also captures phone_number from signup metadata: when "Confirm email" is enabled in
+--    Auth settings, signUp() returns no session until the person confirms, so the
+--    client-side upsert in AuthContext.tsx skips itself (an unauthenticated request would
+--    get rejected by the "insert their own profile" RLS policy above). This trigger runs
+--    with security definer, so it doesn't need a session and always fires.
+--    Prerequisite: phone_otp_schema.sql must be run first (it adds the phone_number column).
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, display_name)
-  values (new.id, coalesce(new.raw_user_meta_data->>'display_name', 'New user'))
+  insert into public.profiles (id, display_name, phone_number)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'display_name', 'New user'),
+    new.raw_user_meta_data->>'phone_number'
+  )
   on conflict (id) do nothing;
   return new;
 end;

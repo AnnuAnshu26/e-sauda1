@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import { categories } from "../data/listings";
 import { Category, Listing } from "../types";
@@ -228,12 +228,12 @@ export default function Browse() {
             <p className="mt-1 text-sm text-ink/60">
               It only takes a few minutes to list an item.
             </p>
-            <a
-              href="/sell"
+            <Link
+              to="/sell"
               className="mt-4 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light"
             >
               Post a listing
-            </a>
+            </Link>
           </div>
         </div>
       </div>

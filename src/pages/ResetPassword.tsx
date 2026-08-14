@@ -1,5 +1,5 @@
 import { useEffect, useState, FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
@@ -72,9 +72,9 @@ export default function ResetPassword() {
         <p className="mt-2 text-sm text-ink/60">
           This password reset link is invalid or has expired. Request a new one.
         </p>
-        <a href="/forgot-password" className="mt-6 text-sm font-medium text-clay hover:underline">
+        <Link to="/forgot-password" className="mt-6 text-sm font-medium text-clay hover:underline">
           Request a new link
-        </a>
+        </Link>
       </div>
     )
   }

@@ -44,8 +44,8 @@ Route: `/signup`, `/login`, `/forgot-password`, `/reset-password`,
       your Supabase Auth settings).
 - [ ] Try signing up with an email already in use → confirm a clear error,
       not a silent failure.
-- [ ] Log out, log back in with the same credentials → works.
-- [ ] Log in with a wrong password → clear error, no crash.
+- [W] Log out, log back in with the same credentials → works.
+- [W] Log in with a wrong password → clear error, no crash.
 - [ ] **Forgot password**: request a reset → check the email arrives → click
       the link → land on `/reset-password` → set a new password → log in
       with the new one.

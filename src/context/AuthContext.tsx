@@ -82,16 +82,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signUp(email: string, password: string, displayName: string, phoneNumber: string) {
-    // Passing display_name here is what makes it available to the `handle_new_user`
-    // trigger (supabase/schema.sql) as `raw_user_meta_data->>'display_name'` — without
-    // this, the trigger's coalesce() always falls through to its 'New user' fallback,
-    // because it fires before any client-side code gets a chance to run.
+    // Passing display_name and phone_number here is what makes them available to the
+    // `handle_new_user` trigger (supabase/schema.sql) as raw_user_meta_data — without
+    // this, the trigger has no way to know either value when there's no session yet
+    // (see the comment on the upsert below for why that happens).
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName } },
+      options: { data: { display_name: displayName, phone_number: phoneNumber } },
     })
     if (error) return { error: error.message }
+
+    // Supabase deliberately does NOT return an error when signing up with an email that
+    // already has a CONFIRMED account — it returns a fake-looking success with a user
+    // object whose `identities` array is empty, to avoid letting an attacker use the
+    // signup form to test which emails are registered (email enumeration). Without this
+    // check, the person just silently falls through to "check your inbox" and never
+    // gets told the account already exists.
+    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      return { error: 'An account with this email already exists. Try logging in instead.' }
+    }
 
     // Belt-and-suspenders fallback for setups without the SQL trigger installed, and to
     // correct the name if the trigger already created the row with its 'New user'
@@ -101,7 +111,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // phone_number is stored now but phone_verified stays false until the OTP step —
     // RequireAuth redirects to /verify-phone until that actually happens (see
     // phone_otp_schema.sql), so this is never trusted as "verified" on its own.
-    if (data.user) {
+    //
+    // IMPORTANT: only do this when signUp() actually returned a session. If the
+    // project has "Confirm email" enabled, data.user exists but data.session is
+    // null until the person clicks the confirmation link — an unauthenticated
+    // request here only carries the anon key, and the "insert their own profile"
+    // RLS policy (which requires auth.uid() = id) then rejects it with 401. In that
+    // case, skip it entirely and rely on the handle_new_user() DB trigger in
+    // schema.sql, which runs with security definer and doesn't need a session.
+    if (data.user && data.session) {
       await supabase
         .from('profiles')
         .upsert(
