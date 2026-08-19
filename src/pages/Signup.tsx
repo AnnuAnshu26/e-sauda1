@@ -8,7 +8,6 @@ export default function Signup() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [phoneNumber, setPhoneNumber] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [checkEmail, setCheckEmail] = useState(false)
@@ -21,13 +20,9 @@ export default function Signup() {
       setError('Password must be at least 6 characters.')
       return
     }
-    if (!/^[6-9]\d{9}$/.test(phoneNumber.replace(/\D/g, ''))) {
-      setError('Enter a valid 10-digit mobile number — we\'ll send a code to verify it.')
-      return
-    }
 
     setLoading(true)
-    const { error, sessionCreated } = await signUp(email, password, name, phoneNumber)
+    const { error, sessionCreated } = await signUp(email, password, name)
     setLoading(false)
 
     if (error) {
@@ -38,10 +33,8 @@ export default function Signup() {
     if (sessionCreated) {
       // Email confirmation isn't required on this project (that's a Supabase Auth
       // dashboard setting, not something this code controls) -- signUp already
-      // created a live session, so there's no email to "go check". Head straight to
-      // phone verification, which RequireAuth will enforce on every other route
-      // anyway since phone_verified is always false immediately after signup.
-      navigate('/verify-phone')
+      // created a live session, so there's nowhere else to send them.
+      navigate('/')
       return
     }
 
@@ -105,23 +98,6 @@ export default function Signup() {
             placeholder="At least 6 characters"
             className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
           />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-ink">Mobile number</label>
-          <div className="mt-2 flex items-center overflow-hidden rounded-lg border border-black/10">
-            <span className="border-r border-black/10 bg-cream-dark px-3 py-2.5 text-sm text-ink/60">+91</span>
-            <input
-              type="tel"
-              required
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="10-digit number"
-              maxLength={10}
-              className="flex-1 px-3 py-2.5 text-sm focus:outline-none"
-            />
-          </div>
-          <p className="mt-1 text-xs text-ink/40">We'll text you a one-time code to verify this.</p>
         </div>
 
         {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>}

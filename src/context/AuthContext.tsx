@@ -12,8 +12,6 @@ interface Profile {
   rating_count: number
   is_admin: boolean
   suspended: boolean
-  phone_number: string | null
-  phone_verified: boolean
 }
 
 interface AuthContextValue {
@@ -25,7 +23,6 @@ interface AuthContextValue {
     email: string,
     password: string,
     displayName: string,
-    phoneNumber: string,
   ) => Promise<{ error: string | null; sessionCreated?: boolean }>
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
@@ -60,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase
       .from('profiles')
       .select(
-        'id, display_name, city, trust_score, verified, rating_avg, rating_count, is_admin, suspended, phone_number, phone_verified',
+        'id, display_name, city, trust_score, verified, rating_avg, rating_count, is_admin, suspended',
       )
       .eq('id', userId)
       .single()
@@ -69,12 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // client-side upsert fallback in signUp() below -- both asynchronous, and this
     // fetch can be triggered independently by the auth-state-change listener the
     // moment a session appears, which can race ahead of either of them completing.
-    // Without retrying, landing in that gap leaves `profile` stuck at null forever:
-    // no error shown anywhere, but RequireAuth's `if (profile && ...)` phone-
-    // verification gate silently never fires since profile is falsy, and
-    // VerifyPhone's auto-send effect never fires either since phone_number is
-    // undefined. A few short retries closes this gap without a real user ever
-    // noticing the delay.
+    // Without retrying, landing in that gap leaves `profile` stuck at null forever.
+    // A few short retries closes this gap without a real user ever noticing the delay.
     if ((error || !data) && attempt < 5) {
       await new Promise((resolve) => setTimeout(resolve, attempt * 250))
       return loadProfile(userId, attempt + 1)
@@ -97,15 +90,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (session?.user) await loadProfile(session.user.id)
   }
 
-  async function signUp(email: string, password: string, displayName: string, phoneNumber: string) {
-    // Passing display_name and phone_number here is what makes them available to the
+  async function signUp(email: string, password: string, displayName: string) {
+    // Passing display_name here is what makes it available to the
     // `handle_new_user` trigger (supabase/schema.sql) as raw_user_meta_data — without
-    // this, the trigger has no way to know either value when there's no session yet
+    // this, the trigger has no way to know it when there's no session yet
     // (see the comment on the upsert below for why that happens).
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName, phone_number: phoneNumber } },
+      options: { data: { display_name: displayName } },
     })
     if (error) return { error: error.message }
 
@@ -124,9 +117,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // fallback (e.g. if this signup form is used against an older-schema project).
     // Using upsert (not insert) is what makes this actually take effect — a plain
     // insert here would just fail silently on the row the trigger already created.
-    // phone_number is stored now but phone_verified stays false until the OTP step —
-    // RequireAuth redirects to /verify-phone until that actually happens (see
-    // phone_otp_schema.sql), so this is never trusted as "verified" on its own.
     //
     // IMPORTANT: only do this when signUp() actually returned a session. If the
     // project has "Confirm email" enabled, data.user exists but data.session is
@@ -139,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await supabase
         .from('profiles')
         .upsert(
-          { id: data.user.id, display_name: displayName, trust_score: 50, verified: false, phone_number: phoneNumber },
+          { id: data.user.id, display_name: displayName, trust_score: 50, verified: false },
           { onConflict: 'id' },
         )
     }
