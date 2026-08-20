@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>e-Sauda — Buy it, sell it without the drama</title>
     <meta name="description" content="Buy and sell locally, with escrow-protected payments and real-time chat. e-Sauda is a local marketplace built for trust." />
-    <!-- Generic, site-wide preview for the homepage and any page without its own
-         listing-specific tags (see api/og-listing.js + vercel.json for those). -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="e-Sauda" />
     <meta property="og:title" content="e-Sauda — Buy it, sell it without the drama" />
@@ -14,23 +12,10 @@
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="e-Sauda — Buy it, sell it without the drama" />
     <meta name="twitter:description" content="Buy and sell locally, with escrow-protected payments and real-time chat." />
-    <script>
-      // Runs synchronously, before any CSS or React loads, so there's no visible
-      // flash of the wrong theme while JS boots up. Mirrors the logic in
-      // src/hooks/useTheme.ts exactly -- if you change the fallback/precedence
-      // there, change it here too.
-      (function () {
-        var stored = localStorage.getItem('theme');
-        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (stored === 'dark' || (!stored && prefersDark)) {
-          document.documentElement.classList.add('dark');
-        }
-      })();
-    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
   </head>

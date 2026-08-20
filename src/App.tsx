@@ -1,7 +1,9 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import RequireAuth from './components/RequireAuth'
+import PageTransition from './components/PageTransition'
 import Home from './pages/Home'
 import Browse from './pages/Browse'
 import Sell from './pages/Sell'
@@ -27,107 +29,117 @@ import Messages from './pages/Messages'
 import Saved from './pages/Saved'
 import ChatbotWidget from './components/ChatbotWidget'
 
+function AnimatedRoutes() {
+  const location = useLocation()
+
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+        <Route path="/browse" element={<PageTransition><Browse /></PageTransition>} />
+        <Route path="/listing/:id" element={<PageTransition><ListingDetail /></PageTransition>} />
+        <Route
+          path="/listing/:id/edit"
+          element={
+            <RequireAuth>
+              <PageTransition><EditListing /></PageTransition>
+            </RequireAuth>
+          }
+        />
+        <Route path="/seller/:id" element={<PageTransition><SellerProfile /></PageTransition>} />
+        <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+        <Route path="/signup" element={<PageTransition><Signup /></PageTransition>} />
+        <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
+        <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
+        <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
+        <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
+        <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
+        <Route path="/shipping-policy" element={<PageTransition><ShippingPolicy /></PageTransition>} />
+        <Route path="/contact" element={<PageTransition><ContactUs /></PageTransition>} />
+        <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
+        <Route
+          path="/messages"
+          element={
+            <RequireAuth>
+              <PageTransition><Messages /></PageTransition>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/messages/:id"
+          element={
+            <RequireAuth>
+              <PageTransition><Messages /></PageTransition>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/sell"
+          element={
+            <RequireAuth>
+              <PageTransition><Sell /></PageTransition>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/my-listings"
+          element={
+            <RequireAuth>
+              <PageTransition><MyListings /></PageTransition>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <RequireAuth>
+              <PageTransition><Orders /></PageTransition>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/vault"
+          element={
+            <RequireAuth>
+              <PageTransition><Vault /></PageTransition>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <PageTransition><Profile /></PageTransition>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/saved"
+          element={
+            <RequireAuth>
+              <PageTransition><Saved /></PageTransition>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <RequireAuth>
+              <PageTransition><Admin /></PageTransition>
+            </RequireAuth>
+          }
+        />
+      </Routes>
+    </AnimatePresence>
+  )
+}
+
 export default function App() {
   return (
     <div className="flex min-h-screen flex-col bg-cream">
       <Navbar />
       <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/browse" element={<Browse />} />
-          <Route path="/listing/:id" element={<ListingDetail />} />
-          <Route
-            path="/listing/:id/edit"
-            element={
-              <RequireAuth>
-                <EditListing />
-              </RequireAuth>
-            }
-          />
-          <Route path="/seller/:id" element={<SellerProfile />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/refund-policy" element={<RefundPolicy />} />
-          <Route path="/shipping-policy" element={<ShippingPolicy />} />
-          <Route path="/contact" element={<ContactUs />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route
-            path="/messages"
-            element={
-              <RequireAuth>
-                <Messages />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/messages/:id"
-            element={
-              <RequireAuth>
-                <Messages />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/sell"
-            element={
-              <RequireAuth>
-                <Sell />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/my-listings"
-            element={
-              <RequireAuth>
-                <MyListings />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/orders"
-            element={
-              <RequireAuth>
-                <Orders />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/vault"
-            element={
-              <RequireAuth>
-                <Vault />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <RequireAuth>
-                <Profile />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/saved"
-            element={
-              <RequireAuth>
-                <Saved />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <RequireAuth>
-                <Admin />
-              </RequireAuth>
-            }
-          />
-        </Routes>
+        <AnimatedRoutes />
       </main>
       <Footer />
       <ChatbotWidget />

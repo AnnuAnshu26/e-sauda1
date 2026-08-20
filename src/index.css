@@ -3,31 +3,33 @@
 @tailwind utilities;
 
 :root {
-  /* Light theme (the app's original palette) — R G B space-separated, required by
-     Tailwind's rgb(var(--x) / <alpha-value>) syntax so opacity utilities (bg-cream/50
-     etc.) still work correctly. */
-  --color-cream: 247 241 227;
-  --color-cream-dark: 240 232 214;
-  --color-forest: 13 59 49;
-  --color-forest-light: 19 74 62;
-  --color-clay: 232 115 59;
-  --color-clay-light: 243 164 107;
-  --color-ink: 28 27 24;
+  /* Light, editorial theme. Same token names as before (cream/surface/ink/
+     forest/clay/line) so nothing downstream needs to change — only the
+     values here do. R G B space-separated for Tailwind's
+     rgb(var(--x) / <alpha-value>) opacity syntax. */
+  --color-cream: 250 248 243;
+  --color-cream-dark: 242 238 229;
+  --color-surface: 255 255 255;
+  --color-forest: 27 77 62;
+  --color-forest-light: 42 107 87;
+  --color-clay: 196 92 51;
+  --color-clay-light: 217 130 88;
+  --color-ink: 26 26 22;
+  --color-line: 20 20 15;
 }
 
+/* Kept as a no-op mirror of :root purely so any leftover dark:* utility
+   doesn't error. Single theme, same values. */
 .dark {
-  /* Dark theme — same brand identity (warm off-white / forest green / clay orange),
-     roles inverted: cream becomes the dark background instead of a light one, ink
-     becomes light text instead of near-black. Forest and clay are nudged slightly
-     brighter than their light-mode values so they still have enough contrast sitting
-     on a dark background instead of a cream one. */
-  --color-cream: 22 33 28;
-  --color-cream-dark: 30 43 37;
-  --color-forest: 28 107 87;
-  --color-forest-light: 34 122 99;
-  --color-clay: 240 133 76;
-  --color-clay-light: 245 173 122;
-  --color-ink: 237 231 216;
+  --color-cream: 250 248 243;
+  --color-cream-dark: 242 238 229;
+  --color-surface: 255 255 255;
+  --color-forest: 27 77 62;
+  --color-forest-light: 42 107 87;
+  --color-clay: 196 92 51;
+  --color-clay-light: 217 130 88;
+  --color-ink: 26 26 22;
+  --color-line: 20 20 15;
 }
 
 html {
@@ -39,5 +41,23 @@ body {
 }
 
 ::selection {
-  @apply bg-clay/30;
+  @apply bg-clay/20;
+}
+
+.eyebrow {
+  @apply text-xs font-medium uppercase tracking-[0.2em] text-ink/50;
+}
+
+.hero-heading {
+  @apply font-display font-medium italic leading-[0.95] tracking-tight text-ink;
+}
+
+/* Respect reduced-motion system setting globally */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -1,12 +1,10 @@
-import { Heart, Lock } from 'lucide-react'
+import { Heart, Lock, ImageOff } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Listing } from '../types'
 
 interface ListingCardProps {
   listing: Listing
-  // Both optional: pages that use useSavedListings() pass these to persist saves;
-  // if omitted, the heart still works but only for the current render (local-only).
   saved?: boolean
   onToggleSaved?: (listingId: string) => void
 }
@@ -19,19 +17,19 @@ export default function ListingCard({ listing, saved: savedProp, onToggleSaved }
   return (
     <Link
       to={`/listing/${listing.id}`}
-      className="group block overflow-hidden rounded-xl2 border border-black/5 bg-white transition hover:shadow-lg"
+      className="group block overflow-hidden rounded-xl2 border border-line/10 bg-surface transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
     >
-      <div className={`relative flex h-40 items-center justify-center text-5xl ${listing.bg}`}>
+      <div className={`relative flex h-40 items-center justify-center ${listing.bg}`}>
         {listing.photoUrls?.length > 0 && (
           <img
             src={listing.photoUrls[0]}
             alt={listing.title}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         )}
         <div className="absolute left-2 top-2 flex gap-1">
           {listing.escrow && (
-            <span className="flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-[11px] font-medium text-ink">
+            <span className="flex items-center gap-1 rounded-full bg-cream/90 px-2 py-1 text-[11px] font-medium text-ink">
               <Lock size={11} /> Escrow
             </span>
           )}
@@ -42,12 +40,14 @@ export default function ListingCard({ listing, saved: savedProp, onToggleSaved }
             e.stopPropagation()
             controlled ? onToggleSaved!(listing.id) : setLocalSaved((v) => !v)
           }}
-          className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90"
+          className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-cream/90 transition-transform duration-150 hover:scale-110"
           aria-label={saved ? 'Remove from saved' : 'Save listing'}
         >
           <Heart size={14} className={saved ? 'fill-clay text-clay' : 'text-ink/70'} />
         </button>
-        {!(listing.photoUrls?.length > 0) && <span>{listing.emoji}</span>}
+        {!(listing.photoUrls?.length > 0) && (
+          <ImageOff size={28} strokeWidth={1.5} className="text-ink/25" />
+        )}
       </div>
       <div className="p-4">
         <div className="flex items-center justify-between">
