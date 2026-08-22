@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Package, Trash2 } from "lucide-react";
+import Reveal from "../components/Reveal";
 import { useAuth } from "../context/AuthContext";
 import { deleteListing, fetchUserListings } from "../lib/listings";
 import { deleteListingPhotos } from "../lib/storage";
@@ -53,9 +54,9 @@ export default function Orders() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
-      <h1 className="font-display text-3xl font-semibold">My orders</h1>
+      <Reveal><h1 className="font-display text-3xl font-semibold">My orders</h1></Reveal>
 
-      <div className="mt-6 inline-flex rounded-full border border-black/10 bg-white p-1">
+      <div className="mt-6 inline-flex rounded-full border border-line/10 bg-surface p-1">
         {tabs.map((t) => (
           <button
             key={t}
@@ -84,7 +85,7 @@ export default function Orders() {
             {myListings.map((l) => (
               <div
                 key={l.id}
-                className="flex items-center justify-between rounded-xl2 border border-black/5 bg-white p-4"
+                className="flex items-center justify-between rounded-xl2 border border-line/5 bg-surface p-4"
               >
                 <div className="flex items-center gap-4">
                   <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-cream-dark text-2xl">
@@ -95,7 +96,7 @@ export default function Orders() {
                     <p className="text-sm text-ink/50">
                       ₹{l.price.toLocaleString("en-IN")} · {l.category}
                       {l.status !== "active" && (
-                        <span className="ml-2 rounded-full bg-black/5 px-2 py-0.5 text-xs capitalize">
+                        <span className="ml-2 rounded-full bg-ink/5 px-2 py-0.5 text-xs capitalize">
                           {l.status}
                         </span>
                       )}
@@ -105,7 +106,7 @@ export default function Orders() {
                 <button
                   onClick={() => handleDelete(l.id)}
                   disabled={deletingId === l.id}
-                  className="flex items-center gap-1 rounded-full border border-black/10 px-3 py-1.5 text-xs font-semibold text-ink/60 hover:border-red-200 hover:text-red-600 disabled:opacity-40"
+                  className="flex items-center gap-1 rounded-full border border-line/10 px-3 py-1.5 text-xs font-semibold text-ink/60 hover:border-red-500/30 hover:text-red-600 disabled:opacity-40"
                 >
                   <Trash2 size={13} />{" "}
                   {deletingId === l.id ? "Removing…" : "Remove"}
@@ -141,12 +142,12 @@ function EmptyState({
   onClick: () => void;
 }) {
   return (
-    <div className="mt-6 flex flex-col items-center justify-center rounded-xl2 border border-dashed border-black/15 py-20 text-center">
+    <div className="mt-6 flex flex-col items-center justify-center rounded-xl2 border border-dashed border-line/15 py-20 text-center">
       <Package size={36} className="text-ink/30" />
       <p className="mt-4 font-medium text-ink">{message}</p>
       <button
         onClick={onClick}
-        className="mt-4 flex items-center gap-2 rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm font-semibold text-ink hover:bg-cream-dark"
+        className="mt-4 flex items-center gap-2 rounded-full border border-line/10 bg-surface px-5 py-2.5 text-sm font-semibold text-ink hover:bg-cream-dark"
       >
         {cta}
       </button>

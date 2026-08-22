@@ -141,7 +141,7 @@ export default function ListingDetail() {
       <div className="mx-auto max-w-lg px-6 py-24 text-center">
         <p className="font-display text-2xl font-semibold">Listing not found</p>
         <p className="mt-2 text-sm text-ink/60">It may have been removed or sold.</p>
-        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
+        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink">
           Back to Browse
         </Link>
       </div>
@@ -197,11 +197,11 @@ export default function ListingDetail() {
               </span>
             )}
             {listing.verified && (
-              <span className="flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
+              <span className="flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-1 text-xs font-medium text-emerald-600">
                 <ShieldCheck size={11} /> Verified
               </span>
             )}
-            <span className="rounded-full bg-black/5 px-2.5 py-1 text-xs font-medium text-ink/60">
+            <span className="rounded-full bg-ink/5 px-2.5 py-1 text-xs font-medium text-ink/60">
               {listing.status !== 'active' ? listing.status.toUpperCase() : listing.category}
             </span>
           </div>
@@ -224,11 +224,11 @@ export default function ListingDetail() {
           )}
 
           <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-lg bg-white p-3">
+            <div className="rounded-lg bg-surface p-3">
               <p className="text-xs text-ink/50">Condition</p>
               <p className="font-medium text-ink">{listing.condition}</p>
             </div>
-            <div className="rounded-lg bg-white p-3">
+            <div className="rounded-lg bg-surface p-3">
               <p className="text-xs text-ink/50">Category</p>
               <p className="font-medium text-ink">
                 {listing.category}
@@ -244,23 +244,23 @@ export default function ListingDetail() {
             </div>
           )}
 
-          {chatError && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{chatError}</p>}
-          {buyError && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{buyError}</p>}
+          {chatError && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-600">{chatError}</p>}
+          {buyError && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-600">{buyError}</p>}
 
           <div className="mt-8">
             {isOwner ? (
-              <div className="flex items-center justify-between gap-3 rounded-lg bg-black/5 p-4 text-sm text-ink/60">
+              <div className="flex items-center justify-between gap-3 rounded-lg bg-ink/5 p-4 text-sm text-ink/60">
                 This is your own listing.
                 <Link
                   to={`/listing/${listing.id}/edit`}
-                  className="shrink-0 rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-ink hover:bg-cream-dark"
+                  className="shrink-0 rounded-full border border-line/10 bg-surface px-4 py-2 text-xs font-semibold text-ink hover:bg-cream-dark"
                 >
                   Edit listing
                 </Link>
               </div>
             ) : purchase ? (
-              <div className="rounded-xl2 border border-emerald-200 bg-emerald-50 p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
+              <div className="rounded-xl2 border border-emerald-500/30 bg-emerald-500/10 p-4">
+                <p className="flex items-center gap-2 text-sm font-semibold text-emerald-600">
                   <ShieldCheck size={16} /> Funds secured in the Vault
                 </p>
                 <p className="mt-3 text-xs uppercase tracking-wide text-ink/50">Your handover OTP</p>
@@ -273,13 +273,13 @@ export default function ListingDetail() {
                 </p>
                 <Link
                   to="/vault"
-                  className="mt-4 inline-block rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream hover:bg-forest-light"
+                  className="mt-4 inline-block rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-ink hover:bg-forest-light"
                 >
                   Go to Sauda Vault
                 </Link>
               </div>
             ) : listing.status !== 'active' ? (
-              <div className="rounded-lg bg-black/5 p-4 text-sm text-ink/60">
+              <div className="rounded-lg bg-ink/5 p-4 text-sm text-ink/60">
                 This listing is no longer available.
               </div>
             ) : (
@@ -295,7 +295,7 @@ export default function ListingDetail() {
                   <button
                     onClick={handleChat}
                     disabled={startingChat}
-                    className="flex items-center gap-2 rounded-full border border-black/10 bg-surface px-6 py-3 text-sm font-semibold text-ink hover:bg-cream-dark disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-full border border-line/10 bg-surface px-6 py-3 text-sm font-semibold text-ink hover:bg-cream-dark disabled:opacity-50"
                   >
                     <MessageCircle size={16} />
                     {startingChat ? 'Starting chat…' : 'Chat with seller'}
@@ -303,7 +303,7 @@ export default function ListingDetail() {
                   <button
                     onClick={handleBuy}
                     disabled={buying}
-                    className="flex items-center gap-2 rounded-full bg-clay px-6 py-3 text-sm font-semibold text-white hover:bg-clay-light disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-full bg-clay px-6 py-3 text-sm font-semibold text-ink hover:bg-clay-light disabled:opacity-50"
                   >
                     <Lock size={16} />
                     {buying

@@ -6,6 +6,7 @@ import { fetchUserListings } from '../lib/listings'
 import { fetchRatingsForUser } from '../lib/ratings'
 import { useAuth } from '../context/AuthContext'
 import { useSavedListings } from '../hooks/useSavedListings'
+import Reveal from '../components/Reveal'
 import { Listing, Rating } from '../types'
 import ListingCard from '../components/ListingCard'
 import ReportButton from '../components/ReportButton'
@@ -50,7 +51,7 @@ export default function SellerProfile() {
     return (
       <div className="mx-auto max-w-lg px-6 py-24 text-center">
         <p className="font-display text-2xl font-semibold">Seller not found</p>
-        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
+        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink">
           Back to Browse
         </Link>
       </div>
@@ -64,10 +65,10 @@ export default function SellerProfile() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
-      <div className="rounded-xl2 bg-gradient-to-br from-clay/15 to-cream-dark p-8">
+      <Reveal className="rounded-xl2 bg-gradient-to-br from-clay/15 to-cream-dark p-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-forest text-2xl font-semibold text-cream">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-forest text-2xl font-semibold text-ink">
               {profile.displayName.charAt(0).toUpperCase()}
             </span>
             <div>
@@ -87,7 +88,7 @@ export default function SellerProfile() {
                 </span>
                 {profile.ratingCount > 0 && (
                   <span className="flex items-center gap-1 text-ink/70">
-                    <Star size={12} className="fill-amber-400 text-amber-400" />
+                    <Star size={12} className="fill-amber-400 text-amber-600" />
                     {profile.ratingAvg?.toFixed(1)} ({profile.ratingCount})
                   </span>
                 )}
@@ -104,7 +105,7 @@ export default function SellerProfile() {
             )}
           </div>
         </div>
-      </div>
+      </Reveal>
 
       <h2 className="mt-8 font-display text-xl font-semibold">
         Active listings <span className="text-base font-normal text-ink/50">({listings.length})</span>
@@ -128,20 +129,20 @@ export default function SellerProfile() {
         Reviews <span className="text-base font-normal text-ink/50">({ratings.length})</span>
       </h2>
       {ratings.length === 0 ? (
-        <div className="mt-4 flex flex-col items-center rounded-xl2 border border-dashed border-black/15 py-12 text-center">
+        <div className="mt-4 flex flex-col items-center rounded-xl2 border border-dashed border-line/15 py-12 text-center">
           <Package size={28} className="text-ink/25" />
           <p className="mt-3 text-sm text-ink/50">No reviews yet.</p>
         </div>
       ) : (
         <div className="mt-4 space-y-3">
           {ratings.map((r) => (
-            <div key={r.id} className="rounded-xl2 border border-black/5 bg-white p-4">
+            <div key={r.id} className="rounded-xl2 border border-line/5 bg-surface p-4">
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
                     size={14}
-                    className={i < r.stars ? 'fill-amber-400 text-amber-400' : 'text-black/10'}
+                    className={i < r.stars ? 'fill-amber-400 text-amber-600' : 'text-ink/10'}
                   />
                 ))}
                 <span className="ml-2 text-xs text-ink/40">

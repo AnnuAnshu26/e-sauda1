@@ -91,8 +91,8 @@ export default function Browse() {
             onClick={() => setActive(t)}
             className={`rounded-full px-4 py-2 text-sm font-medium ${
               active === t
-                ? "bg-forest text-cream"
-                : "border border-black/10 bg-white text-ink/80"
+                ? "bg-forest text-ink"
+                : "border border-line/10 bg-surface text-ink/80"
             }`}
           >
             {t}
@@ -101,14 +101,14 @@ export default function Browse() {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr]">
-        <aside className="h-fit rounded-xl2 border border-black/5 bg-white p-5">
+        <aside className="h-fit rounded-xl2 border border-line/5 bg-surface p-5">
           <h3 className="font-display text-lg font-semibold">Filters</h3>
 
           <div className="mt-5">
             <label className="text-xs font-semibold uppercase tracking-wide text-ink/50">
               Search
             </label>
-            <div className="mt-2 flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2">
+            <div className="mt-2 flex items-center gap-2 rounded-lg border border-line/10 px-3 py-2">
               <Search size={16} className="shrink-0 text-ink/40" />
               <input
                 value={searchInput}
@@ -126,7 +126,7 @@ export default function Browse() {
             <select
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm"
+              className="mt-2 w-full rounded-lg border border-line/10 bg-surface px-3 py-2 text-sm"
             >
               <option>All cities</option>
               <option>Bengaluru</option>
@@ -144,13 +144,13 @@ export default function Browse() {
                 value={min}
                 onChange={(e) => setMin(e.target.value)}
                 placeholder="Min"
-                className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm"
+                className="bg-surface text-ink w-full rounded-lg border border-line/10 px-3 py-2 text-sm"
               />
               <input
                 value={max}
                 onChange={(e) => setMax(e.target.value)}
                 placeholder="Max"
-                className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm"
+                className="bg-surface text-ink w-full rounded-lg border border-line/10 px-3 py-2 text-sm"
               />
             </div>
           </div>
@@ -162,7 +162,7 @@ export default function Browse() {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm"
+              className="mt-2 w-full rounded-lg border border-line/10 bg-surface px-3 py-2 text-sm"
             >
               <option>Relevance</option>
               <option>Price: Low to High</option>
@@ -186,7 +186,7 @@ export default function Browse() {
           </p>
 
           {error && (
-            <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+            <p className="mb-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-600">
               Couldn't load listings: {error}
             </p>
           )}
@@ -230,7 +230,7 @@ export default function Browse() {
             </p>
             <Link
               to="/sell"
-              className="mt-4 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light"
+              className="mt-4 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink hover:bg-forest-light"
             >
               Post a listing
             </Link>

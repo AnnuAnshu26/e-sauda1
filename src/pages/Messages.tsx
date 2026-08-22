@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Send, MessageSquare, AlertTriangle, Ban, ShieldOff, IndianRupee, Check, X } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Send, MessageSquare, AlertTriangle, Ban, ShieldOff, IndianRupee, Check, X, Sparkles } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import {
   fetchConversations,
@@ -285,7 +286,7 @@ export default function Messages() {
       </div>
 
       {showBlockedList && (
-        <div className="mt-3 rounded-xl2 border border-black/5 bg-white p-4">
+        <div className="mt-3 rounded-xl2 border border-line/5 bg-surface p-4">
           {blockedUsers.length === 0 ? (
             <p className="text-sm text-ink/50">You haven't blocked anyone.</p>
           ) : (
@@ -306,9 +307,9 @@ export default function Messages() {
         </div>
       )}
 
-      <div className="mt-6 grid grid-cols-1 gap-0 overflow-hidden rounded-xl2 border border-black/5 bg-white md:grid-cols-[320px_1fr]">
+      <div className="mt-6 grid grid-cols-1 gap-0 overflow-hidden rounded-xl2 border border-line/5 bg-surface md:grid-cols-[320px_1fr]">
         {/* Conversation list */}
-        <div className="border-b border-black/5 md:border-b-0 md:border-r">
+        <div className="border-b border-line/5 md:border-b-0 md:border-r">
           {loadingList ? (
             <div className="space-y-3 p-4">
               {[...Array(4)].map((_, i) => (
@@ -317,21 +318,40 @@ export default function Messages() {
             </div>
           ) : conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <MessageSquare size={28} className="text-ink/25" />
-              <p className="mt-3 text-sm text-ink/50">No conversations yet.</p>
-              <p className="text-xs text-ink/40">Chat with a seller from any listing page.</p>
+              <motion.span
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
+                className="flex h-14 w-14 items-center justify-center rounded-2xl bg-clay/10 text-clay"
+              >
+                <MessageSquare size={24} />
+              </motion.span>
+              <p className="mt-4 text-sm font-medium text-ink/70">No conversations yet.</p>
+              <p className="mt-1 text-xs text-ink/40">Chat with a seller from any listing page.</p>
             </div>
           ) : (
-            <ul className="max-h-[70vh] divide-y divide-black/5 overflow-y-auto">
-              {conversations.map((c) => (
-                <li key={c.id}>
+            <ul className="relative max-h-[70vh] divide-y divide-line/5 overflow-y-auto">
+              {conversations.map((c, idx) => (
+                <motion.li
+                  key={c.id}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.35, delay: Math.min(idx * 0.04, 0.2) }}
+                  className="relative"
+                >
+                  {c.id === activeId && (
+                    <motion.span
+                      layoutId="active-conversation"
+                      className="absolute inset-y-0 left-0 w-0.5 bg-clay"
+                      transition={{ type: 'spring', stiffness: 400, damping: 34 }}
+                    />
+                  )}
                   <button
                     onClick={() => navigate(`/messages/${c.id}`)}
-                    className={`flex w-full items-center gap-3 p-4 text-left hover:bg-cream ${
-                      c.id === activeId ? 'bg-cream' : ''
+                    className={`flex w-full items-center gap-3 p-4 text-left transition-colors duration-150 hover:bg-cream-dark ${
+                      c.id === activeId ? 'bg-cream-dark' : ''
                     }`}
                   >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-cream-dark text-xl">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-clay/25 to-forest/25 text-xl">
                       {c.listingPhotoUrl ? (
                         <img src={c.listingPhotoUrl} alt="" className="h-full w-full object-cover" />
                       ) : (
@@ -350,7 +370,7 @@ export default function Messages() {
                       </span>
                     </span>
                   </button>
-                </li>
+                </motion.li>
               ))}
             </ul>
           )}
@@ -359,13 +379,20 @@ export default function Messages() {
         {/* Thread */}
         <div className="flex h-[70vh] flex-col">
           {!activeId ? (
-            <div className="flex flex-1 items-center justify-center text-sm text-ink/40">
-              Select a conversation to start chatting.
+            <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+              <motion.span
+                animate={{ y: [0, -8, 0], rotate: [0, 3, 0, -3, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-clay/15 to-forest/15 text-clay"
+              >
+                <Sparkles size={26} strokeWidth={1.5} />
+              </motion.span>
+              <p className="text-sm text-ink/40">Select a conversation to start chatting.</p>
             </div>
           ) : (
             <>
               {activeConversation && (
-                <div className="flex items-center justify-between border-b border-black/5 p-4">
+                <div className="flex items-center justify-between border-b border-line/5 p-4">
                   <div>
                     <p className="text-sm font-semibold text-ink">{activeConversation.listingTitle}</p>
                     <p className="text-xs text-ink/50">₹{activeConversation.listingPrice.toLocaleString('en-IN')}</p>
@@ -375,8 +402,8 @@ export default function Messages() {
                     disabled={blockActing}
                     className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold disabled:opacity-50 ${
                       isBlocked
-                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                        : 'border-black/10 bg-white text-ink/60 hover:bg-cream-dark'
+                        ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20'
+                        : 'border-line/10 bg-surface text-ink/60 hover:bg-cream-dark'
                     }`}
                   >
                     <Ban size={13} /> {isBlocked ? 'Unblock' : 'Block'}
@@ -401,21 +428,27 @@ export default function Messages() {
                       const m = item.message
                       const mine = m.senderId === user?.id
                       return (
-                        <div key={`m-${m.id}`} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
+                        <motion.div
+                          key={`m-${m.id}`}
+                          initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                          className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}
+                        >
                           <div
                             className={`max-w-[75%] rounded-xl2 px-4 py-2 text-sm ${
-                              mine ? 'bg-forest text-cream' : 'bg-cream-dark text-ink'
+                              mine ? 'bg-forest text-ink' : 'bg-cream-dark text-ink'
                             }`}
                           >
                             {m.body}
                           </div>
                           {m.flagged && (
-                            <span className="mt-1 flex items-center gap-1 text-[11px] text-amber-700">
+                            <span className="mt-1 flex items-center gap-1 text-[11px] text-amber-600">
                               <AlertTriangle size={11} /> May contain sensitive info — never share OTPs
                               or pay outside the Vault
                             </span>
                           )}
-                        </div>
+                        </motion.div>
                       )
                     }
 
@@ -432,7 +465,13 @@ export default function Messages() {
                       consumed: 'Purchased at this price',
                     }
                     return (
-                      <div key={`o-${o.id}`} className="flex justify-center">
+                      <motion.div
+                        key={`o-${o.id}`}
+                        initial={{ opacity: 0, scale: 0.94 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                        className="flex justify-center"
+                      >
                         <div className="w-full max-w-xs rounded-xl2 border border-clay/30 bg-clay/5 p-3 text-center">
                           <p className="flex items-center justify-center gap-1 text-sm font-semibold text-ink">
                             <IndianRupee size={13} />
@@ -446,14 +485,14 @@ export default function Messages() {
                                   <button
                                     onClick={() => handleAcceptOffer(o.id)}
                                     disabled={acting}
-                                    className="flex items-center gap-1 rounded-full bg-forest px-3 py-1 text-xs font-semibold text-cream disabled:opacity-50"
+                                    className="flex items-center gap-1 rounded-full bg-forest px-3 py-1 text-xs font-semibold text-ink disabled:opacity-50"
                                   >
                                     <Check size={12} /> Accept
                                   </button>
                                   <button
                                     onClick={() => handleDeclineOffer(o.id)}
                                     disabled={acting}
-                                    className="flex items-center gap-1 rounded-full border border-black/10 bg-surface px-3 py-1 text-xs font-semibold text-ink/60 disabled:opacity-50"
+                                    className="flex items-center gap-1 rounded-full border border-line/10 bg-surface px-3 py-1 text-xs font-semibold text-ink/60 disabled:opacity-50"
                                   >
                                     <X size={12} /> Decline
                                   </button>
@@ -463,7 +502,7 @@ export default function Messages() {
                                 <button
                                   onClick={() => handleWithdrawOffer(o.id)}
                                   disabled={acting}
-                                  className="rounded-full border border-black/10 bg-surface px-3 py-1 text-xs font-semibold text-ink/60 disabled:opacity-50"
+                                  className="rounded-full border border-line/10 bg-surface px-3 py-1 text-xs font-semibold text-ink/60 disabled:opacity-50"
                                 >
                                   Withdraw
                                 </button>
@@ -471,7 +510,7 @@ export default function Messages() {
                             </div>
                           )}
                         </div>
-                      </div>
+                      </motion.div>
                     )
                   })
                 )}
@@ -479,11 +518,11 @@ export default function Messages() {
               </div>
 
               {profile?.suspended ? (
-                <p className="border-t border-black/5 p-4 text-center text-sm text-red-600">
+                <p className="border-t border-line/5 p-4 text-center text-sm text-red-600">
                   Your account is suspended and can't send messages.
                 </p>
               ) : isBlocked ? (
-                <p className="border-t border-black/5 p-4 text-center text-sm text-ink/50">
+                <p className="border-t border-line/5 p-4 text-center text-sm text-ink/50">
                   You've blocked this user.{' '}
                   <button onClick={handleToggleBlock} className="font-medium text-clay hover:underline">
                     Unblock
@@ -495,7 +534,7 @@ export default function Messages() {
                   {isBuyer && (
                     <form
                       onSubmit={handleMakeOffer}
-                      className="flex items-center gap-2 border-t border-black/5 bg-clay/5 px-4 py-2.5"
+                      className="flex items-center gap-2 border-t border-line/5 bg-clay/5 px-4 py-2.5"
                     >
                       <IndianRupee size={14} className="shrink-0 text-ink/40" />
                       <input
@@ -505,41 +544,41 @@ export default function Messages() {
                         onChange={(e) => setOfferDraft(e.target.value)}
                         placeholder={hasPendingOffer ? 'Waiting on your current offer…' : 'Offer a different price'}
                         disabled={hasPendingOffer || sendingOffer}
-                        className="flex-1 rounded-full border border-black/10 bg-surface px-3 py-1.5 text-sm focus:outline-none disabled:opacity-50"
+                        className="flex-1 rounded-full border border-line/10 bg-surface px-3 py-1.5 text-sm focus:outline-none disabled:opacity-50"
                       />
                       <button
                         type="submit"
                         disabled={hasPendingOffer || sendingOffer || !offerDraft}
-                        className="rounded-full bg-clay px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-40"
+                        className="rounded-full bg-clay px-3 py-1.5 text-xs font-semibold text-ink disabled:opacity-40"
                       >
                         {sendingOffer ? 'Sending…' : 'Make offer'}
                       </button>
                     </form>
                   )}
                   {offerError && (
-                    <p className="mx-4 mt-2 rounded-lg bg-red-50 p-3 text-xs text-red-600">{offerError}</p>
+                    <p className="mx-4 mt-2 rounded-lg bg-red-500/10 p-3 text-xs text-red-600">{offerError}</p>
                   )}
 
                   {sendError && (
-                    <p className="mx-4 mb-2 mt-2 rounded-lg bg-red-50 p-3 text-xs text-red-600">{sendError}</p>
+                    <p className="mx-4 mb-2 mt-2 rounded-lg bg-red-500/10 p-3 text-xs text-red-600">{sendError}</p>
                   )}
                   {pendingWarning && (
-                    <div className="mx-4 mb-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
-                      <p className="flex items-start gap-2 text-xs text-amber-800">
+                    <div className="mx-4 mb-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+                      <p className="flex items-start gap-2 text-xs text-amber-600">
                         <AlertTriangle size={14} className="mt-0.5 shrink-0" />
                         {describeFlags(pendingWarning.reasons)}
                       </p>
                       <div className="mt-2 flex gap-2">
                         <button
                           onClick={() => setPendingWarning(null)}
-                          className="rounded-full border border-amber-300 px-3 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-100"
+                          className="rounded-full border border-amber-500/40 px-3 py-1 text-xs font-semibold text-amber-600 hover:bg-amber-500/20"
                         >
                           Edit message
                         </button>
                         <button
                           onClick={sendAnyway}
                           disabled={sending}
-                          className="rounded-full bg-amber-800 px-3 py-1 text-xs font-semibold text-white hover:bg-amber-900 disabled:opacity-50"
+                          className="rounded-full bg-amber-500 px-3 py-1 text-xs font-semibold text-white hover:bg-amber-600 disabled:opacity-50"
                         >
                           Send anyway
                         </button>
@@ -547,7 +586,7 @@ export default function Messages() {
                     </div>
                   )}
 
-                  <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-black/5 p-4">
+                  <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-line/5 p-4">
                     <input
                       value={draft}
                       onChange={(e) => {
@@ -555,20 +594,21 @@ export default function Messages() {
                         if (pendingWarning) setPendingWarning(null)
                       }}
                       placeholder="Type a message…"
-                      className="flex-1 rounded-full border border-black/10 px-4 py-2.5 text-sm focus:outline-none"
+                      className="bg-surface text-ink flex-1 rounded-full border border-line/10 px-4 py-2.5 text-sm focus:outline-none"
                     />
-                    <button
+                    <motion.button
+                      whileTap={{ scale: 0.88 }}
                       type="submit"
                       disabled={sending || !draft.trim()}
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-forest text-cream disabled:opacity-40"
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-forest text-ink transition-transform disabled:opacity-40"
                       aria-label="Send message"
                     >
                       <Send size={16} />
-                    </button>
+                    </motion.button>
                   </form>
                 </>
               )}
-              <p className="border-t border-black/5 px-4 py-2 text-center text-[11px] text-ink/40">
+              <p className="border-t border-line/5 px-4 py-2 text-center text-[11px] text-ink/40">
                 Never share OTPs or accept payment outside the e-Sauda Vault.
               </p>
             </>

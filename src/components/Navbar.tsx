@@ -51,7 +51,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 border-b border-line/10 bg-cream/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-4">
         <Link to="/" className="flex shrink-0 items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-forest text-sm font-semibold text-cream">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-forest text-sm font-semibold text-ink">
             e
           </span>
           <span className="font-display text-lg italic tracking-tight text-ink">e-Sauda</span>
@@ -96,7 +96,7 @@ export default function Navbar() {
             >
               <Bell size={18} />
               {unreadCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-clay px-1 text-[10px] font-semibold text-white">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-clay px-1 text-[10px] font-semibold text-ink">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
@@ -145,7 +145,7 @@ export default function Navbar() {
             <Link to="/login" className="rounded-full px-4 py-2 text-sm font-semibold text-ink/70 hover:text-ink">
               Log in
             </Link>
-            <Link to="/signup" className="rounded-full bg-forest px-4 py-2 text-sm font-semibold text-cream hover:bg-forest-light">
+            <Link to="/signup" className="rounded-full bg-forest px-4 py-2 text-sm font-semibold text-ink hover:bg-forest-light">
               Sign up
             </Link>
           </div>
@@ -154,14 +154,14 @@ export default function Navbar() {
             <div className="relative shrink-0" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen((v) => !v)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-clay-light font-semibold text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-clay-light font-semibold text-ink"
               >
                 {initial}
               </button>
               {menuOpen && (
                 <div className="absolute right-0 mt-2 w-64 rounded-xl2 border border-line/10 bg-surface p-2 shadow-xl">
                   <div className="flex items-center gap-3 border-b border-line/10 p-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-clay-light font-semibold text-white">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-clay-light font-semibold text-ink">
                       {initial}
                     </span>
                     <div>
@@ -197,7 +197,7 @@ export default function Navbar() {
                       <ShieldAlert size={16} /> Reports (admin)
                     </Link>
                   )}
-                  <button onClick={handleSignOut} className="flex w-full items-center gap-3 rounded-lg p-3 text-left text-sm text-red-600 hover:bg-red-50">
+                  <button onClick={handleSignOut} className="flex w-full items-center gap-3 rounded-lg p-3 text-left text-sm text-red-600 hover:bg-red-500/10">
                     <LogOut size={16} /> Log out
                   </button>
                 </div>
@@ -206,7 +206,7 @@ export default function Navbar() {
 
             <Link
               to="/sell"
-              className="flex shrink-0 items-center gap-1 rounded-full bg-forest px-4 py-2 text-sm font-semibold text-cream hover:bg-forest-light"
+              className="flex shrink-0 items-center gap-1 rounded-full bg-forest px-4 py-2 text-sm font-semibold text-ink hover:bg-forest-light"
             >
               <Plus size={16} /> Sell
             </Link>

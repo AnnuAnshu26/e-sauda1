@@ -5,7 +5,7 @@ import { Category } from '../types'
 // listing at creation time (since real photo upload is a later branch).
 export const categories: { name: Category; emoji: string; bg: string; count: number }[] = [
   { name: 'Mobiles', emoji: '📱', bg: 'bg-neutral-200', count: 42000 },
-  { name: 'Vehicles', emoji: '🛵', bg: 'from-orange-200 to-amber-100', count: 18000 },
+  { name: 'Vehicles', emoji: '🛵', bg: 'bg-gradient-to-br from-orange-200 to-amber-100', count: 18000 },
   { name: 'Furniture', emoji: '🪑', bg: 'bg-amber-100', count: 23000 },
   { name: 'Appliances', emoji: '❄️', bg: 'bg-sky-100', count: 11000 },
   { name: 'Electronics', emoji: '⌨️', bg: 'bg-emerald-100', count: 31000 },

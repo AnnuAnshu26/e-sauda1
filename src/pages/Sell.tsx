@@ -19,6 +19,7 @@ import { suggestPrice, PriceSuggestion } from "../lib/pricing";
 import { Category } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { Upload, Video, Check, X } from "lucide-react";
+import { categoryIcons } from "../lib/categoryIcons";
 
 const stepNames = ["Category", "Details", "Media", "Review"];
 const LISTING_CAP_PER_CATEGORY = 2; // matches the flat cap new users start with; grows with trust score later
@@ -272,7 +273,7 @@ export default function Sell() {
   if (posted) {
     return (
       <div className="mx-auto max-w-lg px-6 py-24 text-center">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600">
           <Check size={28} />
         </span>
         <h1 className="mt-6 font-display text-2xl font-semibold">
@@ -283,18 +284,18 @@ export default function Sell() {
           {nextListingFee} applied.
         </p>
         {photoWarning && (
-          <p className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
+          <p className="mt-3 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-600">
             {photoWarning}
           </p>
         )}
         {videoWarning && (
-          <p className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
+          <p className="mt-3 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-600">
             {videoWarning}
           </p>
         )}
         <button
           onClick={() => navigate("/orders")}
-          className="mt-8 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light"
+          className="mt-8 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink hover:bg-forest-light"
         >
           Go to My listings
         </button>
@@ -309,7 +310,7 @@ export default function Sell() {
         A quick, guided flow. Fair-price check baked in.
       </p>
 
-      <div className="mt-6 rounded-xl2 border border-black/5 bg-white p-4">
+      <div className="mt-6 rounded-xl2 border border-line/5 bg-surface p-4">
         <p className="flex items-center gap-2 text-sm font-semibold text-ink">
           <ShieldIcon />
           {category
@@ -327,9 +328,9 @@ export default function Sell() {
             <div
               className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
                 i === step
-                  ? "bg-forest text-cream"
+                  ? "bg-forest text-ink"
                   : i < step
-                    ? "bg-clay text-white"
+                    ? "bg-clay text-ink"
                     : "bg-cream-dark text-ink/50"
               }`}
             >
@@ -341,31 +342,40 @@ export default function Sell() {
               {s}
             </span>
             {i < stepNames.length - 1 && (
-              <span className="h-px w-8 bg-black/10" />
+              <span className="h-px w-8 bg-line/10" />
             )}
           </div>
         ))}
       </div>
 
-      <div className="mt-8 rounded-xl2 border border-black/5 bg-white p-6">
+      <div className="mt-8 rounded-xl2 border border-line/5 bg-surface p-6">
         {step === 0 && (
           <div>
             <h2 className="font-semibold text-ink">Choose a category</h2>
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {categories.map((c) => (
-                <button
-                  key={c.name}
-                  onClick={() => setCategory(c.name)}
-                  className={`flex flex-col items-center gap-2 rounded-xl2 border p-4 ${
-                    category === c.name
-                      ? "border-clay bg-clay/5"
-                      : "border-black/10 hover:border-black/20"
-                  }`}
-                >
-                  <span className="text-2xl">{c.emoji}</span>
-                  <span className="text-sm font-medium">{c.name}</span>
-                </button>
-              ))}
+              {categories.map((c) => {
+                const Icon = categoryIcons[c.name];
+                return (
+                  <button
+                    key={c.name}
+                    onClick={() => setCategory(c.name)}
+                    className={`flex flex-col items-center gap-2 rounded-xl2 border p-4 transition-colors duration-150 ${
+                      category === c.name
+                        ? "border-clay bg-clay/5"
+                        : "border-line/10 hover:border-line/20"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+                        category === c.name ? "bg-clay/15 text-clay" : "bg-ink/5 text-ink/70"
+                      }`}
+                    >
+                      <Icon size={18} strokeWidth={1.75} />
+                    </span>
+                    <span className="text-sm font-medium">{c.name}</span>
+                  </button>
+                );
+              })}
             </div>
             <div className="mt-5">
               <label className="text-sm font-medium text-ink">
@@ -375,11 +385,11 @@ export default function Sell() {
                 value={subCategory}
                 onChange={(e) => setSubCategory(e.target.value)}
                 placeholder="e.g. Motorbikes, Keyboards"
-                className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+                className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
               />
             </div>
             {atCap ? (
-              <div className="mt-5 rounded-lg bg-red-50 p-3 text-xs text-red-600">
+              <div className="mt-5 rounded-lg bg-red-500/10 p-3 text-xs text-red-600">
                 You've hit your listing cap for <strong>{category}</strong>.
                 Complete a sale or raise your trust score to free up a slot.
               </div>
@@ -404,7 +414,7 @@ export default function Sell() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Keychron Q1 Pro · Wireless Mechanical"
-                  className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+                  className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
                 />
               </div>
               <div>
@@ -415,7 +425,7 @@ export default function Sell() {
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   placeholder="12500"
-                  className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+                  className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
                 />
                 {priceSuggestionLoading ? (
                   <p className="mt-1 text-xs text-ink/40">Checking similar listings…</p>
@@ -451,7 +461,7 @@ export default function Sell() {
                 <select
                   value={condition}
                   onChange={(e) => setCondition(e.target.value)}
-                  className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+                  className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
                 >
                   <option>New</option>
                   <option>Like new</option>
@@ -468,7 +478,7 @@ export default function Sell() {
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
                   placeholder="Any dents, accessories included, reason for selling..."
-                  className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+                  className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
                 />
               </div>
               <div>
@@ -479,7 +489,7 @@ export default function Sell() {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="e.g. Koramangala, Bengaluru"
-                  className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+                  className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
                 />
                 <p className="mt-1 text-xs text-ink/50">
                   Shown on your listing and used for the City filter on Browse.
@@ -518,7 +528,7 @@ export default function Sell() {
                 </div>
               ))}
               {photoFiles.length < 6 && (
-                <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-xl2 border-2 border-dashed border-black/15 text-ink/40 hover:border-clay/40">
+                <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-xl2 border-2 border-dashed border-line/15 text-ink/40 hover:border-clay/40">
                   <Upload size={20} />
                   <span className="text-xs">Upload</span>
                   <input
@@ -532,7 +542,7 @@ export default function Sell() {
               )}
             </div>
             {photoError && (
-              <p className="mt-3 rounded-lg bg-red-50 p-3 text-xs text-red-600">
+              <p className="mt-3 rounded-lg bg-red-500/10 p-3 text-xs text-red-600">
                 {photoError}
               </p>
             )}
@@ -561,7 +571,7 @@ export default function Sell() {
                 </button>
               </div>
             ) : (
-              <label className="mt-4 flex aspect-video w-full max-w-sm cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl2 border-2 border-dashed border-black/15 text-ink/40 hover:border-clay/40">
+              <label className="mt-4 flex aspect-video w-full max-w-sm cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl2 border-2 border-dashed border-line/15 text-ink/40 hover:border-clay/40">
                 <Video size={20} />
                 <span className="text-xs">
                   {checkingVideo ? "Checking video…" : "Upload a video"}
@@ -576,7 +586,7 @@ export default function Sell() {
               </label>
             )}
             {videoError && (
-              <p className="mt-3 rounded-lg bg-red-50 p-3 text-xs text-red-600">
+              <p className="mt-3 rounded-lg bg-red-500/10 p-3 text-xs text-red-600">
                 {videoError}
               </p>
             )}
@@ -612,7 +622,7 @@ export default function Sell() {
               <Row label="Anti-bot fee due now" value={`₹${nextListingFee}`} />
             </div>
             {publishError && (
-              <p className="mt-4 rounded-lg bg-red-50 p-3 text-xs text-red-600">
+              <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-xs text-red-600">
                 {publishError}
               </p>
             )}
@@ -624,7 +634,7 @@ export default function Sell() {
         <button
           onClick={back}
           disabled={step === 0}
-          className="rounded-full border border-black/10 px-5 py-2.5 text-sm font-semibold text-ink disabled:opacity-30"
+          className="rounded-full border border-line/10 px-5 py-2.5 text-sm font-semibold text-ink disabled:opacity-30"
         >
           Back
         </button>
@@ -636,7 +646,7 @@ export default function Sell() {
               (step === 1 && (!title || !price || !city.trim())) ||
               (step === 2 && (!videoFile || checkingVideo))
             }
-            className="rounded-full bg-forest px-6 py-2.5 text-sm font-semibold text-cream disabled:opacity-40"
+            className="rounded-full bg-forest px-6 py-2.5 text-sm font-semibold text-ink disabled:opacity-40"
           >
             Next
           </button>
@@ -644,7 +654,7 @@ export default function Sell() {
           <button
             onClick={publish}
             disabled={publishing}
-            className="rounded-full bg-clay px-6 py-2.5 text-sm font-semibold text-white hover:bg-clay-light disabled:opacity-50"
+            className="rounded-full bg-clay px-6 py-2.5 text-sm font-semibold text-ink hover:bg-clay-light disabled:opacity-50"
           >
             {uploadingPhotos
               ? "Uploading photos…"
@@ -662,7 +672,7 @@ export default function Sell() {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between border-b border-black/5 py-2">
+    <div className="flex justify-between border-b border-line/5 py-2">
       <span className="text-ink/50">{label}</span>
       <span className="max-w-[60%] text-right font-medium text-ink">
         {value}

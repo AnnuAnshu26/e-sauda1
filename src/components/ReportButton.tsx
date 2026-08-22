@@ -59,7 +59,7 @@ export default function ReportButton({ listingId, reportedUserId, label = 'Repor
     <>
       <button
         onClick={openModal}
-        className="flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-ink/60 hover:bg-cream-dark"
+        className="flex items-center gap-1.5 rounded-full border border-line/10 bg-surface px-4 py-2 text-xs font-semibold text-ink/60 hover:bg-cream-dark"
       >
         <Flag size={13} /> {label}
       </button>
@@ -67,7 +67,7 @@ export default function ReportButton({ listingId, reportedUserId, label = 'Repor
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={close}>
           <div
-            className="w-full max-w-sm rounded-xl2 bg-white p-6 shadow-xl"
+            className="w-full max-w-sm rounded-xl2 bg-surface p-6 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
@@ -79,12 +79,12 @@ export default function ReportButton({ listingId, reportedUserId, label = 'Repor
 
             {submitted ? (
               <div className="mt-4">
-                <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">
+                <p className="rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-600">
                   Thanks — we've received your report and it'll be reviewed.
                 </p>
                 <button
                   onClick={close}
-                  className="mt-4 w-full rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream hover:bg-forest-light"
+                  className="mt-4 w-full rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-ink hover:bg-forest-light"
                 >
                   Done
                 </button>
@@ -100,7 +100,7 @@ export default function ReportButton({ listingId, reportedUserId, label = 'Repor
                   <select
                     value={reason}
                     onChange={(e) => setReason(e.target.value as ReportReason)}
-                    className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+                    className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
                   >
                     {Object.entries(reportReasonLabels).map(([value, text]) => (
                       <option key={value} value={value}>
@@ -117,16 +117,16 @@ export default function ReportButton({ listingId, reportedUserId, label = 'Repor
                     onChange={(e) => setDetails(e.target.value)}
                     rows={3}
                     placeholder="Anything that'll help us look into this"
-                    className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+                    className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
                   />
                 </div>
 
-                {error && <p className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>}
+                {error && <p className="mt-3 rounded-lg bg-red-500/10 p-3 text-sm text-red-600">{error}</p>}
 
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="mt-5 w-full rounded-full bg-clay px-5 py-2.5 text-sm font-semibold text-white hover:bg-clay-light disabled:opacity-50"
+                  className="mt-5 w-full rounded-full bg-clay px-5 py-2.5 text-sm font-semibold text-ink hover:bg-clay-light disabled:opacity-50"
                 >
                   {submitting ? 'Submitting…' : 'Submit report'}
                 </button>

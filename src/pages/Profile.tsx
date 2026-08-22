@@ -6,6 +6,7 @@ import { fetchUserListings } from "../lib/listings";
 import { fetchMyPurchases, fetchMySales } from "../lib/vault";
 import { fetchSavedListingIds } from "../lib/savedItems";
 import { updateDisplayName } from "../lib/profiles";
+import Reveal from "../components/Reveal";
 import { deleteAccount } from "../lib/account";
 
 export default function Profile() {
@@ -99,10 +100,10 @@ export default function Profile() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
-      <div className="rounded-xl2 bg-gradient-to-br from-clay/15 to-cream-dark p-8">
+      <Reveal className="rounded-xl2 bg-gradient-to-br from-clay/15 to-cream-dark p-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-forest text-2xl font-semibold text-cream">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-forest text-2xl font-semibold text-ink">
               {displayName.charAt(0).toUpperCase()}
             </span>
             <div>
@@ -117,19 +118,19 @@ export default function Profile() {
                       if (e.key === "Escape") setEditingName(false);
                     }}
                     placeholder="Your name"
-                    className="rounded-lg border border-black/10 bg-white px-3 py-1.5 font-display text-xl font-semibold"
+                    className="rounded-lg border border-line/10 bg-surface px-3 py-1.5 font-display text-xl font-semibold"
                   />
                   <button
                     onClick={saveName}
                     disabled={savingName}
-                    className="rounded-full bg-forest p-1.5 text-cream hover:bg-forest-light disabled:opacity-50"
+                    className="rounded-full bg-forest p-1.5 text-ink hover:bg-forest-light disabled:opacity-50"
                     aria-label="Save name"
                   >
                     <Check size={14} />
                   </button>
                   <button
                     onClick={() => setEditingName(false)}
-                    className="rounded-full border border-black/10 p-1.5 text-ink/60 hover:bg-black/5"
+                    className="rounded-full border border-line/10 p-1.5 text-ink/60 hover:bg-ink/5"
                     aria-label="Cancel"
                   >
                     <X size={14} />
@@ -160,7 +161,7 @@ export default function Profile() {
                 {user?.id && (
                   <button
                     onClick={() => navigator.clipboard.writeText(user.id)}
-                    className="rounded border border-black/10 px-1.5 py-0.5 text-[10px] font-medium text-ink/50 hover:bg-black/5"
+                    className="rounded border border-line/10 px-1.5 py-0.5 text-[10px] font-medium text-ink/50 hover:bg-ink/5"
                   >
                     Copy full ID
                   </button>
@@ -194,7 +195,7 @@ export default function Profile() {
             </p>
           </div>
         </div>
-        <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-white/60">
+        <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-ink/10">
           <div
             className="h-full bg-forest"
             style={{ width: `${trustScore}%` }}
@@ -203,7 +204,7 @@ export default function Profile() {
         <p className="mt-2 text-xs text-ink/50">
           Complete more saudas, get 5-star ratings and verify identity to grow.
         </p>
-      </div>
+      </Reveal>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Stat label="Completed saudas" value={completedCount} />
@@ -217,7 +218,7 @@ export default function Profile() {
         <Stat label="Saved items" value={savedCount} />
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl2 border-2 border-dashed border-clay/40 bg-white p-6">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl2 border-2 border-dashed border-clay/40 bg-surface p-6">
         <div>
           <p className="font-semibold text-ink">Unlock full trust</p>
           <p className="mt-1 text-sm text-ink/60">
@@ -229,7 +230,7 @@ export default function Profile() {
           <button
             disabled
             title="DigiLocker verification is coming soon"
-            className="flex items-center gap-2 rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream opacity-50 cursor-not-allowed"
+            className="flex items-center gap-2 rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-ink opacity-50 cursor-not-allowed"
           >
             <Lock size={15} /> Verify with DigiLocker
           </button>
@@ -243,7 +244,7 @@ export default function Profile() {
           <div
             key={b.label}
             className={`flex flex-col items-center gap-2 rounded-xl2 border p-6 text-center ${
-              b.unlocked ? "border-clay bg-clay/5" : "border-black/10"
+              b.unlocked ? "border-clay bg-clay/5" : "border-line/10"
             }`}
           >
             <b.icon
@@ -261,26 +262,26 @@ export default function Profile() {
       <div className="mt-8 flex flex-wrap gap-3">
         <button
           onClick={() => navigate("/orders")}
-          className="rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm font-semibold hover:bg-cream-dark"
+          className="rounded-full border border-line/10 bg-surface px-5 py-2.5 text-sm font-semibold hover:bg-cream-dark"
         >
           My orders
         </button>
         <button
           onClick={() => navigate("/vault")}
-          className="rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm font-semibold hover:bg-cream-dark"
+          className="rounded-full border border-line/10 bg-surface px-5 py-2.5 text-sm font-semibold hover:bg-cream-dark"
         >
           Sauda Vault
         </button>
         <button
           onClick={() => navigate("/sell")}
-          className="rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream hover:bg-forest-light"
+          className="rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-ink hover:bg-forest-light"
         >
           Post new listing
         </button>
       </div>
 
-      <div className="mt-10 rounded-xl2 border border-red-200 bg-red-50/50 p-6">
-        <h2 className="font-display text-lg font-semibold text-red-700">Danger zone</h2>
+      <div className="mt-10 rounded-xl2 border border-red-500/30 bg-red-500/10/50 p-6">
+        <h2 className="font-display text-lg font-semibold text-red-600">Danger zone</h2>
         {!showDeleteConfirm ? (
           <>
             <p className="mt-1 text-sm text-ink/60">
@@ -290,7 +291,7 @@ export default function Profile() {
             </p>
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="mt-4 rounded-full border border-red-300 bg-white px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50"
+              className="mt-4 rounded-full border border-red-500/40 bg-surface px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-500/10"
             >
               Delete my account
             </button>
@@ -308,14 +309,14 @@ export default function Profile() {
             <input
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
-              className="mt-2 w-full max-w-xs rounded-lg border border-red-200 px-3 py-2 text-sm"
+              className="bg-surface text-ink mt-2 w-full max-w-xs rounded-lg border border-red-500/30 px-3 py-2 text-sm"
             />
             {deleteError && <p className="mt-2 text-sm text-red-600">{deleteError}</p>}
             <div className="mt-4 flex gap-2">
               <button
                 onClick={handleDeleteAccount}
                 disabled={deleteConfirmText !== "DELETE" || deleting}
-                className="rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-40"
+                className="rounded-full bg-red-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-600 disabled:opacity-40"
               >
                 {deleting ? "Deleting…" : "Permanently delete my account"}
               </button>
@@ -325,7 +326,7 @@ export default function Profile() {
                   setDeleteConfirmText("");
                   setDeleteError(null);
                 }}
-                className="rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm font-semibold text-ink/70 hover:bg-cream-dark"
+                className="rounded-full border border-line/10 bg-surface px-5 py-2.5 text-sm font-semibold text-ink/70 hover:bg-cream-dark"
               >
                 Never mind
               </button>
@@ -347,7 +348,7 @@ function Stat({
   suffix?: string;
 }) {
   return (
-    <div className="rounded-xl2 border border-black/5 bg-white p-5">
+    <div className="rounded-xl2 border border-line/5 bg-surface p-5">
       <p className="text-sm text-ink/50">{label}</p>
       <p className="font-display text-3xl font-semibold text-ink">{value}</p>
       {suffix && <p className="text-xs text-ink/40">{suffix}</p>}

@@ -39,7 +39,7 @@ export default function Login() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
           />
         </div>
         <div>
@@ -49,19 +49,19 @@ export default function Login() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
           />
           <Link to="/forgot-password" className="mt-2 inline-block text-xs font-medium text-clay hover:underline">
             Forgot password?
           </Link>
         </div>
 
-        {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>}
+        {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-600">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light disabled:opacity-50"
+          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink hover:bg-forest-light disabled:opacity-50"
         >
           {loading ? 'Logging in...' : 'Log in'}
         </button>

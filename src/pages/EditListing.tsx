@@ -222,7 +222,7 @@ export default function EditListing() {
       <div className="mx-auto max-w-lg px-6 py-24 text-center">
         <p className="font-display text-2xl font-semibold">Listing not found</p>
         <p className="mt-2 text-sm text-ink/60">It may have been removed or sold.</p>
-        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
+        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink">
           Back to Browse
         </Link>
       </div>
@@ -234,7 +234,7 @@ export default function EditListing() {
       <div className="mx-auto max-w-lg px-6 py-24 text-center">
         <p className="font-display text-2xl font-semibold">Not your listing</p>
         <p className="mt-2 text-sm text-ink/60">You can only edit listings you own.</p>
-        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
+        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink">
           Back to Browse
         </Link>
       </div>
@@ -278,7 +278,7 @@ export default function EditListing() {
           ))}
 
           {photos.length < MAX_PHOTOS && (
-            <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl2 border-2 border-dashed border-black/15 text-ink/40 hover:border-clay/40">
+            <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl2 border-2 border-dashed border-line/15 text-ink/40 hover:border-clay/40">
               <Upload size={18} />
               <span className="text-xs">{uploadingPhotos ? 'Uploading…' : 'Add'}</span>
               <input
@@ -316,7 +316,7 @@ export default function EditListing() {
             </button>
           </div>
         ) : (
-          <label className="mt-3 flex aspect-video w-full max-w-sm cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl2 border-2 border-dashed border-black/15 text-ink/40 hover:border-clay/40">
+          <label className="mt-3 flex aspect-video w-full max-w-sm cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl2 border-2 border-dashed border-line/15 text-ink/40 hover:border-clay/40">
             <Video size={20} />
             <span className="text-xs">{savingVideo ? 'Uploading…' : 'Add a video'}</span>
             <input
@@ -338,7 +338,7 @@ export default function EditListing() {
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
           />
         </div>
 
@@ -350,7 +350,7 @@ export default function EditListing() {
             min="0"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
           />
         </div>
 
@@ -359,7 +359,7 @@ export default function EditListing() {
           <select
             value={condition}
             onChange={(e) => setCondition(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
           >
             <option>New</option>
             <option>Like new</option>
@@ -373,7 +373,7 @@ export default function EditListing() {
           <input
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
           />
         </div>
 
@@ -384,17 +384,17 @@ export default function EditListing() {
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             placeholder="Any dents, accessories included, reason for selling..."
-            className="mt-2 w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm"
+            className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
           />
         </div>
 
-        {error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</p>}
-        {saved && <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">Saved. Taking you back…</p>}
+        {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-600">{error}</p>}
+        {saved && <p className="rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-600">Saved. Taking you back…</p>}
 
         <button
           type="submit"
           disabled={saving}
-          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light disabled:opacity-50"
+          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink hover:bg-forest-light disabled:opacity-50"
         >
           {saving ? 'Saving…' : 'Save changes'}
         </button>
