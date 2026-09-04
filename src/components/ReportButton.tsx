@@ -79,12 +79,12 @@ export default function ReportButton({ listingId, reportedUserId, label = 'Repor
 
             {submitted ? (
               <div className="mt-4">
-                <p className="rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-600">
+                <p className="rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-400">
                   Thanks — we've received your report and it'll be reviewed.
                 </p>
                 <button
                   onClick={close}
-                  className="mt-4 w-full rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-ink hover:bg-forest-light"
+                  className="mt-4 w-full rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream hover:bg-forest-light"
                 >
                   Done
                 </button>
@@ -121,12 +121,12 @@ export default function ReportButton({ listingId, reportedUserId, label = 'Repor
                   />
                 </div>
 
-                {error && <p className="mt-3 rounded-lg bg-red-500/10 p-3 text-sm text-red-600">{error}</p>}
+                {error && <p className="mt-3 rounded-lg bg-red-500/10 p-3 text-sm text-red-400">{error}</p>}
 
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="mt-5 w-full rounded-full bg-clay px-5 py-2.5 text-sm font-semibold text-ink hover:bg-clay-light disabled:opacity-50"
+                  className="mt-5 w-full rounded-full bg-clay px-5 py-2.5 text-sm font-semibold text-cream hover:bg-clay-light disabled:opacity-50"
                 >
                   {submitting ? 'Submitting…' : 'Submit report'}
                 </button>

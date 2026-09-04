@@ -25,7 +25,7 @@ export default {
         line: 'rgb(var(--color-line) / <alpha-value>)',
       },
       fontFamily: {
-        display: ['"Fraunces"', 'serif'],
+        display: ['"Inter"', 'system-ui', 'sans-serif'],
         sans: ['"Inter"', 'system-ui', 'sans-serif'],
       },
       borderRadius: {

@@ -56,12 +56,12 @@ export default function Login() {
           </Link>
         </div>
 
-        {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-600">{error}</p>}
+        {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-400">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink hover:bg-forest-light disabled:opacity-50"
+          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light disabled:opacity-50"
         >
           {loading ? 'Logging in...' : 'Log in'}
         </button>

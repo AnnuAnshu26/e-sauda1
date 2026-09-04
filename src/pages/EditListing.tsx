@@ -222,7 +222,7 @@ export default function EditListing() {
       <div className="mx-auto max-w-lg px-6 py-24 text-center">
         <p className="font-display text-2xl font-semibold">Listing not found</p>
         <p className="mt-2 text-sm text-ink/60">It may have been removed or sold.</p>
-        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink">
+        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
           Back to Browse
         </Link>
       </div>
@@ -234,7 +234,7 @@ export default function EditListing() {
       <div className="mx-auto max-w-lg px-6 py-24 text-center">
         <p className="font-display text-2xl font-semibold">Not your listing</p>
         <p className="mt-2 text-sm text-ink/60">You can only edit listings you own.</p>
-        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink">
+        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
           Back to Browse
         </Link>
       </div>
@@ -293,7 +293,7 @@ export default function EditListing() {
           )}
         </div>
 
-        {photoError && <p className="mt-2 text-xs text-red-600">{photoError}</p>}
+        {photoError && <p className="mt-2 text-xs text-red-400">{photoError}</p>}
       </div>
 
       <div className="mt-8">
@@ -328,7 +328,7 @@ export default function EditListing() {
             />
           </label>
         )}
-        {videoError && <p className="mt-2 text-xs text-red-600">{videoError}</p>}
+        {videoError && <p className="mt-2 text-xs text-red-400">{videoError}</p>}
       </div>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
@@ -388,13 +388,13 @@ export default function EditListing() {
           />
         </div>
 
-        {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-600">{error}</p>}
-        {saved && <p className="rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-600">Saved. Taking you back…</p>}
+        {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-400">{error}</p>}
+        {saved && <p className="rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-400">Saved. Taking you back…</p>}
 
         <button
           type="submit"
           disabled={saving}
-          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink hover:bg-forest-light disabled:opacity-50"
+          className="w-full rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light disabled:opacity-50"
         >
           {saving ? 'Saving…' : 'Save changes'}
         </button>

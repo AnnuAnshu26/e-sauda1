@@ -64,7 +64,7 @@ export default function ChatbotWidget() {
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
                   className={`max-w-[85%] whitespace-pre-wrap rounded-xl2 px-3 py-2 text-sm ${
-                    m.role === 'user' ? 'bg-forest text-ink' : 'bg-cream-dark text-ink'
+                    m.role === 'user' ? 'bg-forest text-cream' : 'bg-cream-dark text-ink'
                   }`}
                 >
                   {m.content}
@@ -72,7 +72,7 @@ export default function ChatbotWidget() {
               </div>
             ))}
             {sending && <p className="text-xs text-ink/40">Thinking…</p>}
-            {error && <p className="rounded-lg bg-red-500/10 p-2 text-xs text-red-600">{error}</p>}
+            {error && <p className="rounded-lg bg-red-500/10 p-2 text-xs text-red-400">{error}</p>}
             <div ref={bottomRef} />
           </div>
 
@@ -86,7 +86,7 @@ export default function ChatbotWidget() {
             <button
               type="submit"
               disabled={sending || !draft.trim()}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-clay text-ink disabled:opacity-40"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-clay text-cream disabled:opacity-40"
               aria-label="Send"
             >
               <Send size={14} />
@@ -97,7 +97,7 @@ export default function ChatbotWidget() {
 
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-clay text-ink shadow-lg hover:bg-clay-light"
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-clay text-cream shadow-lg hover:bg-clay-light"
         aria-label="Open assistant"
       >
         <MessageCircleQuestion size={22} />

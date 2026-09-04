@@ -402,7 +402,7 @@ export default function Messages() {
                     disabled={blockActing}
                     className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold disabled:opacity-50 ${
                       isBlocked
-                        ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20'
+                        ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
                         : 'border-line/10 bg-surface text-ink/60 hover:bg-cream-dark'
                     }`}
                   >
@@ -437,13 +437,13 @@ export default function Messages() {
                         >
                           <div
                             className={`max-w-[75%] rounded-xl2 px-4 py-2 text-sm ${
-                              mine ? 'bg-forest text-ink' : 'bg-cream-dark text-ink'
+                              mine ? 'bg-forest text-cream' : 'bg-cream-dark text-ink'
                             }`}
                           >
                             {m.body}
                           </div>
                           {m.flagged && (
-                            <span className="mt-1 flex items-center gap-1 text-[11px] text-amber-600">
+                            <span className="mt-1 flex items-center gap-1 text-[11px] text-amber-400">
                               <AlertTriangle size={11} /> May contain sensitive info — never share OTPs
                               or pay outside the Vault
                             </span>
@@ -485,7 +485,7 @@ export default function Messages() {
                                   <button
                                     onClick={() => handleAcceptOffer(o.id)}
                                     disabled={acting}
-                                    className="flex items-center gap-1 rounded-full bg-forest px-3 py-1 text-xs font-semibold text-ink disabled:opacity-50"
+                                    className="flex items-center gap-1 rounded-full bg-forest px-3 py-1 text-xs font-semibold text-cream disabled:opacity-50"
                                   >
                                     <Check size={12} /> Accept
                                   </button>
@@ -518,7 +518,7 @@ export default function Messages() {
               </div>
 
               {profile?.suspended ? (
-                <p className="border-t border-line/5 p-4 text-center text-sm text-red-600">
+                <p className="border-t border-line/5 p-4 text-center text-sm text-red-400">
                   Your account is suspended and can't send messages.
                 </p>
               ) : isBlocked ? (
@@ -549,29 +549,29 @@ export default function Messages() {
                       <button
                         type="submit"
                         disabled={hasPendingOffer || sendingOffer || !offerDraft}
-                        className="rounded-full bg-clay px-3 py-1.5 text-xs font-semibold text-ink disabled:opacity-40"
+                        className="rounded-full bg-clay px-3 py-1.5 text-xs font-semibold text-cream disabled:opacity-40"
                       >
                         {sendingOffer ? 'Sending…' : 'Make offer'}
                       </button>
                     </form>
                   )}
                   {offerError && (
-                    <p className="mx-4 mt-2 rounded-lg bg-red-500/10 p-3 text-xs text-red-600">{offerError}</p>
+                    <p className="mx-4 mt-2 rounded-lg bg-red-500/10 p-3 text-xs text-red-400">{offerError}</p>
                   )}
 
                   {sendError && (
-                    <p className="mx-4 mb-2 mt-2 rounded-lg bg-red-500/10 p-3 text-xs text-red-600">{sendError}</p>
+                    <p className="mx-4 mb-2 mt-2 rounded-lg bg-red-500/10 p-3 text-xs text-red-400">{sendError}</p>
                   )}
                   {pendingWarning && (
                     <div className="mx-4 mb-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-                      <p className="flex items-start gap-2 text-xs text-amber-600">
+                      <p className="flex items-start gap-2 text-xs text-amber-400">
                         <AlertTriangle size={14} className="mt-0.5 shrink-0" />
                         {describeFlags(pendingWarning.reasons)}
                       </p>
                       <div className="mt-2 flex gap-2">
                         <button
                           onClick={() => setPendingWarning(null)}
-                          className="rounded-full border border-amber-500/40 px-3 py-1 text-xs font-semibold text-amber-600 hover:bg-amber-500/20"
+                          className="rounded-full border border-amber-500/40 px-3 py-1 text-xs font-semibold text-amber-400 hover:bg-amber-500/20"
                         >
                           Edit message
                         </button>
@@ -600,7 +600,7 @@ export default function Messages() {
                       whileTap={{ scale: 0.88 }}
                       type="submit"
                       disabled={sending || !draft.trim()}
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-forest text-ink transition-transform disabled:opacity-40"
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-forest text-cream transition-transform disabled:opacity-40"
                       aria-label="Send message"
                     >
                       <Send size={16} />

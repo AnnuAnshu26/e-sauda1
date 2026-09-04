@@ -167,7 +167,7 @@ export default function Home() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 to="/browse"
-                className="group flex items-center gap-2 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink transition-transform duration-200 hover:-translate-y-0.5 hover:bg-forest-light"
+                className="group flex items-center gap-2 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream transition-transform duration-200 hover:-translate-y-0.5 hover:bg-forest-light"
               >
                 Explore listings
                 <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -195,7 +195,7 @@ export default function Home() {
             ["4.8★", "Buyer rating"],
           ].map(([n, l]) => (
             <div key={l} className="bg-surface px-8 py-8 transition-colors duration-200 hover:bg-cream-dark">
-              <p className="font-display text-4xl italic text-ink">{n}</p>
+              <p className="font-display text-4xl font-extrabold text-ink">{n}</p>
               <p className="mt-2 eyebrow">{l}</p>
             </div>
           ))}
@@ -231,7 +231,7 @@ export default function Home() {
                 }}
                 whileHover={{ y: -4, scale: 1.14 }}
                 className={`flex h-16 w-16 items-center justify-center rounded-2xl shadow-lg transition-colors duration-500 ${
-                  activeHeroIcon === i ? "bg-clay text-ink" : "bg-ink/95 text-cream-dark"
+                  activeHeroIcon === i ? "bg-clay text-cream" : "bg-ink/95 text-cream-dark"
                 }`}
               >
                 <Icon size={26} strokeWidth={1.5} />
@@ -279,7 +279,7 @@ export default function Home() {
         <Reveal className="mb-8 flex items-end justify-between">
           <div>
             <p className="eyebrow">(Categories)</p>
-            <h2 className="mt-2 font-display text-3xl italic text-ink">Shop by category</h2>
+            <h2 className="mt-2 font-display text-3xl font-extrabold text-ink">Shop by category</h2>
           </div>
           <Link to="/browse" className="text-sm font-semibold text-clay hover:underline">See all →</Link>
         </Reveal>
@@ -319,7 +319,7 @@ export default function Home() {
         <Reveal className="mb-8 flex items-end justify-between">
           <div>
             <p className="eyebrow">(Fresh in your city)</p>
-            <h2 className="mt-2 font-display text-3xl italic text-ink">Real people, real items</h2>
+            <h2 className="mt-2 font-display text-3xl font-extrabold text-ink">Real people, real items</h2>
             <p className="mt-1 text-sm text-ink/50">Every listing gated by our anti-bot fee.</p>
           </div>
           <Link to="/browse" className="text-sm font-semibold text-clay hover:underline">Browse all →</Link>
@@ -350,7 +350,7 @@ export default function Home() {
           crossfading. Hover to pause, click a number to jump. */}
       <section className="border-y border-line/10 bg-cream-dark py-14">
         <Reveal className="mx-auto max-w-3xl px-6 text-center">
-          <h2 className="font-display text-4xl italic text-ink">
+          <h2 className="font-display text-4xl font-extrabold text-ink">
             No screenshot scams. <span className="text-clay">Ever.</span>
           </h2>
           <p className="mt-3 text-sm text-ink/60">
@@ -369,7 +369,7 @@ export default function Home() {
         <Reveal className="grid grid-cols-1 items-end gap-10 lg:grid-cols-2">
           <div>
             <p className="eyebrow">(Why e-Sauda)</p>
-            <h2 className="mt-4 font-display text-4xl italic leading-tight text-ink">
+            <h2 className="mt-4 font-display text-4xl font-extrabold leading-tight text-ink">
               Built the way marketplaces <span className="text-clay">should</span> have been.
             </h2>
           </div>
@@ -392,10 +392,14 @@ export default function Home() {
 
       {/* Final CTA */}
       <section className="mx-auto max-w-7xl px-6 pb-24">
-        <Reveal className="rounded-xl2 border border-ink/15 bg-gradient-to-br from-forest to-forest-light px-10 py-16 text-ink">
-          <p className="font-display text-4xl italic">Your first listing costs ₹1.</p>
-          <p className="font-display text-4xl italic text-ink/55">Your last scam happened yesterday.</p>
-          <p className="mt-5 max-w-xl text-ink/70">
+        <Reveal className="rounded-xl2 border border-cream/15 bg-gradient-to-br from-forest to-forest-light px-10 py-16 text-cream">
+          <p className="font-display text-4xl font-extrabold not-italic leading-[0.95] tracking-tight">
+            Your first listing costs ₹1.
+          </p>
+          <p className="font-display text-4xl font-extrabold not-italic leading-[0.95] tracking-tight text-cream/55">
+            Your last scam happened yesterday.
+          </p>
+          <p className="mt-5 max-w-xl text-cream/70">
             Join the marketplace built by neighbours, for neighbours. Fair fees,
             real people, and money that only moves when you're ready.
           </p>
@@ -409,7 +413,7 @@ export default function Home() {
             </Link>
             <Link
               to="/browse"
-              className="rounded-full border border-ink/25 px-6 py-3 text-sm font-semibold text-ink transition-colors duration-200 hover:bg-ink/5"
+              className="rounded-full border border-cream/30 px-6 py-3 text-sm font-semibold text-cream transition-colors duration-200 hover:bg-cream/10"
             >
               Browse the marketplace
             </Link>

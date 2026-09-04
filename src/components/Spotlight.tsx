@@ -80,7 +80,7 @@ export default function Spotlight({ slides }: { slides: SpotlightSlide[] }) {
               <slide.icon size={24} strokeWidth={1.5} />
             </span>
             <div>
-              <h3 className="font-display text-2xl italic leading-tight text-ink sm:text-3xl">
+              <h3 className="font-display text-2xl font-extrabold leading-tight text-ink sm:text-3xl">
                 {slide.title}
               </h3>
               <p className="mt-2 max-w-lg text-sm text-ink/60">{slide.desc}</p>

@@ -273,7 +273,7 @@ export default function Sell() {
   if (posted) {
     return (
       <div className="mx-auto max-w-lg px-6 py-24 text-center">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
           <Check size={28} />
         </span>
         <h1 className="mt-6 font-display text-2xl font-semibold">
@@ -284,18 +284,18 @@ export default function Sell() {
           {nextListingFee} applied.
         </p>
         {photoWarning && (
-          <p className="mt-3 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-600">
+          <p className="mt-3 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-400">
             {photoWarning}
           </p>
         )}
         {videoWarning && (
-          <p className="mt-3 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-600">
+          <p className="mt-3 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-400">
             {videoWarning}
           </p>
         )}
         <button
           onClick={() => navigate("/orders")}
-          className="mt-8 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink hover:bg-forest-light"
+          className="mt-8 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light"
         >
           Go to My listings
         </button>
@@ -328,9 +328,9 @@ export default function Sell() {
             <div
               className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
                 i === step
-                  ? "bg-forest text-ink"
+                  ? "bg-forest text-cream"
                   : i < step
-                    ? "bg-clay text-ink"
+                    ? "bg-clay text-cream"
                     : "bg-cream-dark text-ink/50"
               }`}
             >
@@ -389,7 +389,7 @@ export default function Sell() {
               />
             </div>
             {atCap ? (
-              <div className="mt-5 rounded-lg bg-red-500/10 p-3 text-xs text-red-600">
+              <div className="mt-5 rounded-lg bg-red-500/10 p-3 text-xs text-red-400">
                 You've hit your listing cap for <strong>{category}</strong>.
                 Complete a sale or raise your trust score to free up a slot.
               </div>
@@ -542,7 +542,7 @@ export default function Sell() {
               )}
             </div>
             {photoError && (
-              <p className="mt-3 rounded-lg bg-red-500/10 p-3 text-xs text-red-600">
+              <p className="mt-3 rounded-lg bg-red-500/10 p-3 text-xs text-red-400">
                 {photoError}
               </p>
             )}
@@ -586,7 +586,7 @@ export default function Sell() {
               </label>
             )}
             {videoError && (
-              <p className="mt-3 rounded-lg bg-red-500/10 p-3 text-xs text-red-600">
+              <p className="mt-3 rounded-lg bg-red-500/10 p-3 text-xs text-red-400">
                 {videoError}
               </p>
             )}
@@ -622,7 +622,7 @@ export default function Sell() {
               <Row label="Anti-bot fee due now" value={`₹${nextListingFee}`} />
             </div>
             {publishError && (
-              <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-xs text-red-600">
+              <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-xs text-red-400">
                 {publishError}
               </p>
             )}
@@ -646,7 +646,7 @@ export default function Sell() {
               (step === 1 && (!title || !price || !city.trim())) ||
               (step === 2 && (!videoFile || checkingVideo))
             }
-            className="rounded-full bg-forest px-6 py-2.5 text-sm font-semibold text-ink disabled:opacity-40"
+            className="rounded-full bg-forest px-6 py-2.5 text-sm font-semibold text-cream disabled:opacity-40"
           >
             Next
           </button>
@@ -654,7 +654,7 @@ export default function Sell() {
           <button
             onClick={publish}
             disabled={publishing}
-            className="rounded-full bg-clay px-6 py-2.5 text-sm font-semibold text-ink hover:bg-clay-light disabled:opacity-50"
+            className="rounded-full bg-clay px-6 py-2.5 text-sm font-semibold text-cream hover:bg-clay-light disabled:opacity-50"
           >
             {uploadingPhotos
               ? "Uploading photos…"

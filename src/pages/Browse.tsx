@@ -91,7 +91,7 @@ export default function Browse() {
             onClick={() => setActive(t)}
             className={`rounded-full px-4 py-2 text-sm font-medium ${
               active === t
-                ? "bg-forest text-ink"
+                ? "bg-forest text-cream"
                 : "border border-line/10 bg-surface text-ink/80"
             }`}
           >
@@ -186,7 +186,7 @@ export default function Browse() {
           </p>
 
           {error && (
-            <p className="mb-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-600">
+            <p className="mb-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-400">
               Couldn't load listings: {error}
             </p>
           )}
@@ -230,7 +230,7 @@ export default function Browse() {
             </p>
             <Link
               to="/sell"
-              className="mt-4 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink hover:bg-forest-light"
+              className="mt-4 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light"
             >
               Post a listing
             </Link>

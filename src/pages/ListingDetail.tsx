@@ -141,7 +141,7 @@ export default function ListingDetail() {
       <div className="mx-auto max-w-lg px-6 py-24 text-center">
         <p className="font-display text-2xl font-semibold">Listing not found</p>
         <p className="mt-2 text-sm text-ink/60">It may have been removed or sold.</p>
-        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink">
+        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
           Back to Browse
         </Link>
       </div>
@@ -197,7 +197,7 @@ export default function ListingDetail() {
               </span>
             )}
             {listing.verified && (
-              <span className="flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-1 text-xs font-medium text-emerald-600">
+              <span className="flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-1 text-xs font-medium text-emerald-400">
                 <ShieldCheck size={11} /> Verified
               </span>
             )}
@@ -244,8 +244,8 @@ export default function ListingDetail() {
             </div>
           )}
 
-          {chatError && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-600">{chatError}</p>}
-          {buyError && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-600">{buyError}</p>}
+          {chatError && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-400">{chatError}</p>}
+          {buyError && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-400">{buyError}</p>}
 
           <div className="mt-8">
             {isOwner ? (
@@ -260,7 +260,7 @@ export default function ListingDetail() {
               </div>
             ) : purchase ? (
               <div className="rounded-xl2 border border-emerald-500/30 bg-emerald-500/10 p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold text-emerald-600">
+                <p className="flex items-center gap-2 text-sm font-semibold text-emerald-400">
                   <ShieldCheck size={16} /> Funds secured in the Vault
                 </p>
                 <p className="mt-3 text-xs uppercase tracking-wide text-ink/50">Your handover OTP</p>
@@ -273,7 +273,7 @@ export default function ListingDetail() {
                 </p>
                 <Link
                   to="/vault"
-                  className="mt-4 inline-block rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-ink hover:bg-forest-light"
+                  className="mt-4 inline-block rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream hover:bg-forest-light"
                 >
                   Go to Sauda Vault
                 </Link>
@@ -303,7 +303,7 @@ export default function ListingDetail() {
                   <button
                     onClick={handleBuy}
                     disabled={buying}
-                    className="flex items-center gap-2 rounded-full bg-clay px-6 py-3 text-sm font-semibold text-ink hover:bg-clay-light disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-full bg-clay px-6 py-3 text-sm font-semibold text-cream hover:bg-clay-light disabled:opacity-50"
                   >
                     <Lock size={16} />
                     {buying

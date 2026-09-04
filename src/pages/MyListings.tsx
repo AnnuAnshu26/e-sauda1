@@ -7,9 +7,9 @@ import { fetchUserListings, deleteListing, markListingSold, relistListing } from
 import { Listing } from '../types'
 
 const statusStyles: Record<Listing['status'], string> = {
-  active: 'bg-emerald-500/10 text-emerald-600',
+  active: 'bg-emerald-500/10 text-emerald-400',
   sold: 'bg-ink/5 text-ink/60',
-  removed: 'bg-red-500/10 text-red-600',
+  removed: 'bg-red-500/10 text-red-400',
 }
 
 // The one place a seller can see everything they've ever posted, regardless of
@@ -73,12 +73,12 @@ export default function MyListings() {
     <div className="mx-auto max-w-3xl px-6 py-10">
       <Reveal className="flex items-center justify-between">
         <h1 className="font-display text-3xl font-semibold">My listings</h1>
-        <Link to="/sell" className="rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-ink hover:bg-forest-light">
+        <Link to="/sell" className="rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream hover:bg-forest-light">
           + Sell something
         </Link>
       </Reveal>
 
-      {error && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-400">{error}</p>}
 
       <div className="mt-6 space-y-3">
         {loading ? (
@@ -127,7 +127,7 @@ export default function MyListings() {
                     <button
                       onClick={() => handleMarkSold(l)}
                       disabled={statusChangingId === l.id}
-                      className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:bg-emerald-500/20 disabled:opacity-50"
+                      className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/20 disabled:opacity-50"
                     >
                       <CheckCircle size={12} /> Mark as sold
                     </button>
@@ -145,7 +145,7 @@ export default function MyListings() {
                 <button
                   onClick={() => handleDelete(l)}
                   disabled={deletingId === l.id}
-                  className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-500/20 disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/20 disabled:opacity-50"
                 >
                   <Trash2 size={12} /> Delete
                 </button>

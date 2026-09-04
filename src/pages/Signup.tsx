@@ -54,7 +54,7 @@ export default function Signup() {
         </p>
         <button
           onClick={() => navigate('/login')}
-          className="mt-6 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink hover:bg-forest-light"
+          className="mt-6 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light"
         >
           Go to login
         </button>
@@ -100,12 +100,12 @@ export default function Signup() {
           />
         </div>
 
-        {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-600">{error}</p>}
+        {error && <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-400">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full bg-clay px-6 py-3 text-sm font-semibold text-ink hover:bg-clay-light disabled:opacity-50"
+          className="w-full rounded-full bg-clay px-6 py-3 text-sm font-semibold text-cream hover:bg-clay-light disabled:opacity-50"
         >
           {loading ? 'Creating account...' : 'Create account'}
         </button>

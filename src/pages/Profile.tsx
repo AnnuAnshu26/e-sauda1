@@ -103,7 +103,7 @@ export default function Profile() {
       <Reveal className="rounded-xl2 bg-gradient-to-br from-clay/15 to-cream-dark p-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-forest text-2xl font-semibold text-ink">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-forest text-2xl font-semibold text-cream">
               {displayName.charAt(0).toUpperCase()}
             </span>
             <div>
@@ -123,7 +123,7 @@ export default function Profile() {
                   <button
                     onClick={saveName}
                     disabled={savingName}
-                    className="rounded-full bg-forest p-1.5 text-ink hover:bg-forest-light disabled:opacity-50"
+                    className="rounded-full bg-forest p-1.5 text-cream hover:bg-forest-light disabled:opacity-50"
                     aria-label="Save name"
                   >
                     <Check size={14} />
@@ -148,7 +148,7 @@ export default function Profile() {
                   </button>
                 </h1>
               )}
-              {nameError && <p className="mt-1 text-xs text-red-600">{nameError}</p>}
+              {nameError && <p className="mt-1 text-xs text-red-400">{nameError}</p>}
               <p className="text-sm text-ink/60">
                 {profile?.city || "Location not set"}
               </p>
@@ -169,7 +169,7 @@ export default function Profile() {
               </p>
               <div className="mt-1 flex items-center gap-3 text-xs">
                 <span
-                  className={verified ? "text-emerald-600" : "text-amber-600"}
+                  className={verified ? "text-emerald-400" : "text-amber-400"}
                 >
                   {verified ? "Verified" : "Not verified"}
                 </span>
@@ -230,7 +230,7 @@ export default function Profile() {
           <button
             disabled
             title="DigiLocker verification is coming soon"
-            className="flex items-center gap-2 rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-ink opacity-50 cursor-not-allowed"
+            className="flex items-center gap-2 rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream opacity-50 cursor-not-allowed"
           >
             <Lock size={15} /> Verify with DigiLocker
           </button>
@@ -274,14 +274,14 @@ export default function Profile() {
         </button>
         <button
           onClick={() => navigate("/sell")}
-          className="rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-ink hover:bg-forest-light"
+          className="rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream hover:bg-forest-light"
         >
           Post new listing
         </button>
       </div>
 
       <div className="mt-10 rounded-xl2 border border-red-500/30 bg-red-500/10/50 p-6">
-        <h2 className="font-display text-lg font-semibold text-red-600">Danger zone</h2>
+        <h2 className="font-display text-lg font-semibold text-red-400">Danger zone</h2>
         {!showDeleteConfirm ? (
           <>
             <p className="mt-1 text-sm text-ink/60">
@@ -291,7 +291,7 @@ export default function Profile() {
             </p>
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="mt-4 rounded-full border border-red-500/40 bg-surface px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-500/10"
+              className="mt-4 rounded-full border border-red-500/40 bg-surface px-5 py-2.5 text-sm font-semibold text-red-400 hover:bg-red-500/10"
             >
               Delete my account
             </button>
@@ -311,7 +311,7 @@ export default function Profile() {
               onChange={(e) => setDeleteConfirmText(e.target.value)}
               className="bg-surface text-ink mt-2 w-full max-w-xs rounded-lg border border-red-500/30 px-3 py-2 text-sm"
             />
-            {deleteError && <p className="mt-2 text-sm text-red-600">{deleteError}</p>}
+            {deleteError && <p className="mt-2 text-sm text-red-400">{deleteError}</p>}
             <div className="mt-4 flex gap-2">
               <button
                 onClick={handleDeleteAccount}

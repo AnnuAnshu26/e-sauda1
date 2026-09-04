@@ -88,7 +88,7 @@ export default function Vault() {
           </p>
           <button
             onClick={() => navigate("/browse")}
-            className="mt-6 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink hover:bg-forest-light"
+            className="mt-6 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light"
           >
             {tab === "Buying" ? "Find something to buy" : "Browse the marketplace"}
           </button>
@@ -217,7 +217,7 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
   return (
     <div className="rounded-xl2 border border-emerald-500/30 bg-emerald-500/10/60 p-5">
       <OrderHeader order={order} />
-      <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-600">
+      <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-400">
         <ShieldCheck size={15} /> Funds secured — safe to meet the seller
       </p>
 
@@ -235,13 +235,13 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
         <button
           onClick={reveal}
           disabled={revealing}
-          className="mt-3 rounded-full border border-emerald-500/40 bg-surface px-4 py-2 text-xs font-semibold text-emerald-600 hover:bg-emerald-500/10 disabled:opacity-50"
+          className="mt-3 rounded-full border border-emerald-500/40 bg-surface px-4 py-2 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/10 disabled:opacity-50"
         >
           {revealing ? "Loading…" : "Reveal handover OTP"}
         </button>
       )}
 
-      {error && <p className="mt-3 rounded-lg bg-red-500/10 p-2 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-3 rounded-lg bg-red-500/10 p-2 text-xs text-red-400">{error}</p>}
 
       {deliveryChecked && (
         <div className="mt-4 border-t border-emerald-500/20 pt-3">
@@ -258,13 +258,13 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
                 <button
                   onClick={handleMarkDelivered}
                   disabled={confirmingDelivered}
-                  className="mt-2 rounded-full border border-emerald-500/40 bg-surface px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:bg-emerald-500/10 disabled:opacity-50"
+                  className="mt-2 rounded-full border border-emerald-500/40 bg-surface px-3 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/10 disabled:opacity-50"
                 >
                   {confirmingDelivered ? "Confirming…" : "Mark as delivered"}
                 </button>
               )}
               {delivery.status === "delivered" && (
-                <p className="mt-1 text-xs text-emerald-600">
+                <p className="mt-1 text-xs text-emerald-400">
                   Once you've inspected the item, reveal your OTP above and share it via the rider.
                 </p>
               )}
@@ -286,7 +286,7 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
         {showCancel ? (
           <div className="space-y-2">
             {delivery && delivery.status !== "cancelled" && (
-              <p className="rounded-lg bg-amber-500/10 p-2 text-xs text-amber-600">
+              <p className="rounded-lg bg-amber-500/10 p-2 text-xs text-amber-400">
                 A {delivery.partner} rider has already been arranged for this order.
                 Cancelling now deducts the ₹{delivery.fee} delivery fee from your
                 refund — you'll get back ₹{Math.max(order.amount - delivery.fee, 0)}{" "}
@@ -318,7 +318,7 @@ function BuyingCard({ order, onChange }: { order: VaultOrder; onChange: () => vo
         ) : (
           <button
             onClick={() => setShowCancel(true)}
-            className="text-xs font-medium text-red-600 hover:underline"
+            className="text-xs font-medium text-red-400 hover:underline"
           >
             Cancel this order
           </button>
@@ -357,7 +357,7 @@ function SellingCard({ order, onChange }: { order: VaultOrder; onChange: () => v
     <div className="rounded-xl2 border border-line/5 bg-surface p-5">
       <OrderHeader order={order} />
 
-      <div className="mt-4 flex items-start gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-600">
+      <div className="mt-4 flex items-start gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-400">
         <AlertTriangle size={14} className="mt-0.5 shrink-0" />
         <span>
           Never accept a screenshot or text message as proof of payment. Only hand over
@@ -365,7 +365,7 @@ function SellingCard({ order, onChange }: { order: VaultOrder; onChange: () => v
         </span>
       </div>
 
-      <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-600">
+      <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-400">
         <ShieldCheck size={15} /> Funds secured in the Vault
       </p>
 
@@ -394,13 +394,13 @@ function SellingCard({ order, onChange }: { order: VaultOrder; onChange: () => v
         <button
           type="submit"
           disabled={confirming || !entered.trim()}
-          className="rounded-full bg-forest px-4 py-2 text-sm font-semibold text-ink hover:bg-forest-light disabled:opacity-50"
+          className="rounded-full bg-forest px-4 py-2 text-sm font-semibold text-cream hover:bg-forest-light disabled:opacity-50"
         >
           {confirming ? "Confirming…" : "Confirm handover"}
         </button>
       </form>
 
-      {error && <p className="mt-3 rounded-lg bg-red-500/10 p-2 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-3 rounded-lg bg-red-500/10 p-2 text-xs text-red-400">{error}</p>}
     </div>
   );
 }
@@ -442,7 +442,7 @@ function HistoryRow({ order, currentUserId }: { order: VaultOrder; currentUserId
       <div className="flex items-center justify-between">
         <OrderHeader order={order} />
         {isCompleted ? (
-          <span className="flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-1 text-xs font-medium text-emerald-600">
+          <span className="flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-1 text-xs font-medium text-emerald-400">
             <ShieldCheck size={12} /> Completed
           </span>
         ) : (
@@ -470,7 +470,7 @@ function HistoryRow({ order, currentUserId }: { order: VaultOrder; currentUserId
         <Download size={13} />
         {downloadingReceipt ? 'Generating…' : 'Download receipt'}
       </button>
-      {receiptError && <p className="mt-1 text-xs text-red-600">{receiptError}</p>}
+      {receiptError && <p className="mt-1 text-xs text-red-400">{receiptError}</p>}
 
       {isCompleted && checked && (
         <div className="mt-3 border-t border-line/5 pt-3">
@@ -557,11 +557,11 @@ function RatingForm({ orderId, onDone }: { orderId: string; onDone: (r: Rating) 
         placeholder="Optional: how did it go? (e.g. item as described, on time, easy handover)"
         className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2 text-xs"
       />
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
       <button
         onClick={submit}
         disabled={submitting || stars === 0}
-        className="mt-2 rounded-full bg-forest px-4 py-1.5 text-xs font-semibold text-ink disabled:opacity-40"
+        className="mt-2 rounded-full bg-forest px-4 py-1.5 text-xs font-semibold text-cream disabled:opacity-40"
       >
         {submitting ? "Submitting…" : "Submit rating"}
       </button>

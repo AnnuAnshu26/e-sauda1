@@ -7,8 +7,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-forest text-xs font-semibold text-ink">e</span>
-              <span className="font-display text-base italic tracking-tight text-ink">e-Sauda</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-forest text-xs font-semibold text-cream">e</span>
+              <span className="font-display text-base font-extrabold tracking-tight text-ink">e-Sauda</span>
             </div>
             <p className="mt-4 max-w-xs text-sm text-ink/50">
               Trust-first local marketplace. Escrow-secured. Delivery baked in.

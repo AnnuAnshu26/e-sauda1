@@ -101,7 +101,7 @@ export default function Admin() {
         <ShieldAlert className="mx-auto text-ink/30" size={40} />
         <p className="mt-4 font-display text-2xl font-semibold">Not authorized</p>
         <p className="mt-2 text-sm text-ink/60">This page is only for admins.</p>
-        <Link to="/" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink">
+        <Link to="/" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
           Back home
         </Link>
       </div>
@@ -119,7 +119,7 @@ export default function Admin() {
             key={t}
             onClick={() => setTab(t)}
             className={`rounded-full px-4 py-2 text-sm font-medium capitalize ${
-              tab === t ? 'bg-forest text-ink' : 'border border-line/10 bg-surface text-ink/80'
+              tab === t ? 'bg-forest text-cream' : 'border border-line/10 bg-surface text-ink/80'
             }`}
           >
             {t}
@@ -127,7 +127,7 @@ export default function Admin() {
         ))}
       </div>
 
-      {error && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-400">{error}</p>}
 
       <div className="mt-6 space-y-3">
         {loading ? (
@@ -186,7 +186,7 @@ export default function Admin() {
                     <button
                       onClick={() => act(r.id, 'reviewed')}
                       disabled={actingOn === r.id}
-                      className="flex items-center gap-1.5 rounded-full bg-forest px-4 py-2 text-xs font-semibold text-ink hover:bg-forest-light disabled:opacity-50"
+                      className="flex items-center gap-1.5 rounded-full bg-forest px-4 py-2 text-xs font-semibold text-cream hover:bg-forest-light disabled:opacity-50"
                     >
                       <Check size={13} /> Mark reviewed
                     </button>
@@ -203,7 +203,7 @@ export default function Admin() {
                   <button
                     onClick={() => handleRemoveListing(r)}
                     disabled={actingOn === r.id}
-                    className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-500/20 disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-400 hover:bg-red-500/20 disabled:opacity-50"
                   >
                     <Trash2 size={13} /> Remove listing
                   </button>
@@ -214,8 +214,8 @@ export default function Admin() {
                     disabled={actingOn === r.id}
                     className={`flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-semibold disabled:opacity-50 ${
                       r.reportedUserSuspended
-                        ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20'
-                        : 'border-red-500/30 bg-red-500/10 text-red-600 hover:bg-red-500/20'
+                        ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+                        : 'border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20'
                     }`}
                   >
                     {r.reportedUserSuspended ? (

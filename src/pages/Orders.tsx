@@ -106,7 +106,7 @@ export default function Orders() {
                 <button
                   onClick={() => handleDelete(l.id)}
                   disabled={deletingId === l.id}
-                  className="flex items-center gap-1 rounded-full border border-line/10 px-3 py-1.5 text-xs font-semibold text-ink/60 hover:border-red-500/30 hover:text-red-600 disabled:opacity-40"
+                  className="flex items-center gap-1 rounded-full border border-line/10 px-3 py-1.5 text-xs font-semibold text-ink/60 hover:border-red-500/30 hover:text-red-400 disabled:opacity-40"
                 >
                   <Trash2 size={13} />{" "}
                   {deletingId === l.id ? "Removing…" : "Remove"}

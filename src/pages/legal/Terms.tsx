@@ -8,8 +8,8 @@ export default function Terms() {
   return (
     <LegalLayout title="Terms and Conditions" lastUpdated="July 19, 2026">
       <p>
-        e-Sauda ("we", "us", "the platform") is operated by AARTI, a
-        sole proprietorship registered in India, operating out of WEST DELHI,DELHI.
+        e-Sauda ("we", "us", "the platform") is operated by ANSHU YADAV, a
+        sole proprietorship registered in India, operating out of SOUTH WEST DELHI,DELHI.
         These Terms govern your use of e-Sauda's website and services.
       </p>
 
@@ -24,7 +24,7 @@ export default function Terms() {
       <h2>Sauda Vault (escrow)</h2>
       <p>
         When a buyer purchases a listing through Sauda Vault, their payment is
-        collected via our payment processor (Razorpay) and held until the buyer
+        collected via our payment processor and held until the buyer
         confirms they've received the item, using a one-time handover code shared with
         the seller at the point of exchange. Funds are released to the seller only
         after handover is confirmed.

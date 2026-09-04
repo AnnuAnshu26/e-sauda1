@@ -173,7 +173,7 @@ export default function MeetupPlanner({
             <button
               type="submit"
               disabled={saving}
-              className="rounded-full bg-forest px-4 py-1.5 text-xs font-semibold text-ink hover:bg-forest-light disabled:opacity-50"
+              className="rounded-full bg-forest px-4 py-1.5 text-xs font-semibold text-cream hover:bg-forest-light disabled:opacity-50"
             >
               {saving ? 'Saving…' : 'Propose'}
             </button>
@@ -210,14 +210,14 @@ export default function MeetupPlanner({
                 : `Proposed by ${otherPartyLabel}`}
           </p>
 
-          {error && <p className="mt-2 rounded-lg bg-red-500/10 p-2 text-xs text-red-600">{error}</p>}
+          {error && <p className="mt-2 rounded-lg bg-red-500/10 p-2 text-xs text-red-400">{error}</p>}
 
           <div className="mt-3 flex flex-wrap gap-2">
             {meetup.status === 'proposed' && !isProposer && (
               <button
                 onClick={handleConfirm}
                 disabled={saving}
-                className="flex items-center gap-1 rounded-full bg-forest px-3 py-1.5 text-xs font-semibold text-ink hover:bg-forest-light disabled:opacity-50"
+                className="flex items-center gap-1 rounded-full bg-forest px-3 py-1.5 text-xs font-semibold text-cream hover:bg-forest-light disabled:opacity-50"
               >
                 <Check size={12} /> Confirm
               </button>
@@ -231,7 +231,7 @@ export default function MeetupPlanner({
             <button
               onClick={handleCancel}
               disabled={saving}
-              className="flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-500/20 disabled:opacity-50"
+              className="flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/20 disabled:opacity-50"
             >
               <X size={12} /> Cancel
             </button>

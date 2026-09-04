@@ -51,7 +51,7 @@ export default function SellerProfile() {
     return (
       <div className="mx-auto max-w-lg px-6 py-24 text-center">
         <p className="font-display text-2xl font-semibold">Seller not found</p>
-        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ink">
+        <Link to="/browse" className="mt-6 inline-block rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream">
           Back to Browse
         </Link>
       </div>
@@ -68,7 +68,7 @@ export default function SellerProfile() {
       <Reveal className="rounded-xl2 bg-gradient-to-br from-clay/15 to-cream-dark p-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-forest text-2xl font-semibold text-ink">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-forest text-2xl font-semibold text-cream">
               {profile.displayName.charAt(0).toUpperCase()}
             </span>
             <div>
@@ -82,13 +82,13 @@ export default function SellerProfile() {
                 Joined {joinedLabel}
               </p>
               <div className="mt-1 flex items-center gap-3 text-xs">
-                <span className={profile.verified ? 'flex items-center gap-1 text-emerald-600' : 'text-amber-600'}>
+                <span className={profile.verified ? 'flex items-center gap-1 text-emerald-400' : 'text-amber-400'}>
                   {profile.verified && <ShieldCheck size={12} />}
                   {profile.verified ? 'Verified' : 'Not verified'}
                 </span>
                 {profile.ratingCount > 0 && (
                   <span className="flex items-center gap-1 text-ink/70">
-                    <Star size={12} className="fill-amber-400 text-amber-600" />
+                    <Star size={12} className="fill-amber-400 text-amber-400" />
                     {profile.ratingAvg?.toFixed(1)} ({profile.ratingCount})
                   </span>
                 )}
@@ -142,7 +142,7 @@ export default function SellerProfile() {
                   <Star
                     key={i}
                     size={14}
-                    className={i < r.stars ? 'fill-amber-400 text-amber-600' : 'text-ink/10'}
+                    className={i < r.stars ? 'fill-amber-400 text-amber-400' : 'text-ink/10'}
                   />
                 ))}
                 <span className="ml-2 text-xs text-ink/40">

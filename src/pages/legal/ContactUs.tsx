@@ -4,7 +4,7 @@ export default function ContactUs() {
   return (
     <LegalLayout title="Contact Us" lastUpdated="July 19, 2026">
       <p>
-        e-Sauda is operated by AARTI, a sole proprietorship based in
+        e-Sauda is operated by ANSHU YADAV, a sole proprietorship based in
         India. If you have a question, an issue with an order, or need to report
         something, reach us through any of the channels below.
       </p>
@@ -13,10 +13,10 @@ export default function ContactUs() {
       <p>edotsauda@gmail.com -- we aim to respond within 2 business days.</p>
 
       <h2>Phone</h2>
-      <p>8375004426 -- available [Mon-Sat, 10am-6pm IST].</p>
+      <p>9817116312 -- available [Mon-Sat, 10am-6pm IST].</p>
 
       <h2>Registered address</h2>
-      <p>HNO 468 SHAHBAD DAULATPUR,DELHI-110042</p>
+      <p>GPRA TYPE-2 QUARTERS, SAROJINI NAGAR</p>
 
       <h2>For order-specific issues</h2>
       <p>
