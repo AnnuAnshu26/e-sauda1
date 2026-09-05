@@ -27,6 +27,7 @@ import Admin from './pages/Admin'
 import SellerProfile from './pages/SellerProfile'
 import Messages from './pages/Messages'
 import Saved from './pages/Saved'
+import Explore from './pages/Explore'
 import ChatbotWidget from './components/ChatbotWidget'
 
 function AnimatedRoutes() {
@@ -35,9 +36,38 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><Home /></PageTransition>} />
-        <Route path="/browse" element={<PageTransition><Browse /></PageTransition>} />
-        <Route path="/listing/:id" element={<PageTransition><ListingDetail /></PageTransition>} />
+        <Route
+          path="/"
+          element={
+            <RequireAuth>
+              <PageTransition><Home /></PageTransition>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/browse"
+          element={
+            <RequireAuth>
+              <PageTransition><Browse /></PageTransition>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/explore"
+          element={
+            <RequireAuth>
+              <PageTransition><Explore /></PageTransition>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/listing/:id"
+          element={
+            <RequireAuth>
+              <PageTransition><ListingDetail /></PageTransition>
+            </RequireAuth>
+          }
+        />
         <Route
           path="/listing/:id/edit"
           element={
@@ -46,7 +76,14 @@ function AnimatedRoutes() {
             </RequireAuth>
           }
         />
-        <Route path="/seller/:id" element={<PageTransition><SellerProfile /></PageTransition>} />
+        <Route
+          path="/seller/:id"
+          element={
+            <RequireAuth>
+              <PageTransition><SellerProfile /></PageTransition>
+            </RequireAuth>
+          }
+        />
         <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
         <Route path="/signup" element={<PageTransition><Signup /></PageTransition>} />
         <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
@@ -56,6 +93,9 @@ function AnimatedRoutes() {
         <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
         <Route path="/shipping-policy" element={<PageTransition><ShippingPolicy /></PageTransition>} />
         <Route path="/contact" element={<PageTransition><ContactUs /></PageTransition>} />
+        {/* Legal/compliance pages stay reachable without logging in -- payment
+            gateways (Razorpay) and app-store review both expect Terms/Privacy/
+            Refund/Contact to be publicly viewable, not gated behind auth. */}
         <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
         <Route
           path="/messages"

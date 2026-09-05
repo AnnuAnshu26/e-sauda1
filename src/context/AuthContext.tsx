@@ -25,6 +25,10 @@ interface AuthContextValue {
     displayName: string,
   ) => Promise<{ error: string | null; sessionCreated?: boolean }>
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
+  // Google OAuth — redirects the browser to Google and back, so there's no
+  // return value to await here; the session appears via onAuthStateChange
+  // once the redirect completes (see the listener set up below).
+  signInWithGoogle: () => Promise<{ error: string | null }>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
   requestPasswordReset: (email: string) => Promise<{ error: string | null }>
@@ -161,6 +165,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error ? error.message : null }
   }
 
+  // Redirects to Google's consent screen; back on this origin, Supabase's
+  // detectSessionInUrl (on by default in lib/supabase.ts's client) picks up
+  // the resulting tokens automatically and onAuthStateChange fires with a
+  // real session — no manual token handling needed here, same pattern as the
+  // password-reset redirect above.
+  async function signInWithGoogle() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    })
+    return { error: error ? error.message : null }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -170,6 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         signUp,
         signIn,
+        signInWithGoogle,
         signOut,
         refreshProfile,
         requestPasswordReset,

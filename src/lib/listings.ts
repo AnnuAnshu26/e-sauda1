@@ -25,6 +25,8 @@ export function mapRow(row: any): Listing {
     videoUrl: row.video_url ?? null,
     status: row.status,
     createdAt: row.created_at,
+    latitude: row.latitude !== null && row.latitude !== undefined ? Number(row.latitude) : null,
+    longitude: row.longitude !== null && row.longitude !== undefined ? Number(row.longitude) : null,
   }
 }
 // A single listing's full detail — used by the /listing/:id page.
@@ -133,6 +135,8 @@ export async function createListing(
     p_depth_cm: null,
     p_emoji: visual.emoji,
     p_bg: visual.bg,
+    p_latitude: input.latitude ?? null,
+    p_longitude: input.longitude ?? null,
   })
 
   if (error) throw error
@@ -155,6 +159,8 @@ export interface ListingUpdateInput {
   description: string
   city: string
   location: string
+  latitude?: number | null
+  longitude?: number | null
 }
 
 export async function updateListing(id: string, input: ListingUpdateInput): Promise<Listing> {
@@ -167,6 +173,8 @@ export async function updateListing(id: string, input: ListingUpdateInput): Prom
       description: input.description || null,
       city: input.city || null,
       location: input.location || input.city || '',
+      latitude: input.latitude ?? null,
+      longitude: input.longitude ?? null,
     })
     .eq('id', id)
     .select('*')
@@ -219,4 +227,21 @@ export async function markListingSold(id: string): Promise<void> {
 export async function relistListing(id: string): Promise<void> {
   const { error } = await supabase.from('listings').update({ status: 'active' }).eq('id', id)
   if (error) throw error
+}
+
+// Powers the Explore feed (shorts-style vertical scroll of product videos --
+// see pages/Explore.tsx). Every new listing has a mandatory video (see
+// video_upload_schema.sql), so this is just "active listings that happen to
+// have one" -- older pre-mandatory-video listings with a null video_url are
+// naturally excluded since there's nothing to play for them.
+export async function fetchListingsWithVideo(limit = 30): Promise<Listing[]> {
+  const { data, error } = await supabase
+    .from('listings')
+    .select('*')
+    .eq('status', 'active')
+    .not('video_url', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (error) throw error
+  return (data ?? []).map(mapRow)
 }

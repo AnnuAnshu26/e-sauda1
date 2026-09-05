@@ -12,6 +12,7 @@ import { useSavedListings } from '../hooks/useSavedListings'
 import { Listing, VaultOrderWithOtp, ChatOffer } from '../types'
 import ReportButton from '../components/ReportButton'
 import ListingCard from '../components/ListingCard'
+import ListingMap from '../components/ListingMap'
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>()
@@ -214,6 +215,14 @@ export default function ListingDetail() {
           <p className="mt-3 flex items-center gap-1 text-sm text-ink/60">
             <MapPin size={14} /> {listing.location || listing.city || 'Location not set'} · {listing.distanceKm}km away
           </p>
+          {listing.latitude !== null && listing.longitude !== null && (
+            <div className="mt-3">
+              <ListingMap lat={listing.latitude} lng={listing.longitude} label={listing.location || listing.city || listing.title} />
+              <p className="mt-1.5 text-xs text-ink/40">
+                Approximate area shown for privacy — exact address is shared only after a Vault purchase.
+              </p>
+            </div>
+          )}
           {!isOwner && (
             <div className="mt-1 flex items-center gap-3">
               <Link to={`/seller/${listing.ownerId}`} className="text-sm text-clay hover:underline">

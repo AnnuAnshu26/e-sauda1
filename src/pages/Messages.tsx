@@ -15,6 +15,7 @@ import {
   acceptOffer,
   declineOffer,
   withdrawOffer,
+  counterOffer,
   subscribeToOffers,
 } from '../lib/chatOffers'
 import { scanMessage, describeFlags } from '../lib/moderation'
@@ -46,6 +47,9 @@ export default function Messages() {
   const [sendError, setSendError] = useState<string | null>(null)
   const [showBlockedList, setShowBlockedList] = useState(false)
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([])
+  const [counteringOfferId, setCounteringOfferId] = useState<string | null>(null)
+  const [counterDraft, setCounterDraft] = useState('')
+  const [counterSubmitting, setCounterSubmitting] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   // Load the inbox list once we know who's logged in.
@@ -259,6 +263,35 @@ export default function Messages() {
     }
   }
 
+  // Lets whichever side didn't make the current pending offer propose a
+  // different price instead of just accepting/declining it. Server-side this
+  // atomically declines the old offer and inserts a fresh one from this side
+  // (see counter_chat_offer in chat_offers_negotiation_schema.sql) — both
+  // updates are reflected here optimistically, then corrected by whatever the
+  // realtime subscription reports back.
+  async function handleCounterOffer(offerId: string) {
+    const amount = Number(counterDraft)
+    if (!amount || amount <= 0) {
+      setOfferError('Enter a valid counter amount.')
+      return
+    }
+    setCounterSubmitting(true)
+    setOfferError(null)
+    try {
+      const newOffer = await counterOffer(offerId, amount)
+      setOffers((prev) => [
+        ...prev.map((o) => (o.id === offerId ? { ...o, status: 'declined' as const, supersededBy: newOffer.id } : o)),
+        newOffer,
+      ])
+      setCounteringOfferId(null)
+      setCounterDraft('')
+    } catch (err: any) {
+      setOfferError(err.message || 'Could not send that counter-offer. Try again.')
+    } finally {
+      setCounterSubmitting(false)
+    }
+  }
+
   // Messages and offers are separate tables, sorted together into a single
   // timeline so an offer card appears right where it was actually sent,
   // relative to the surrounding conversation.
@@ -453,14 +486,18 @@ export default function Messages() {
                     }
 
                     const o = item.offer
-                    const iMadeThisOffer = o.buyerId === user?.id
-                    const canRespond = !iMadeThisOffer && o.status === 'pending' // seller
-                    const canWithdraw = iMadeThisOffer && o.status === 'pending' // buyer
+                    // Who made THIS offer, from the server-derived offered_by (not just
+                    // "am I the buyer" — either side can now propose or counter a price,
+                    // see chat_offers_negotiation_schema.sql).
+                    const iMadeThisOffer = (o.offeredBy === 'buyer') === isBuyer
+                    const canRespond = !iMadeThisOffer && o.status === 'pending' // whoever didn't make it
+                    const canWithdraw = iMadeThisOffer && o.status === 'pending' // whoever made it
+                    const isCountering = counteringOfferId === o.id
                     const acting = actingOfferId === o.id
                     const statusCopy: Record<ChatOffer['status'], string> = {
-                      pending: iMadeThisOffer ? 'Waiting for seller to respond' : 'Awaiting your response',
+                      pending: iMadeThisOffer ? 'Waiting for a response' : 'Awaiting your response',
                       accepted: 'Offer accepted — buyer can now buy at this price',
-                      declined: 'Offer declined',
+                      declined: o.supersededBy ? 'Countered below' : 'Offer declined',
                       withdrawn: 'Offer withdrawn',
                       consumed: 'Purchased at this price',
                     }
@@ -473,13 +510,16 @@ export default function Messages() {
                         className="flex justify-center"
                       >
                         <div className="w-full max-w-xs rounded-xl2 border border-clay/30 bg-clay/5 p-3 text-center">
+                          <p className="text-[11px] font-medium uppercase tracking-wide text-ink/40">
+                            {o.offeredBy === 'seller' ? 'Seller offered' : 'Buyer offered'}
+                          </p>
                           <p className="flex items-center justify-center gap-1 text-sm font-semibold text-ink">
                             <IndianRupee size={13} />
-                            {o.amount.toLocaleString('en-IN')} offer
+                            {o.amount.toLocaleString('en-IN')}
                           </p>
                           <p className="mt-0.5 text-xs text-ink/50">{statusCopy[o.status]}</p>
-                          {(canRespond || canWithdraw) && (
-                            <div className="mt-2 flex justify-center gap-2">
+                          {(canRespond || canWithdraw) && !isCountering && (
+                            <div className="mt-2 flex flex-wrap justify-center gap-2">
                               {canRespond && (
                                 <>
                                   <button
@@ -488,6 +528,17 @@ export default function Messages() {
                                     className="flex items-center gap-1 rounded-full bg-forest px-3 py-1 text-xs font-semibold text-cream disabled:opacity-50"
                                   >
                                     <Check size={12} /> Accept
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setCounteringOfferId(o.id)
+                                      setCounterDraft(String(o.amount))
+                                      setOfferError(null)
+                                    }}
+                                    disabled={acting}
+                                    className="flex items-center gap-1 rounded-full border border-clay/40 bg-surface px-3 py-1 text-xs font-semibold text-clay disabled:opacity-50"
+                                  >
+                                    Counter
                                   </button>
                                   <button
                                     onClick={() => handleDeclineOffer(o.id)}
@@ -507,6 +558,32 @@ export default function Messages() {
                                   Withdraw
                                 </button>
                               )}
+                            </div>
+                          )}
+                          {isCountering && (
+                            <div className="mt-2 flex items-center gap-2">
+                              <IndianRupee size={12} className="shrink-0 text-ink/40" />
+                              <input
+                                type="number"
+                                min="1"
+                                autoFocus
+                                value={counterDraft}
+                                onChange={(e) => setCounterDraft(e.target.value)}
+                                className="w-full rounded-full border border-line/10 bg-surface px-2.5 py-1 text-xs focus:outline-none"
+                              />
+                              <button
+                                onClick={() => handleCounterOffer(o.id)}
+                                disabled={counterSubmitting || !counterDraft}
+                                className="shrink-0 rounded-full bg-clay px-2.5 py-1 text-xs font-semibold text-cream disabled:opacity-40"
+                              >
+                                {counterSubmitting ? '…' : 'Send'}
+                              </button>
+                              <button
+                                onClick={() => setCounteringOfferId(null)}
+                                className="shrink-0 rounded-full border border-line/10 bg-surface px-2 py-1 text-xs text-ink/50"
+                              >
+                                <X size={12} />
+                              </button>
                             </div>
                           )}
                         </div>
@@ -531,7 +608,7 @@ export default function Messages() {
                 </p>
               ) : (
                 <>
-                  {isBuyer && (
+                  {!hasPendingOffer && (
                     <form
                       onSubmit={handleMakeOffer}
                       className="flex items-center gap-2 border-t border-line/5 bg-clay/5 px-4 py-2.5"
@@ -542,13 +619,13 @@ export default function Messages() {
                         min="1"
                         value={offerDraft}
                         onChange={(e) => setOfferDraft(e.target.value)}
-                        placeholder={hasPendingOffer ? 'Waiting on your current offer…' : 'Offer a different price'}
-                        disabled={hasPendingOffer || sendingOffer}
+                        placeholder={isBuyer ? 'Offer a different price' : 'Offer the buyer a price'}
+                        disabled={sendingOffer}
                         className="flex-1 rounded-full border border-line/10 bg-surface px-3 py-1.5 text-sm focus:outline-none disabled:opacity-50"
                       />
                       <button
                         type="submit"
-                        disabled={hasPendingOffer || sendingOffer || !offerDraft}
+                        disabled={sendingOffer || !offerDraft}
                         className="rounded-full bg-clay px-3 py-1.5 text-xs font-semibold text-cream disabled:opacity-40"
                       >
                         {sendingOffer ? 'Sending…' : 'Make offer'}

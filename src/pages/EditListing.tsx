@@ -2,6 +2,8 @@ import { useEffect, useState, FormEvent } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { X, Upload, Video } from 'lucide-react'
 import { fetchListingById, updateListing, updateListingPhotos, updateListingVideo } from '../lib/listings'
+import { geocodeLocation, GeoPoint } from '../lib/geocoding'
+import ListingMap from '../components/ListingMap'
 import {
   uploadListingPhotos,
   deleteListingPhotoByUrl,
@@ -49,6 +51,10 @@ export default function EditListing() {
   const [videoError, setVideoError] = useState<string | null>(null)
   const [savingVideo, setSavingVideo] = useState(false)
 
+  const [geo, setGeo] = useState<GeoPoint | null>(null)
+  const [geocoding, setGeocoding] = useState(false)
+  const [geoDirty, setGeoDirty] = useState(false) // becomes true once the person edits city, so we know to re-geocode
+
   useEffect(() => {
     if (!id) return
     setLoading(true)
@@ -70,6 +76,9 @@ export default function EditListing() {
         setCity(data.city || '')
         setPhotos(data.photoUrls || [])
         setVideoUrl(data.videoUrl)
+        if (data.latitude !== null && data.longitude !== null) {
+          setGeo({ lat: data.latitude, lng: data.longitude })
+        }
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false))
@@ -78,6 +87,32 @@ export default function EditListing() {
   // Photo changes save immediately (unlike title/price/etc, which wait for the form's
   // Save button) — matches how removing a photo or picking a file feels everywhere
   // else in the app: an action, not a draft edit.
+  // Only re-geocodes once the person actually edits the location field --
+  // otherwise every load of this page would re-hit the geocoder for a listing
+  // that already has a perfectly good stored lat/lng from when it was created.
+  useEffect(() => {
+    if (!geoDirty) return
+    if (!city.trim()) {
+      setGeo(null)
+      return
+    }
+    let cancelled = false
+    setGeocoding(true)
+    const timer = setTimeout(() => {
+      geocodeLocation(city)
+        .then((point) => {
+          if (!cancelled) setGeo(point)
+        })
+        .finally(() => {
+          if (!cancelled) setGeocoding(false)
+        })
+    }, 600)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [city, geoDirty])
+
   async function handleRemovePhoto(url: string) {
     if (!id) return
     setPhotoError(null)
@@ -198,6 +233,8 @@ export default function EditListing() {
         description: description.trim(),
         city: city.trim(),
         location: city.trim(),
+        latitude: geo?.lat ?? null,
+        longitude: geo?.lng ?? null,
       })
       setSaved(true)
       setTimeout(() => navigate(`/listing/${id}`), 900)
@@ -372,9 +409,18 @@ export default function EditListing() {
           <label className="text-sm font-medium text-ink">City</label>
           <input
             value={city}
-            onChange={(e) => setCity(e.target.value)}
+            onChange={(e) => {
+              setCity(e.target.value)
+              setGeoDirty(true)
+            }}
             className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
           />
+          {geocoding && <p className="mt-2 text-xs text-ink/40">Locating area on the map…</p>}
+          {!geocoding && geo && (
+            <div className="mt-3">
+              <ListingMap lat={geo.lat} lng={geo.lng} label={city} />
+            </div>
+          )}
         </div>
 
         <div>

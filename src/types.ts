@@ -31,6 +31,12 @@ export interface Listing {
   videoUrl: string | null
   status: 'active' | 'sold' | 'removed'
   createdAt: string
+  // Approximate area-level coordinates resolved from `location` (see
+  // lib/geocoding.ts) — null for listings created before this feature or
+  // where geocoding couldn't resolve the text. Powers the interactive map
+  // on ListingDetail; deliberately not precise enough to be a street address.
+  latitude: number | null
+  longitude: number | null
 }
 
 // Shape the Sell wizard collects and hands to lib/listings.ts createListing().
@@ -44,6 +50,8 @@ export interface NewListingInput {
   description?: string
   city?: string
   location?: string
+  latitude?: number | null
+  longitude?: number | null
 }
 
 export interface Conversation {
@@ -76,9 +84,11 @@ export interface ConversationSummary extends Conversation {
 }
 
 export type ChatOfferStatus = 'pending' | 'accepted' | 'declined' | 'withdrawn' | 'consumed'
+export type ChatOfferMadeBy = 'buyer' | 'seller'
 
-// A buyer-proposed price inside a chat thread. Rendered inline in the
-// message timeline in Messages.tsx.
+// A proposed price inside a chat thread — from either side, since either
+// party can start or counter a negotiation. Rendered inline in the message
+// timeline in Messages.tsx.
 export interface ChatOffer {
   id: string
   conversationId: string
@@ -87,6 +97,12 @@ export interface ChatOffer {
   sellerId: string
   amount: number
   status: ChatOfferStatus
+  // Who proposed THIS specific amount — the other party is the one who can
+  // accept/decline/counter it; this party can only withdraw it.
+  offeredBy: ChatOfferMadeBy
+  // Set once this offer has been countered — points at the new offer row
+  // that replaced it, so the UI can render a negotiation history/chain.
+  supersededBy: string | null
   createdAt: string
   updatedAt: string
 }

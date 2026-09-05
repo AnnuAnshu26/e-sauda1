@@ -67,6 +67,12 @@ export default function Signup() {
       <h1 className="font-display text-3xl font-semibold">Create an account</h1>
       <p className="mt-1 text-sm text-ink/60">Takes under a minute. First listing is ₹1.</p>
 
+      <p className="mt-4 rounded-lg bg-clay/10 p-3 text-xs text-ink/70">
+        Prefer not to set a password? Head to{' '}
+        <Link to="/login" className="font-semibold text-clay hover:underline">Log in</Link>{' '}
+        instead — signing in with Google creates your account automatically the first time.
+      </p>
+
       <form onSubmit={onSubmit} className="mt-8 space-y-4">
         <div>
           <label className="text-sm font-medium text-ink">Display name</label>

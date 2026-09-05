@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut, Inbox, Heart, ShieldAlert, Package } from 'lucide-react'
+import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut, Inbox, Heart, ShieldAlert, Package, Clapperboard } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useNotifications } from '../hooks/useNotifications'
 import { timeAgo } from '../lib/time'
@@ -81,6 +81,7 @@ export default function Navbar() {
 
         <nav className="hidden shrink-0 items-center gap-6 eyebrow md:flex">
           <Link to="/browse" className="hover:text-ink">Browse</Link>
+          <Link to="/explore" className="hover:text-ink">Explore</Link>
           {user && <Link to="/messages" className="hover:text-ink">Messages</Link>}
           {user && <Link to="/saved" className="hover:text-ink">Saved</Link>}
           <Link to="/vault" className="hover:text-ink">Vault</Link>
@@ -191,6 +192,9 @@ export default function Navbar() {
                   </Link>
                   <Link to="/browse" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream-dark">
                     <ShoppingBag size={16} /> Browse marketplace
+                  </Link>
+                  <Link to="/explore" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream-dark">
+                    <Clapperboard size={16} /> Explore
                   </Link>
                   {profile?.is_admin && (
                     <Link to="/admin" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream-dark">

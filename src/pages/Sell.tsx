@@ -18,8 +18,10 @@ import { payListingFee } from "../lib/listingFee";
 import { suggestPrice, PriceSuggestion } from "../lib/pricing";
 import { Category } from "../types";
 import { useAuth } from "../context/AuthContext";
-import { Upload, Video, Check, X } from "lucide-react";
+import { Upload, Video, Check, X, MapPin } from "lucide-react";
 import { categoryIcons } from "../lib/categoryIcons";
+import { geocodeLocation, GeoPoint } from "../lib/geocoding";
+import ListingMap from "../components/ListingMap";
 
 const stepNames = ["Category", "Details", "Media", "Review"];
 const LISTING_CAP_PER_CATEGORY = 2; // matches the flat cap new users start with; grows with trust score later
@@ -53,6 +55,35 @@ export default function Sell() {
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [priceSuggestion, setPriceSuggestion] = useState<PriceSuggestion | null>(null);
   const [priceSuggestionLoading, setPriceSuggestionLoading] = useState(false);
+
+  // Resolved from `city` (the free-text location field below) so the listing
+  // can show a real map pin on ListingDetail. Debounced the same way the
+  // price suggestion is, and never blocks publishing if it fails/is empty --
+  // see geocodeLocation's own error handling.
+  const [geo, setGeo] = useState<GeoPoint | null>(null);
+  const [geocoding, setGeocoding] = useState(false);
+
+  useEffect(() => {
+    if (!city.trim()) {
+      setGeo(null);
+      return;
+    }
+    let cancelled = false;
+    setGeocoding(true);
+    const timer = setTimeout(() => {
+      geocodeLocation(city)
+        .then((point) => {
+          if (!cancelled) setGeo(point);
+        })
+        .finally(() => {
+          if (!cancelled) setGeocoding(false);
+        });
+    }, 600);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [city]);
 
   // Object URLs for instant local previews before anything is uploaded.
   // Must be revoked when files change/unmount, or they leak memory.
@@ -211,6 +242,8 @@ export default function Sell() {
           description: description || undefined,
           city: city.trim() || profile?.city || undefined,
           location: city.trim() || undefined,
+          latitude: geo?.lat ?? null,
+          longitude: geo?.lng ?? null,
         },
         razorpayOrderId,
       );
@@ -492,8 +525,24 @@ export default function Sell() {
                   className="bg-surface text-ink mt-2 w-full rounded-lg border border-line/10 px-3 py-2.5 text-sm"
                 />
                 <p className="mt-1 text-xs text-ink/50">
-                  Shown on your listing and used for the City filter on Browse.
+                  Shown on your listing and used for the City filter on Browse. Only your
+                  general area is shown to buyers — never your exact address.
                 </p>
+                {geocoding && (
+                  <p className="mt-2 flex items-center gap-1.5 text-xs text-ink/40">
+                    <MapPin size={12} /> Locating area on the map…
+                  </p>
+                )}
+                {!geocoding && geo && (
+                  <div className="mt-3">
+                    <ListingMap lat={geo.lat} lng={geo.lng} label={city} />
+                  </div>
+                )}
+                {!geocoding && city.trim() && !geo && (
+                  <p className="mt-2 text-xs text-ink/40">
+                    Couldn't place that area on the map — the listing will still publish fine.
+                  </p>
+                )}
               </div>
             </div>
           </div>

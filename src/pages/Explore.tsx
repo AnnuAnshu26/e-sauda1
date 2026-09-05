@@ -70,7 +70,7 @@ function ExploreSlide({
           </p>
           <button
             onClick={() => navigate(`/listing/${listing.id}`)}
-            className="mt-3 flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-semibold text-ink"
+            className="mt-3 flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-semibold text-cream-dark"
           >
             View details <ArrowUpRight size={13} />
           </button>

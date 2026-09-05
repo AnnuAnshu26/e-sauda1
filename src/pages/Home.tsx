@@ -25,6 +25,8 @@ import ListingCard from "../components/ListingCard";
 import Reveal from "../components/Reveal";
 import Spotlight, { SpotlightSlide } from "../components/Spotlight";
 import { categoryIcons } from "../lib/categoryIcons";
+import { fetchWishlistBasedRecommendations } from "../lib/recommendations";
+import { useAuth } from "../context/AuthContext";
 
 const vaultSlides: SpotlightSlide[] = [
   { index: "01", title: "Lock the price", desc: "Chat in-app. Agree on a number. No phone numbers leaked.", icon: MessageSquareText },
@@ -97,11 +99,14 @@ function HeroTicker() {
 }
 
 export default function Home() {
+  const { user } = useAuth();
   const { savedIds, toggleSaved } = useSavedListings();
   const [fresh, setFresh] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeHeroIcon, setActiveHeroIcon] = useState(0);
   const [handoverStep, setHandoverStep] = useState(0);
+  const [recommended, setRecommended] = useState<Listing[]>([]);
+  const [recommendedLoading, setRecommendedLoading] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,6 +116,25 @@ export default function Home() {
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);
+
+  // "Recommended for you" -- driven by what's in the user's wishlist (see
+  // lib/recommendations.ts). Only fetched for logged-in users; a signed-out
+  // visitor has no wishlist to base it on, so the section just doesn't render
+  // for them (checked via recommended.length below) rather than showing a
+  // generic/empty rail.
+  useEffect(() => {
+    if (!user) {
+      setRecommended([]);
+      return;
+    }
+    let cancelled = false;
+    setRecommendedLoading(true);
+    fetchWishlistBasedRecommendations(user.id)
+      .then((data) => { if (!cancelled) setRecommended(data); })
+      .catch(() => { if (!cancelled) setRecommended([]); })
+      .finally(() => { if (!cancelled) setRecommendedLoading(false); });
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   // Cycles which of the four hero icons is "spotlit", and which handover
   // status line shows on the FUNDS SECURED card — keeps the hero panel
@@ -345,6 +369,36 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      {/* Recommended for you — driven by wishlist saves, only for logged-in
+          users who have actually saved something to base it on. */}
+      {user && (recommendedLoading || recommended.length > 0) && (
+        <section className="mx-auto max-w-7xl px-6 pt-16">
+          <Reveal className="mb-8 flex items-end justify-between">
+            <div>
+              <p className="eyebrow">(Based on your wishlist)</p>
+              <h2 className="mt-2 font-display text-3xl font-extrabold text-ink">Recommended for you</h2>
+              <p className="mt-1 text-sm text-ink/50">More like what you've already saved.</p>
+            </div>
+            <Link to="/saved" className="text-sm font-semibold text-clay hover:underline">View wishlist →</Link>
+          </Reveal>
+          {recommendedLoading ? (
+            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-64 animate-pulse rounded-xl2 bg-surface" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+              {recommended.map((l, i) => (
+                <Reveal key={l.id} delay={Math.min(i * 0.05, 0.3)}>
+                  <ListingCard listing={l} saved={savedIds.has(l.id)} onToggleSaved={toggleSaved} />
+                </Reveal>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Vault pitch — the signature moment: numbered, auto-advancing,
           crossfading. Hover to pause, click a number to jump. */}
