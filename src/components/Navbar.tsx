@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut, Inbox, Heart, ShieldAlert, Package, Clapperboard } from 'lucide-react'
+import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut, Inbox, Heart, ShieldAlert, Package, Clapperboard, PlayCircle } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useNotifications } from '../hooks/useNotifications'
 import { timeAgo } from '../lib/time'
@@ -81,12 +81,24 @@ export default function Navbar() {
 
         <nav className="hidden shrink-0 items-center gap-6 eyebrow md:flex">
           <Link to="/browse" className="hover:text-ink">Browse</Link>
-          <Link to="/explore" className="hover:text-ink">Explore</Link>
           {user && <Link to="/messages" className="hover:text-ink">Messages</Link>}
           {user && <Link to="/saved" className="hover:text-ink">Saved</Link>}
           <Link to="/vault" className="hover:text-ink">Vault</Link>
           <Link to="/orders" className="hover:text-ink">Orders</Link>
         </nav>
+
+        {/* Standalone Reels/Explore button -- deliberately its own always-visible
+            button (not just a text link inside the "hidden md:flex" nav above,
+            and not buried in the account dropdown) so it's reachable with one
+            tap on mobile without needing to be logged in or open a menu first. */}
+        <Link
+          to="/explore"
+          className="flex shrink-0 items-center gap-1.5 rounded-full border border-clay/30 bg-clay/10 px-3 py-2 text-sm font-semibold text-clay hover:bg-clay/20"
+          aria-label="Watch Reels"
+        >
+          <PlayCircle size={16} />
+          <span className="hidden sm:inline">Reels</span>
+        </Link>
 
         {user && (
           <div className="relative shrink-0" ref={notifRef}>
