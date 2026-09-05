@@ -1,14 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Static sitemap for e-Sauda. This is a client-side SPA (Vite + React Router),
-  so this file lists only the fixed, publicly-crawlable routes -- not per-listing
-  or per-seller pages (/listing/:id, /seller/:id), which are dynamic and would
-  need a server-generated sitemap to enumerate properly. Auth-gated routes
-  (messages, sell, my-listings, orders, vault, profile, saved, admin) are
-  intentionally excluded since they require login and aren't meant to be indexed.
-
-  Update the <lastmod> dates when a page's content changes meaningfully.
--->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://e-sauda1-two.vercel.app/</loc>
@@ -26,43 +16,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://e-sauda1-two.vercel.app/sell</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://e-sauda1-two.vercel.app/login</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://e-sauda1-two.vercel.app/signup</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://e-sauda1-two.vercel.app/pricing</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://e-sauda1-two.vercel.app/terms</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  <url>
-    <loc>https://e-sauda1-two.vercel.app/privacy</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  <url>
-    <loc>https://e-sauda1-two.vercel.app/refund-policy</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  <url>
-    <loc>https://e-sauda1-two.vercel.app/shipping-policy</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  <url>
-    <loc>https://e-sauda1-two.vercel.app/contact</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <loc>https://e-sauda1-two.vercel.app/signup</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
 </urlset>
