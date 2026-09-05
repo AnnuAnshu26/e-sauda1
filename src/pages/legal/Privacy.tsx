@@ -5,7 +5,7 @@ export default function Privacy() {
     <LegalLayout title="Privacy Policy" lastUpdated="July 19, 2026">
       <p>
         This Privacy Policy explains what information e-Sauda collects, why, and how
-        it's used. e-Sauda is operated by AARTI ("we", "us").
+        it's used. e-Sauda is operated by ANSHU YADAV ("we", "us").
       </p>
 
       <h2>Information we collect</h2>
