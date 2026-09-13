@@ -777,9 +777,10 @@ export default function Sell() {
           }}
         />
       )}
-      {editingVideo && videoFile && (
+      {editingVideo && videoFile && videoPreviewUrl && (
         <VideoEditorModal
           file={videoFile}
+          videoUrl={videoPreviewUrl}
           onCancel={() => setEditingVideo(false)}
           onSave={(edited) => {
             setVideoFile(edited);

@@ -3,6 +3,7 @@ import { Check, X, Volume2, VolumeX } from 'lucide-react'
 
 interface VideoEditorModalProps {
   file: File
+  videoUrl: string
   onSave: (file: File) => void
   onCancel: () => void
 }
@@ -16,9 +17,17 @@ interface VideoEditorModalProps {
 // acceptable trade-offs for a "show the item" clip capped at 60s. Browsers without
 // captureStream support (older Safari) fall back to letting the original file
 // through unchanged rather than blocking the listing flow.
-export default function VideoEditorModal({ file, onSave, onCancel }: VideoEditorModalProps) {
+//
+// videoUrl is owned by the caller, not created here. Earlier this component minted
+// its own URL.createObjectURL(file) on every mount and revoked it on unmount --
+// opening the editor, closing it, and reopening it for the same File meant
+// create+revoke cycling on the same underlying Blob in quick succession, which
+// Chromium browsers can intermittently fail to decode from (no console error, no
+// network request -- the <video> just never fires loadedmetadata). Reusing one
+// stable URL for the whole lifetime of the File, created once by the page that
+// owns the file, avoids that entirely.
+export default function VideoEditorModal({ file, videoUrl, onSave, onCancel }: VideoEditorModalProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const [videoUrl] = useState(() => URL.createObjectURL(file))
   const [duration, setDuration] = useState(0)
   const [trimStart, setTrimStart] = useState(0)
   const [trimEnd, setTrimEnd] = useState(0)
@@ -27,18 +36,44 @@ export default function VideoEditorModal({ file, onSave, onCancel }: VideoEditor
   const [progress, setProgress] = useState(0)
   const [supported, setSupported] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  // If loadedmetadata never fires, the preview would otherwise sit silently at
+  // 0:00 forever with no trim UI and no explanation -- this catches both an
+  // explicit load error and a load that just never completes, so "Use original"
+  // and, where possible, "Apply" still have a clear path forward.
+  const [loadFailed, setLoadFailed] = useState(false)
 
   useEffect(() => {
-    return () => URL.revokeObjectURL(videoUrl)
+    // If the video element already has data by the time this mounts (e.g. the
+    // browser cached decoding it from the same URL shown elsewhere on the page),
+    // loadedmetadata may have already fired and won't fire again -- pick that up
+    // directly instead of waiting on the timeout.
+    const v = videoRef.current
+    if (v && v.readyState >= 1) {
+      onLoadedMetadata()
+    }
+    const timer = setTimeout(() => {
+      if (videoRef.current && videoRef.current.readyState === 0) {
+        setLoadFailed(true)
+      }
+    }, 4000)
+    return () => {
+      clearTimeout(timer)
+      videoRef.current?.pause()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function onLoadedMetadata() {
     const v = videoRef.current as any
+    setLoadFailed(false)
     setSupported(!!(v && (v.captureStream || v.mozCaptureStream)))
     const d = videoRef.current?.duration || 0
     setDuration(d)
     setTrimEnd(d)
+  }
+
+  function onVideoError() {
+    setLoadFailed(true)
   }
 
   function fmt(s: number) {
@@ -49,7 +84,7 @@ export default function VideoEditorModal({ file, onSave, onCancel }: VideoEditor
 
   async function handleApply() {
     const video = videoRef.current as any
-    if (!video || !supported) {
+    if (!video || !supported || loadFailed) {
       onSave(file)
       return
     }
@@ -140,18 +175,25 @@ export default function VideoEditorModal({ file, onSave, onCancel }: VideoEditor
           ref={videoRef}
           src={videoUrl}
           onLoadedMetadata={onLoadedMetadata}
+          onError={onVideoError}
           controls
           muted={muted}
           className="mt-4 aspect-video w-full rounded-xl2 bg-black"
         />
 
-        {!supported && (
+        {!supported && !loadFailed && (
           <p className="mt-3 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-500">
             Your browser doesn't support in-browser video editing. You can still upload the video as-is.
           </p>
         )}
 
-        {supported && duration > 0 && (
+        {loadFailed && (
+          <p className="mt-3 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-500">
+            Couldn't load a preview for trimming/muting right now. You can still use the video as-is below.
+          </p>
+        )}
+
+        {supported && !loadFailed && duration > 0 && (
           <div className="mt-4 space-y-3">
             <div>
               <div className="flex justify-between text-xs text-ink/50">

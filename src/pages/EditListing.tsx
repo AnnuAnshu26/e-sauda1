@@ -19,6 +19,25 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { Listing } from '../types'
 
+// blob.type is normally trustworthy (storage.ts now sets an explicit contentType on
+// upload -- see uploadListingPhotos/uploadListingVideo), but this covers older
+// listings uploaded before that fix, or any storage response that omits it.
+function guessImageType(filename: string): string {
+  const ext = filename.split('.').pop()?.toLowerCase()
+  if (ext === 'png') return 'image/png'
+  if (ext === 'webp') return 'image/webp'
+  if (ext === 'gif') return 'image/gif'
+  return 'image/jpeg'
+}
+function guessVideoType(filename: string): string {
+  const ext = filename.split('.').pop()?.toLowerCase()
+  if (ext === 'webm') return 'video/webm'
+  if (ext === 'mov') return 'video/quicktime'
+  if (ext === 'avi') return 'video/x-msvideo'
+  if (ext === 'mkv') return 'video/x-matroska'
+  return 'video/mp4'
+}
+
 // Deliberately a standalone lightweight form rather than reusing the Sell wizard --
 // Sell's multi-step flow (with the listing-cap/fee-tier logic baked into
 // its category step) is built for *creating* a listing, not fixing a typo in one that
@@ -67,9 +86,25 @@ export default function EditListing() {
 
   // Video editor: used both for a newly picked file and for re-editing the video
   // already on the listing (fetched back into a File the same way as photos above).
+  // videoUrlForEditor is a single object URL owned here for the whole time
+  // videoFileForEditor is set, created once when the file is set and revoked when
+  // it's cleared -- NOT re-created by the modal on every open, which was the
+  // actual cause of the video preview silently failing to reload on a second
+  // "edit" (see VideoEditorModal's comment for the full explanation).
   const [editingVideo, setEditingVideo] = useState(false)
   const [videoFileForEditor, setVideoFileForEditor] = useState<File | null>(null)
+  const [videoUrlForEditor, setVideoUrlForEditor] = useState<string | null>(null)
   const [loadingVideoForEdit, setLoadingVideoForEdit] = useState(false)
+
+  useEffect(() => {
+    if (!videoFileForEditor) {
+      setVideoUrlForEditor(null)
+      return
+    }
+    const url = URL.createObjectURL(videoFileForEditor)
+    setVideoUrlForEditor(url)
+    return () => URL.revokeObjectURL(url)
+  }, [videoFileForEditor])
 
   useEffect(() => {
     if (!editingNewPhoto && newPhotoQueue.length > 0) {
@@ -201,7 +236,7 @@ export default function EditListing() {
       const res = await fetch(url)
       const blob = await res.blob()
       const filename = url.split('/').pop()?.split('?')[0] || 'photo.jpg'
-      setExistingPhotoFile(new File([blob], filename, { type: blob.type || 'image/jpeg' }))
+      setExistingPhotoFile(new File([blob], filename, { type: blob.type || guessImageType(filename) }))
     } catch {
       setPhotoError('Could not load that photo for editing.')
       setEditingExistingPhotoUrl(null)
@@ -261,7 +296,7 @@ export default function EditListing() {
       const res = await fetch(videoUrl)
       const blob = await res.blob()
       const filename = videoUrl.split('/').pop()?.split('?')[0] || 'video.mp4'
-      setVideoFileForEditor(new File([blob], filename, { type: blob.type || 'video/mp4' }))
+      setVideoFileForEditor(new File([blob], filename, { type: blob.type || guessVideoType(filename) }))
     } catch {
       setVideoError('Could not load the video for editing.')
       setEditingVideo(false)
@@ -591,9 +626,10 @@ export default function EditListing() {
           <p className="text-sm text-white">Loading photo…</p>
         </div>
       )}
-      {editingVideo && videoFileForEditor && (
+      {editingVideo && videoFileForEditor && videoUrlForEditor && (
         <VideoEditorModal
           file={videoFileForEditor}
+          videoUrl={videoUrlForEditor}
           onSave={handleSaveEditedVideo}
           onCancel={() => {
             setEditingVideo(false)

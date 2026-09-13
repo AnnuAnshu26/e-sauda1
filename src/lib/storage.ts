@@ -45,6 +45,10 @@ export async function uploadListingPhotos(
     const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
       cacheControl: '3600',
       upsert: true,
+      // Explicit, rather than left to be inferred server-side -- needed so a photo
+      // fetched back later (e.g. to re-open it in the crop/rotate editor) reports
+      // the right blob.type instead of a generic fallback.
+      contentType: file.type || 'image/jpeg',
     })
     if (error) throw error
 
@@ -130,6 +134,11 @@ export async function uploadListingVideo(ownerId: string, listingId: string, fil
   const { error } = await supabase.storage.from(VIDEO_BUCKET).upload(path, file, {
     cacheControl: '3600',
     upsert: true,
+    // Explicit, rather than left to be inferred server-side -- needed so the video
+    // fetched back later (e.g. to re-open it in the trim/mute editor) reports the
+    // right blob.type instead of a generic fallback that can mismatch the actual
+    // container and make the browser refuse to play it.
+    contentType: file.type || 'video/mp4',
   })
   if (error) throw error
 
