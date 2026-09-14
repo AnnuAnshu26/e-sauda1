@@ -17,7 +17,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
-const GROQ_VISION_MODEL = Deno.env.get('GROQ_VISION_MODEL') || 'meta-llama/llama-4-scout-17b-16e-instruct'
+const GROQ_VISION_MODEL = Deno.env.get('GROQ_VISION_MODEL') || 'qwen/qwen3.6-27b'
 // Groq vision models cap how many images a single request can include --
 // keeping our own cap well under that (and under a sane payload size for a
 // person on a slow connection to upload in the first place) rather than
