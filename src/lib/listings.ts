@@ -111,6 +111,18 @@ export async function countActiveListingsInCategory(
   return count ?? 0
 }
 
+// Optional media to attach at creation time -- see create_listing_with_media_schema.sql.
+// Passing these (instead of the old attachPhotos/updateListingVideo follow-up calls)
+// is what guarantees a published listing is never active without the media it was
+// posted with: the photos/video are already uploaded to storage by the time this runs,
+// so the row is inserted complete in one step instead of "created, then hopefully
+// patched up right after."
+export interface NewListingMedia {
+  id?: string
+  photoUrls?: string[]
+  videoUrl?: string | null
+}
+
 // Requires razorpayOrderId from a verified listing-fee payment (see lib/listingFee.ts's
 // payListingFee, which must be called first) -- create_listing_with_fee (SQL) refuses
 // to run without a matching unconsumed payment row, so this can't succeed by skipping
@@ -118,6 +130,7 @@ export async function countActiveListingsInCategory(
 export async function createListing(
   input: NewListingInput,
   razorpayOrderId: string,
+  media: NewListingMedia = {},
 ): Promise<Listing> {
   const visual = categoryVisual(input.category)
   const { data, error } = await supabase.rpc('create_listing_with_fee', {
@@ -137,6 +150,9 @@ export async function createListing(
     p_bg: visual.bg,
     p_latitude: input.latitude ?? null,
     p_longitude: input.longitude ?? null,
+    p_id: media.id ?? null,
+    p_photo_urls: media.photoUrls ?? null,
+    p_video_url: media.videoUrl ?? null,
   })
 
   if (error) throw error

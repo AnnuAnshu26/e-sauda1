@@ -1,34 +1,44 @@
-﻿import { Routes, Route, useLocation } from 'react-router-dom'
+﻿import { lazy, Suspense } from 'react'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import RequireAuth from './components/RequireAuth'
 import PageTransition from './components/PageTransition'
-import Home from './pages/Home'
-import Browse from './pages/Browse'
-import Sell from './pages/Sell'
-import Orders from './pages/Orders'
-import Vault from './pages/Vault'
-import Profile from './pages/Profile'
-import Login from './pages/Login'
-import Terms from './pages/legal/Terms'
-import Privacy from './pages/legal/Privacy'
-import RefundPolicy from './pages/legal/RefundPolicy'
-import ShippingPolicy from './pages/legal/ShippingPolicy'
-import ContactUs from './pages/legal/ContactUs'
-import Pricing from './pages/legal/Pricing'
-import Signup from './pages/Signup'
-import ForgotPassword from './pages/ForgotPassword'
-import ResetPassword from './pages/ResetPassword'
-import ListingDetail from './pages/ListingDetail'
-import EditListing from './pages/EditListing'
-import MyListings from './pages/MyListings'
-import Admin from './pages/Admin'
-import SellerProfile from './pages/SellerProfile'
-import Messages from './pages/Messages'
-import Saved from './pages/Saved'
-import Explore from './pages/Explore'
+import RouteLoadingFallback from './components/RouteLoadingFallback'
 import ChatbotWidget from './components/ChatbotWidget'
+import { NetworkStatusProvider } from './context/NetworkStatusContext'
+
+// Every page is its own JS chunk, fetched only when someone actually
+// navigates there, instead of one giant bundle everyone downloads up front
+// just to view the homepage. Paired with the Suspense fallback below, this is
+// what "lazy loading" means for the app's own code (as opposed to images --
+// see components/LazyImage.tsx -- which is a separate, per-photo concern).
+const Home = lazy(() => import('./pages/Home'))
+const Browse = lazy(() => import('./pages/Browse'))
+const Sell = lazy(() => import('./pages/Sell'))
+const Orders = lazy(() => import('./pages/Orders'))
+const Vault = lazy(() => import('./pages/Vault'))
+const Profile = lazy(() => import('./pages/Profile'))
+const Login = lazy(() => import('./pages/Login'))
+const Terms = lazy(() => import('./pages/legal/Terms'))
+const Privacy = lazy(() => import('./pages/legal/Privacy'))
+const RefundPolicy = lazy(() => import('./pages/legal/RefundPolicy'))
+const ShippingPolicy = lazy(() => import('./pages/legal/ShippingPolicy'))
+const ContactUs = lazy(() => import('./pages/legal/ContactUs'))
+const Pricing = lazy(() => import('./pages/legal/Pricing'))
+const Signup = lazy(() => import('./pages/Signup'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('./pages/ResetPassword'))
+const ListingDetail = lazy(() => import('./pages/ListingDetail'))
+const EditListing = lazy(() => import('./pages/EditListing'))
+const MyListings = lazy(() => import('./pages/MyListings'))
+const Admin = lazy(() => import('./pages/Admin'))
+const SellerProfile = lazy(() => import('./pages/SellerProfile'))
+const Messages = lazy(() => import('./pages/Messages'))
+const Saved = lazy(() => import('./pages/Saved'))
+const Explore = lazy(() => import('./pages/Explore'))
+const Help = lazy(() => import('./pages/Help'))
 
 function AnimatedRoutes() {
   const location = useLocation()
@@ -70,6 +80,10 @@ function AnimatedRoutes() {
             gateways (Razorpay) and app-store review both expect Terms/Privacy/
             Refund/Contact to be publicly viewable, not gated behind auth. */}
         <Route path="/pricing" element={<PageTransition><Pricing /></PageTransition>} />
+        {/* Public for the same reason as Terms/Privacy/etc above -- someone who
+            doesn't understand the site yet is, almost by definition, not
+            logged in, so this can't sit behind RequireAuth. */}
+        <Route path="/help" element={<PageTransition><Help /></PageTransition>} />
         <Route
           path="/messages"
           element={
@@ -149,13 +163,17 @@ function AnimatedRoutes() {
 
 export default function App() {
   return (
-    <div className="flex min-h-screen flex-col bg-cream">
-      <Navbar />
-      <main className="flex-1">
-        <AnimatedRoutes />
-      </main>
-      <Footer />
-      <ChatbotWidget />
-    </div>
+    <NetworkStatusProvider>
+      <div className="flex min-h-screen flex-col bg-cream">
+        <Navbar />
+        <main className="flex-1">
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <AnimatedRoutes />
+          </Suspense>
+        </main>
+        <Footer />
+        <ChatbotWidget />
+      </div>
+    </NetworkStatusProvider>
   )
 }

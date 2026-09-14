@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom'
+import { HelpCircle, Wifi, WifiOff } from 'lucide-react'
+import { useNetworkStatusContext } from '../context/NetworkStatusContext'
 
 export default function Footer() {
+  const { liteMode, setLiteMode } = useNetworkStatusContext()
+
   return (
     <footer className="border-t border-line/10 bg-cream-dark">
       <div className="mx-auto max-w-7xl px-6 py-16">
@@ -12,6 +16,26 @@ export default function Footer() {
             </div>
             <p className="mt-4 max-w-xs text-sm text-ink/50">
               Trust-first local marketplace. Escrow-secured. Delivery baked in.
+            </p>
+            {/* Manual override for Lite mode -- auto-detected on connections the
+                browser itself reports as slow/data-saver (see useNetworkStatus),
+                but this covers Safari/iOS (no such API) and anyone who just wants
+                to save data on request. Turning it on doesn't disable any feature --
+                only how photos/video are loaded (see components/LazyImage.tsx). */}
+            <button
+              onClick={() => setLiteMode(!liteMode)}
+              className={`mt-4 flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                liteMode
+                  ? 'border-clay/30 bg-clay/10 text-clay'
+                  : 'border-line/10 text-ink/50 hover:text-ink'
+              }`}
+              aria-pressed={liteMode}
+            >
+              {liteMode ? <WifiOff size={13} /> : <Wifi size={13} />}
+              Lite mode {liteMode ? 'on' : 'off'}
+            </button>
+            <p className="mt-1.5 max-w-[15rem] text-[11px] text-ink/35">
+              Loads photos/video on tap instead of automatically — handy on a slow connection.
             </p>
           </div>
           <div>
@@ -26,6 +50,11 @@ export default function Footer() {
           <div>
             <h4 className="eyebrow">Trust &amp; safety</h4>
             <ul className="mt-4 space-y-2.5 text-sm text-ink/60">
+              <li>
+                <Link to="/help" className="flex items-center gap-1.5 font-medium text-clay hover:underline">
+                  <HelpCircle size={14} /> Help guide — how e-Sauda works
+                </Link>
+              </li>
               <li>DigiLocker verification (coming soon)</li>
               <li>OTP handover</li>
               <li>Chat moderation</li>
@@ -45,7 +74,8 @@ export default function Footer() {
           </div>
         </div>
         <p className="mt-14 border-t border-line/10 pt-6 text-xs text-ink/30">
-          © 2026 e-Sauda. <Link to="/terms" className="hover:text-clay">Terms</Link> · <Link to="/privacy" className="hover:text-clay">Privacy</Link>
+          © 2026 e-Sauda. <Link to="/terms" className="hover:text-clay">Terms</Link> · <Link to="/privacy" className="hover:text-clay">Privacy</Link> ·{' '}
+          <Link to="/help" className="hover:text-clay">Help guide</Link>
         </p>
       </div>
     </footer>

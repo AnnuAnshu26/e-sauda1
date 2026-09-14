@@ -53,6 +53,10 @@ function ExploreSlide({
         loop
         muted={muted}
         playsInline
+        // Only the active slide should actually buffer video data -- every other
+        // slide sitting in the DOM stays at preload="none" so a scroll through a
+        // long Explore feed doesn't quietly download a dozen videos at once.
+        preload={active ? 'auto' : 'none'}
         onClick={() => navigate(`/listing/${listing.id}`)}
       />
 

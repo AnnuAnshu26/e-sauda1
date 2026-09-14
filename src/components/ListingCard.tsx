@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { Listing } from '../types'
 import { useUserLocation } from '../hooks/useUserLocation'
 import { haversineKm, formatDistanceKm } from '../lib/distance'
+import LazyImage from './LazyImage'
 
 interface ListingCardProps {
   listing: Listing
@@ -35,10 +36,10 @@ export default function ListingCard({ listing, saved: savedProp, onToggleSaved }
     >
       <div className={`relative flex h-40 items-center justify-center ${listing.bg}`}>
         {listing.photoUrls?.length > 0 && (
-          <img
+          <LazyImage
             src={listing.photoUrls[0]}
             alt={listing.title}
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="absolute inset-0 h-full w-full transition-transform duration-300 group-hover:scale-105"
           />
         )}
         <div className="absolute left-2 top-2 flex gap-1">

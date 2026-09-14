@@ -15,6 +15,8 @@ import { Listing, VaultOrderWithOtp, ChatOffer } from '../types'
 import ReportButton from '../components/ReportButton'
 import ListingCard from '../components/ListingCard'
 import ListingMap from '../components/ListingMap'
+import LazyImage from '../components/LazyImage'
+import { useNetworkStatusContext } from '../context/NetworkStatusContext'
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>()
@@ -75,6 +77,8 @@ export default function ListingDetail() {
       cancelled = true
     }
   }, [listing?.id, listing?.category])
+
+  const { liteMode } = useNetworkStatusContext()
 
   const isOwner = !!user && !!listing && user.id === listing.ownerId
 
@@ -167,7 +171,10 @@ export default function ListingDetail() {
         <div>
           <div className={`flex h-96 items-center justify-center overflow-hidden rounded-xl2 text-8xl ${listing.bg}`}>
             {photos.length > 0 ? (
-              <img src={photos[activePhoto]} alt={listing.title} className="h-full w-full object-cover" />
+              // eager: the main photo is above the fold on this page, so it
+              // should load immediately rather than waiting to scroll into view --
+              // Lite mode (slow connections) still shows a "tap to load" block for it.
+              <LazyImage src={photos[activePhoto]} alt={listing.title} className="h-full w-full" eager />
             ) : (
               <span>{listing.emoji}</span>
             )}
@@ -182,7 +189,7 @@ export default function ListingDetail() {
                     i === activePhoto ? 'border-clay' : 'border-transparent'
                   }`}
                 >
-                  <img src={p} alt="" className="h-full w-full object-cover" />
+                  <LazyImage src={p} alt="" className="h-full w-full" />
                 </button>
               ))}
             </div>
@@ -191,9 +198,13 @@ export default function ListingDetail() {
           {listing.videoUrl && (
             <div className="mt-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-ink/40">Product video</p>
+              {/* preload="none" on a slow/Lite-mode connection so opening this page
+                  doesn't also start pulling down the video in the background --
+                  it only downloads once the person actually presses play. */}
               <video
                 src={listing.videoUrl}
                 controls
+                preload={liteMode ? 'none' : 'metadata'}
                 className="mt-2 aspect-video w-full rounded-xl2 bg-black"
               />
             </div>

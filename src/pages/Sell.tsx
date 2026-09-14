@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { categories } from "../data/listings";
-import {
-  countActiveListingsInCategory,
-  createListing,
-  attachPhotos,
-  updateListingVideo,
-} from "../lib/listings";
+import { countActiveListingsInCategory, createListing } from "../lib/listings";
 import {
   uploadListingPhotos,
   validatePhotoFiles,
@@ -16,9 +11,10 @@ import {
 } from "../lib/storage";
 import { payListingFee } from "../lib/listingFee";
 import { suggestPrice, PriceSuggestion } from "../lib/pricing";
+import { suggestListingDescription } from "../lib/descriptionSuggestion";
 import { Category } from "../types";
 import { useAuth } from "../context/AuthContext";
-import { Upload, Video, Check, X, MapPin, Pencil } from "lucide-react";
+import { Upload, Video, Check, X, MapPin, Pencil, Sparkles } from "lucide-react";
 import { categoryIcons } from "../lib/categoryIcons";
 import { geocodeLocation, GeoPoint } from "../lib/geocoding";
 import ListingMap from "../components/ListingMap";
@@ -57,6 +53,19 @@ export default function Sell() {
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [priceSuggestion, setPriceSuggestion] = useState<PriceSuggestion | null>(null);
   const [priceSuggestionLoading, setPriceSuggestionLoading] = useState(false);
+
+  // A stable id generated up front (not server-assigned) so photos/video can be
+  // uploaded to storage under their final listing folder *before* the listing row
+  // itself exists -- see publish() below for why that ordering is the fix for
+  // listings that used to end up live with missing media.
+  const [pendingListingId] = useState(() => crypto.randomUUID());
+  // Kept across a failed publish attempt so retrying doesn't charge the anti-bot
+  // fee a second time -- payListingFee's Razorpay order stays valid/unconsumed
+  // until create_listing_with_fee actually runs.
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+
+  const [descSuggestLoading, setDescSuggestLoading] = useState(false);
+  const [descSuggestError, setDescSuggestError] = useState<string | null>(null);
 
   // Newly picked photos go through the crop/rotate editor one at a time before
   // landing in photoFiles -- pendingPhotoQueue holds the rest while editingNewPhoto
@@ -241,6 +250,28 @@ export default function Sell() {
     setStep((s) => Math.max(s - 1, 0));
   }
 
+  async function handleSuggestDescription() {
+    setDescSuggestError(null);
+    setDescSuggestLoading(true);
+    try {
+      const suggestion = await suggestListingDescription({
+        photoFiles,
+        videoFile,
+        category: category ?? undefined,
+        subCategory: subCategory || undefined,
+        condition,
+        title: title || undefined,
+      });
+      if (suggestion) setDescription(suggestion);
+    } catch (err: any) {
+      setDescSuggestError(
+        err?.message || "Could not generate a description. Try again.",
+      );
+    } finally {
+      setDescSuggestLoading(false);
+    }
+  }
+
   async function publish() {
     if (!user || !category) return;
     if (!videoFile) {
@@ -252,13 +283,60 @@ export default function Sell() {
     setPublishing(true);
     setPublishError(null);
     try {
-      const { razorpayOrderId } = await payListingFee(
-        category,
-        profile?.display_name || "e-Sauda seller",
-        user.email || "",
-      );
+      // Reuse an order from a previous failed attempt instead of charging the
+      // anti-bot fee again -- payListingFee's Razorpay order stays valid and
+      // unconsumed until create_listing_with_fee (below) actually runs.
+      const razorpayOrderId =
+        pendingOrderId ??
+        (
+          await payListingFee(
+            category,
+            profile?.display_name || "e-Sauda seller",
+            user.email || "",
+          )
+        ).razorpayOrderId;
+      setPendingOrderId(razorpayOrderId);
 
-      const listing = await createListing(
+      // Upload media to storage BEFORE creating the listing row, using the id
+      // generated up front (pendingListingId) as the storage folder. This is
+      // the fix for listings that could previously go live with missing photos
+      // or (worse, since it's meant to be mandatory) no video at all: if an
+      // upload fails here, nothing has been published yet, so there's no
+      // half-finished listing sitting active on Browse/Explore for a buyer to
+      // find. The person just sees an error and can retry without repaying.
+      setUploadingVideo(true);
+      let videoUrl: string;
+      try {
+        videoUrl = await uploadListingVideo(user.id, pendingListingId, videoFile);
+      } catch (videoErr: any) {
+        setPublishError(
+          videoErr?.message ||
+            "Could not upload the video. Check your connection and try again — you won't be charged again.",
+        );
+        return;
+      } finally {
+        setUploadingVideo(false);
+      }
+
+      // Photos are optional (the listing can publish with none), so a failed
+      // photo upload only warns rather than blocking the whole publish — but it
+      // still happens before the listing exists, so there's no window where an
+      // *active* listing is silently missing photos it was supposed to have.
+      let photoUrls: string[] = [];
+      if (photoFiles.length > 0) {
+        setUploadingPhotos(true);
+        try {
+          photoUrls = await uploadListingPhotos(user.id, pendingListingId, photoFiles);
+        } catch (photoErr) {
+          setPhotoWarning(
+            "Photos failed to upload, so this listing published without them. Add them from My Listings → Edit.",
+          );
+        } finally {
+          setUploadingPhotos(false);
+        }
+      }
+
+      await createListing(
         {
           title: title || "Untitled listing",
           price: Number(price) || 0,
@@ -272,38 +350,8 @@ export default function Sell() {
           longitude: geo?.lng ?? null,
         },
         razorpayOrderId,
+        { id: pendingListingId, photoUrls, videoUrl },
       );
-
-      if (photoFiles.length > 0) {
-        setUploadingPhotos(true);
-        try {
-          const urls = await uploadListingPhotos(user.id, listing.id, photoFiles);
-          await attachPhotos(listing.id, urls);
-        } catch (photoErr) {
-          // The listing itself published fine — don't block on a photo failure,
-          // just let the user know so they're not confused why photos are missing.
-          setPhotoWarning(
-            "Listing published, but photo upload failed. You can retry from My listings once photo editing is added.",
-          );
-        } finally {
-          setUploadingPhotos(false);
-        }
-      }
-
-      setUploadingVideo(true);
-      try {
-        const url = await uploadListingVideo(user.id, listing.id, videoFile);
-        await updateListingVideo(listing.id, url);
-      } catch (videoErr) {
-        // Same reasoning as the photo failure above — the listing already exists,
-        // so don't roll it back over a transient upload hiccup. Point to Edit
-        // Listing, which has its own add/replace video section, as the recovery path.
-        setVideoWarning(
-          "Listing published, but the video upload failed. Add it from My Listings → Edit.",
-        );
-      } finally {
-        setUploadingVideo(false);
-      }
 
       setPosted(true);
     } catch (err: any) {
@@ -680,6 +728,47 @@ export default function Sell() {
               <p className="mt-3 rounded-lg bg-red-500/10 p-3 text-xs text-red-400">
                 {videoError}
               </p>
+            )}
+
+            {/* AI description suggestion -- only worth offering once there's an
+                actual photo or video to look at (see handleSuggestDescription). */}
+            {(photoFiles.length > 0 || videoFile) && (
+              <div className="mt-8 rounded-xl2 border border-clay/20 bg-clay/5 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="flex items-center gap-1.5 text-sm font-semibold text-ink">
+                      <Sparkles size={15} className="text-clay" /> Suggest a description
+                    </p>
+                    <p className="mt-0.5 text-xs text-ink/50">
+                      Drafts a description from what's actually visible in your photos/video — review and edit before publishing.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSuggestDescription}
+                    disabled={descSuggestLoading}
+                    className="shrink-0 rounded-full bg-clay px-4 py-2 text-xs font-semibold text-cream hover:bg-clay-light disabled:opacity-50"
+                  >
+                    {descSuggestLoading ? "Looking at your photos/video…" : "✨ Suggest description"}
+                  </button>
+                </div>
+                {descSuggestError && (
+                  <p className="mt-3 rounded-lg bg-red-500/10 p-3 text-xs text-red-400">
+                    {descSuggestError}
+                  </p>
+                )}
+                {description && (
+                  <div className="mt-3">
+                    <label className="text-xs font-medium text-ink/50">Description</label>
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={4}
+                      className="mt-1 w-full rounded-lg border border-line/10 bg-surface p-3 text-sm text-ink focus:border-clay/40 focus:outline-none"
+                    />
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}

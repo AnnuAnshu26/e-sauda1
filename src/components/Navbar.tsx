@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut, Inbox, Heart, ShieldAlert, Package, Clapperboard, PlayCircle } from 'lucide-react'
+import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut, Inbox, Heart, ShieldAlert, Package, Clapperboard, PlayCircle, Menu, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useNotifications } from '../hooks/useNotifications'
 import { timeAgo } from '../lib/time'
@@ -8,6 +8,12 @@ import { timeAgo } from '../lib/time'
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
+  // Small-screen nav drawer -- separate from the account dropdown (menuOpen)
+  // above. Below md, the inline "Browse / Messages / Saved / Vault / Orders"
+  // links (see the `hidden md:flex` nav further down) are invisible with no
+  // other way to reach them, so this is what makes the site navigable at all
+  // on a phone.
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [query, setQuery] = useState('')
   const menuRef = useRef<HTMLDivElement>(null)
   const notifRef = useRef<HTMLDivElement>(null)
@@ -36,6 +42,7 @@ export default function Navbar() {
 
   function onSearch(e: React.FormEvent) {
     e.preventDefault()
+    setMobileNavOpen(false)
     navigate(`/browse${query ? `?q=${encodeURIComponent(query)}` : ''}`)
   }
 
@@ -46,6 +53,7 @@ export default function Navbar() {
     // /login (not '/') also skips an unnecessary extra redirect hop, since '/' itself
     // requires auth and would otherwise immediately bounce to /login anyway.
     setMenuOpen(false)
+    setMobileNavOpen(false)
     try {
       await signOut()
     } finally {
@@ -57,7 +65,11 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-line/10 bg-cream/90 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-4">
+      {/* flex-wrap + the search form's order-3/basis-full below is what lets the
+          search bar drop to its own full-width row on narrow screens instead of
+          squeezing (or overflowing) the header alongside the logo, hamburger,
+          bell, and avatar. On md+ everything goes back to a single row. */}
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3 md:flex-nowrap md:gap-4 md:px-6 md:py-4">
         <Link to="/" className="flex shrink-0 items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-forest text-sm font-semibold text-cream">
             e
@@ -65,13 +77,24 @@ export default function Navbar() {
           <span className="font-display text-lg font-extrabold tracking-tight text-ink">e-Sauda</span>
         </Link>
 
+        {/* Hamburger -- only shown below md, since the full link list is visible
+            inline on md+ already. */}
+        <button
+          onClick={() => setMobileNavOpen((v) => !v)}
+          className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink/70 hover:bg-surface md:hidden"
+          aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={mobileNavOpen}
+        >
+          {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+
         <form
           onSubmit={onSearch}
-          className="flex flex-1 items-center gap-2 rounded-full border border-line/10 bg-surface px-4 py-2 max-w-xl"
+          className="order-3 flex w-full basis-full items-center gap-2 rounded-full border border-line/10 bg-surface px-4 py-2 md:order-none md:w-auto md:max-w-xl md:flex-1 md:basis-auto"
         >
           <MapPin size={16} className="shrink-0 text-ink/50" />
-          <span className="shrink-0 text-sm text-ink/70">{profile?.city || 'Delhi'}</span>
-          <span className="h-4 w-px shrink-0 bg-line/10" />
+          <span className="hidden shrink-0 text-sm text-ink/70 sm:inline">{profile?.city || 'Delhi'}</span>
+          <span className="hidden h-4 w-px shrink-0 bg-line/10 sm:inline" />
           <Search size={16} className="shrink-0 text-ink/40" />
           <input
             value={query}
@@ -237,6 +260,68 @@ export default function Navbar() {
           </>
         )}
       </div>
+
+      {/* Mobile nav drawer -- the link list that's inline (`hidden md:flex`)
+          on larger screens. Includes Help so someone lost on a phone always
+          has a way to reach the guide, not just people who scroll to the footer. */}
+      {mobileNavOpen && (
+        <nav className="border-t border-line/10 bg-cream px-4 py-3 md:hidden">
+          <ul className="flex flex-col gap-1 text-sm font-medium text-ink/80">
+            <li>
+              <Link to="/browse" onClick={() => setMobileNavOpen(false)} className="block rounded-lg px-2 py-2 hover:bg-surface">
+                Browse
+              </Link>
+            </li>
+            {user && (
+              <li>
+                <Link to="/messages" onClick={() => setMobileNavOpen(false)} className="block rounded-lg px-2 py-2 hover:bg-surface">
+                  Messages
+                </Link>
+              </li>
+            )}
+            {user && (
+              <li>
+                <Link to="/saved" onClick={() => setMobileNavOpen(false)} className="block rounded-lg px-2 py-2 hover:bg-surface">
+                  Saved
+                </Link>
+              </li>
+            )}
+            <li>
+              <Link to="/vault" onClick={() => setMobileNavOpen(false)} className="block rounded-lg px-2 py-2 hover:bg-surface">
+                Vault
+              </Link>
+            </li>
+            <li>
+              <Link to="/orders" onClick={() => setMobileNavOpen(false)} className="block rounded-lg px-2 py-2 hover:bg-surface">
+                Orders
+              </Link>
+            </li>
+            <li>
+              <Link to="/help" onClick={() => setMobileNavOpen(false)} className="block rounded-lg px-2 py-2 text-clay hover:bg-surface">
+                Help guide
+              </Link>
+            </li>
+            {!user && (
+              <li className="mt-2 flex gap-2 border-t border-line/10 pt-3">
+                <Link
+                  to="/login"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex-1 rounded-full px-4 py-2 text-center text-sm font-semibold text-ink/70 hover:text-ink"
+                >
+                  Log in
+                </Link>
+                <Link
+                  to="/signup"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex-1 rounded-full bg-forest px-4 py-2 text-center text-sm font-semibold text-cream hover:bg-forest-light"
+                >
+                  Sign up
+                </Link>
+              </li>
+            )}
+          </ul>
+        </nav>
+      )}
     </header>
   )
 }
