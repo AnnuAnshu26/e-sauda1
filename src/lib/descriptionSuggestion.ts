@@ -118,13 +118,29 @@ export async function suggestListingDescription(input: DescriptionSuggestionInpu
   if (error) {
     // Same pattern as lib/chatbot.ts -- supabase-js's default error message on
     // a non-2xx response doesn't include what the function actually said.
+    // Clone before reading: some supabase-js versions/paths have already
+    // touched the response body by the time we get here, and calling
+    // .json() on an already-consumed stream throws -- which used to fall
+    // through silently to the generic "Edge Function returned a non-2xx
+    // status code" message and hide the real error. Cloning guarantees a
+    // fresh, independently-readable stream regardless of what the SDK did.
     if ('context' in error && error.context instanceof Response) {
+      let message: string | undefined
       try {
-        const body = await error.context.json()
-        throw new Error(body?.error || error.message)
+        const body = await error.context.clone().json()
+        message = body?.error
       } catch {
-        throw error
+        // Not JSON (or the stream really is unreadable) -- fall back to raw
+        // text so at least something diagnostic reaches the user/console
+        // instead of the opaque generic message.
+        try {
+          const text = await error.context.clone().text()
+          message = text?.slice(0, 300)
+        } catch {
+          // Give up -- use supabase-js's generic message below.
+        }
       }
+      throw new Error(message || error.message)
     }
     throw error
   }

@@ -24,6 +24,55 @@ const GROQ_VISION_MODEL = Deno.env.get('GROQ_VISION_MODEL') || 'qwen/qwen3.6-27b
 // relying on Groq to reject an oversized request.
 const MAX_IMAGES = 4
 
+// Best-effort cleanup in case the vision model ignores the "output only the
+// description" instruction. Prefers the explicit ===DESCRIPTION===...===END===
+// block the prompt asks for (reasoning models tend to narrate their thought
+// process as plain prose with no tags, so we can't just strip <think> blocks
+// or "Photo N:" style lines and call it done -- the delimiters are the only
+// reliable anchor). Falls back to heuristic stripping if the model didn't use
+// the markers, so a working description still gets through.
+function cleanDescription(raw: string): string {
+  let text = raw.trim()
+
+  // Preferred path: pull out exactly what's between the markers.
+  const marked = text.match(/===DESCRIPTION===([\s\S]*?)===END===/i)
+  if (marked && marked[1].trim()) {
+    text = marked[1].trim()
+  } else {
+    // Fallback: model didn't use the markers (or only opened one). Strip a
+    // leading ===DESCRIPTION=== if present with no matching ===END===.
+    text = text.replace(/^===DESCRIPTION===\s*/i, '').replace(/===END===\s*$/i, '').trim()
+
+    // Drop any <think>...</think> reasoning blocks some models emit.
+    text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim()
+
+    // Drop narrated-reasoning lines/paragraphs, e.g. "The user wants...",
+    // "I need to look at...", "Let me...", "Image Analysis:", section
+    // headers, and per-photo breakdown lines like "Photo 1: ..." /
+    // "- Image 2: ...".
+    const reasoningLine =
+      /^\s*(?:\*|-|\d+[.)])?\s*(?:(?:the user (?:wants|is asking)|i need to|i'll|i will|let me|first,?\s+i|looking at|analy[sz]ing|image analysis|photo analysis)\b|(?:photo|image|picture|pic)\s*\d+\s*[:.\-–])/i
+    const lines = text
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0 && !reasoningLine.test(l))
+
+    text = lines.join(' ')
+  }
+
+  // Strip a leading preamble like "Here's a description:" / "Description:".
+  text = text.replace(/^(here'?s?\s+(?:is\s+)?(?:a\s+|the\s+)?description[^:]*:|description\s*:)\s*/i, '')
+
+  // Strip markdown bold/italic/headers and wrapping quotes.
+  text = text.replace(/^#+\s*/gm, '').replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')
+  text = text.replace(/^["'"]+|["'"]+$/g, '')
+
+  // Collapse any leftover repeated whitespace from the line-join above.
+  text = text.replace(/\s+/g, ' ').trim()
+
+  return text
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -101,7 +150,35 @@ identifiable, color, visible condition/wear/damage, and anything notable in the 
 accessories, packaging, etc). Do NOT invent specs, age, purchase price, or a reason for selling --
 if it's not visible in the photos, leave it out. Never claim something is "like new" or
 "perfect condition" unless the photos genuinely show no visible wear. Don't repeat the title
-verbatim. Output only the description text, nothing else (no preamble, no quotes around it).
+verbatim.
+
+You will see multiple photos of the SAME item from different angles. Synthesize everything you
+see across all of them into ONE flowing description of the item -- never describe the photos
+individually. Do not write things like "Photo 1 shows..." or "In the second image..." or "Front
+cover: ... Back cover: ..." or any per-image breakdown, list, or label. A buyer reading it should
+not be able to tell how many photos there were or in what order.
+
+Bad (never do this):
+"Photo 1: front cover showing the title. Photo 2: back cover with the blurb. Photo 3: close-up of
+the corner."
+
+Bad (never do this either):
+"The user wants a description for a book listing. I need to look at the provided images. Image
+Analysis: Image 1 shows the front cover..."
+
+Good (do this instead):
+"Hardcover edition with the original dust jacket, green and gold cover design. Spine and corners
+show light shelf wear but the jacket isn't torn. Includes the back-cover blurb and barcode intact."
+
+Do not narrate your reasoning, your analysis process, or what you're about to do -- not even
+briefly, not even before the real answer. If you need to think, do it silently and only output
+the result.
+
+Output your final answer wrapped EXACTLY like this, with nothing else before, after, or outside
+the markers -- no reasoning, no "Image Analysis", no preamble, no labels:
+===DESCRIPTION===
+<the description here>
+===END===
 
 ${knownDetails ? `Details the seller already entered (for context, don't just repeat them):\n${knownDetails}` : ''}
 `.trim()
@@ -114,7 +191,7 @@ ${knownDetails ? `Details the seller already entered (for context, don't just re
       },
       body: JSON.stringify({
         model: GROQ_VISION_MODEL,
-        max_tokens: 220,
+        max_tokens: 600,
         temperature: 0.4,
         messages: [
           {
@@ -142,7 +219,7 @@ ${knownDetails ? `Details the seller already entered (for context, don't just re
       )
     }
 
-    const description = (data.choices?.[0]?.message?.content ?? '').trim()
+    const description = cleanDescription(data.choices?.[0]?.message?.content ?? '')
     if (!description) {
       return new Response(JSON.stringify({ error: 'Could not generate a suggestion right now.' }), {
         status: 502,
