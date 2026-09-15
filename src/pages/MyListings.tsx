@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Pencil, Trash2, Package, CheckCircle, RotateCcw } from 'lucide-react'
+import { Trash2, Package, CheckCircle, RotateCcw, ChevronRight } from 'lucide-react'
 import Reveal from '../components/Reveal'
 import { useAuth } from '../context/AuthContext'
 import { fetchUserListings, deleteListing, markListingSold, relistListing } from '../lib/listings'
@@ -93,45 +93,48 @@ export default function MyListings() {
           </div>
         ) : (
           listings.map((l) => (
-            <div key={l.id} className="flex flex-wrap items-center gap-4 rounded-xl2 border border-line/5 bg-surface p-4">
+            <div key={l.id} className="flex flex-wrap items-center gap-2 rounded-xl2 border border-line/5 bg-surface p-4">
+              {/* The card itself (thumbnail, title, price, status) is now the primary
+                  way in — clicking anywhere on it opens the listing straight into
+                  Edit, not the public view page. Previously the only way to actually
+                  open a listing from here was a small separate "Edit" button; the
+                  status-change/delete buttons below are deliberately *outside* this
+                  Link (siblings, not children) so clicking them doesn't also trigger
+                  this navigation. */}
               <Link
-                to={`/listing/${l.id}`}
-                className={`flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg text-2xl ${l.bg}`}
+                to={`/listing/${l.id}/edit`}
+                className="flex min-w-0 flex-1 items-center gap-4 rounded-lg -m-1 p-1 hover:bg-cream-dark"
               >
-                {l.photoUrls?.length > 0 ? (
-                  <img src={l.photoUrls[0]} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  l.emoji
-                )}
-              </Link>
-
-              <div className="min-w-0 flex-1">
-                <Link to={`/listing/${l.id}`} className="truncate font-medium text-ink hover:underline">
-                  {l.title}
-                </Link>
-                <p className="mt-0.5 text-sm text-ink/60">₹{l.price.toLocaleString('en-IN')}</p>
-                <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusStyles[l.status]}`}>
-                  {l.status}
+                <span
+                  className={`flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg text-2xl ${l.bg}`}
+                >
+                  {l.photoUrls?.length > 0 ? (
+                    <img src={l.photoUrls[0]} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    l.emoji
+                  )}
                 </span>
-              </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium text-ink">{l.title}</p>
+                  <p className="mt-0.5 text-sm text-ink/60">₹{l.price.toLocaleString('en-IN')}</p>
+                  <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusStyles[l.status]}`}>
+                    {l.status}
+                  </span>
+                </div>
+
+                <ChevronRight size={16} className="hidden shrink-0 text-ink/25 sm:block" />
+              </Link>
 
               <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-2 sm:w-auto">
                 {l.status === 'active' && (
-                  <>
-                    <Link
-                      to={`/listing/${l.id}/edit`}
-                      className="flex items-center gap-1.5 rounded-full border border-line/10 bg-surface px-3 py-1.5 text-xs font-semibold text-ink/70 hover:bg-cream-dark"
-                    >
-                      <Pencil size={12} /> Edit
-                    </Link>
-                    <button
-                      onClick={() => handleMarkSold(l)}
-                      disabled={statusChangingId === l.id}
-                      className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/20 disabled:opacity-50"
-                    >
-                      <CheckCircle size={12} /> Mark as sold
-                    </button>
-                  </>
+                  <button
+                    onClick={() => handleMarkSold(l)}
+                    disabled={statusChangingId === l.id}
+                    className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/20 disabled:opacity-50"
+                  >
+                    <CheckCircle size={12} /> Mark as sold
+                  </button>
                 )}
                 {l.status === 'sold' && (
                   <button

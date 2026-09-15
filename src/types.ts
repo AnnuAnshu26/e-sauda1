@@ -7,6 +7,7 @@ export type Category =
   | 'Fashion'
   | 'Books'
   | 'Sports'
+  | 'Others'
 
 export interface Listing {
   id: string

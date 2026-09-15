@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Package, Trash2, ShieldCheck, X, Clock } from "lucide-react";
+import { Package, Trash2, ShieldCheck, X, Clock, ChevronRight } from "lucide-react";
 import Reveal from "../components/Reveal";
 import { useAuth } from "../context/AuthContext";
 import { deleteListing, fetchUserListings } from "../lib/listings";
@@ -112,14 +112,27 @@ export default function Orders() {
             {myListings.map((l) => (
               <div
                 key={l.id}
-                className="flex items-center justify-between rounded-xl2 border border-line/5 bg-surface p-4"
+                className="flex items-center justify-between gap-3 rounded-xl2 border border-line/5 bg-surface p-4"
               >
-                <div className="flex items-center gap-4">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-cream-dark text-2xl">
-                    {l.emoji}
+                {/* Same fix as My Listings: clicking the row itself now opens the
+                    listing straight into Edit, instead of doing nothing except
+                    show its details here. Remove stays a separate sibling button
+                    so it doesn't also trigger this navigation. */}
+                <Link
+                  to={`/listing/${l.id}/edit`}
+                  className="flex min-w-0 flex-1 items-center gap-4 rounded-lg -m-1 p-1 hover:bg-cream-dark"
+                >
+                  <span
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg text-2xl ${l.bg}`}
+                  >
+                    {l.photoUrls?.length > 0 ? (
+                      <img src={l.photoUrls[0]} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      l.emoji
+                    )}
                   </span>
-                  <div>
-                    <p className="font-medium text-ink">{l.title}</p>
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-ink">{l.title}</p>
                     <p className="text-sm text-ink/50">
                       ₹{l.price.toLocaleString("en-IN")} · {l.category}
                       {l.status !== "active" && (
@@ -129,11 +142,12 @@ export default function Orders() {
                       )}
                     </p>
                   </div>
-                </div>
+                  <ChevronRight size={16} className="ml-auto hidden shrink-0 text-ink/25 sm:block" />
+                </Link>
                 <button
                   onClick={() => handleDelete(l.id)}
                   disabled={deletingId === l.id}
-                  className="flex items-center gap-1 rounded-full border border-line/10 px-3 py-1.5 text-xs font-semibold text-ink/60 hover:border-red-500/30 hover:text-red-400 disabled:opacity-40"
+                  className="shrink-0 flex items-center gap-1 rounded-full border border-line/10 px-3 py-1.5 text-xs font-semibold text-ink/60 hover:border-red-500/30 hover:text-red-400 disabled:opacity-40"
                 >
                   <Trash2 size={13} />{" "}
                   {deletingId === l.id ? "Removing…" : "Remove"}

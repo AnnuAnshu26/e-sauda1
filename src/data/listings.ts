@@ -12,6 +12,10 @@ export const categories: { name: Category; emoji: string; bg: string; count: num
   { name: 'Fashion', emoji: '👜', bg: 'bg-neutral-200', count: 9000 },
   { name: 'Books', emoji: '📚', bg: 'bg-rose-100', count: 6000 },
   { name: 'Sports', emoji: '🏸', bg: 'bg-lime-100', count: 4000 },
+  // Catch-all for anything that doesn't fit the categories above -- keeps the
+  // Sell flow from stalling someone with an item that genuinely has no home
+  // in this list (musical instruments, tools, collectibles, etc).
+  { name: 'Others', emoji: '📦', bg: 'bg-stone-200', count: 2000 },
 ]
 
 export function categoryVisual(category: Category): { emoji: string; bg: string } {

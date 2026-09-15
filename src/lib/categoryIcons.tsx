@@ -24,6 +24,7 @@ export const categoryIcons: Record<Category, LucideIcon> = {
   Fashion: ShoppingBag,
   Books: BookOpen,
   Sports: Dumbbell,
+  Others: Package,
 }
 
 export function categoryIcon(category: Category | string): LucideIcon {
