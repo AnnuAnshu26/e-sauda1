@@ -4,6 +4,7 @@ import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, Sh
 import { useAuth } from '../context/AuthContext'
 import { useNotifications } from '../hooks/useNotifications'
 import { timeAgo } from '../lib/time'
+import ThemeToggle from './ThemeToggle'
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -64,7 +65,7 @@ export default function Navbar() {
   const initial = (profile?.display_name || user?.email || 'Y').charAt(0).toUpperCase()
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line/10 bg-cream/90 backdrop-blur">
+    <header className="glass sticky top-0 z-40 !border-x-0 !border-t-0 !rounded-none">
       {/* flex-wrap + the search form's order-3/basis-full below is what lets the
           search bar drop to its own full-width row on narrow screens instead of
           squeezing (or overflowing) the header alongside the logo, hamburger,
@@ -131,6 +132,8 @@ export default function Navbar() {
           <span className="hidden sm:inline">Reels</span>
         </Link>
 
+        <ThemeToggle className="shrink-0" />
+
         {user && (
           <div className="relative shrink-0" ref={notifRef}>
             <button
@@ -146,7 +149,7 @@ export default function Navbar() {
               )}
             </button>
             {notifOpen && (
-              <div className="absolute right-0 mt-2 w-80 rounded-xl2 border border-line/10 bg-surface p-2 shadow-xl">
+              <div className="glass-elevated absolute right-0 mt-2 w-80 rounded-xl2 p-2">
                 <div className="flex items-center justify-between border-b border-line/10 p-2">
                   <p className="text-sm font-semibold text-ink">Notifications</p>
                   {unreadCount > 0 && (
@@ -203,7 +206,7 @@ export default function Navbar() {
                 {initial}
               </button>
               {menuOpen && (
-                <div className="absolute right-0 mt-2 w-64 rounded-xl2 border border-line/10 bg-surface p-2 shadow-xl">
+                <div className="glass-elevated absolute right-0 mt-2 w-64 rounded-xl2 p-2">
                   <div className="flex items-center gap-3 border-b border-line/10 p-3">
                     <span className="flex h-9 w-9 items-center justify-center rounded-full bg-clay-light font-semibold text-cream">
                       {initial}

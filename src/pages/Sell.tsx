@@ -733,7 +733,7 @@ export default function Sell() {
 
       {/* Bottom action bar: fee due + the single Publish button, sticky so it's
           reachable without scrolling back up on a long page. */}
-      <div className="sticky bottom-4 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl2 border border-line/10 bg-surface/95 p-4 shadow-lg backdrop-blur">
+      <div className="glass-elevated sticky bottom-4 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl2 p-4">
         <div>
           <p className="text-sm font-medium text-ink">
             Anti-bot fee due now: ₹{nextListingFee}

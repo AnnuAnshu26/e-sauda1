@@ -8,6 +8,7 @@ import PageTransition from './components/PageTransition'
 import RouteLoadingFallback from './components/RouteLoadingFallback'
 import ChatbotWidget from './components/ChatbotWidget'
 import { NetworkStatusProvider } from './context/NetworkStatusContext'
+import { ThemeProvider } from './context/ThemeContext'
 
 // Every page is its own JS chunk, fetched only when someone actually
 // navigates there, instead of one giant bundle everyone downloads up front
@@ -163,17 +164,19 @@ function AnimatedRoutes() {
 
 export default function App() {
   return (
-    <NetworkStatusProvider>
-      <div className="flex min-h-screen flex-col bg-cream">
-        <Navbar />
-        <main className="flex-1">
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <AnimatedRoutes />
-          </Suspense>
-        </main>
-        <Footer />
-        <ChatbotWidget />
-      </div>
-    </NetworkStatusProvider>
+    <ThemeProvider>
+      <NetworkStatusProvider>
+        <div className="flex min-h-screen flex-col bg-cream">
+          <Navbar />
+          <main className="flex-1">
+            <Suspense fallback={<RouteLoadingFallback />}>
+              <AnimatedRoutes />
+            </Suspense>
+          </main>
+          <Footer />
+          <ChatbotWidget />
+        </div>
+      </NetworkStatusProvider>
+    </ThemeProvider>
   )
 }

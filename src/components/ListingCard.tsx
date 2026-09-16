@@ -32,7 +32,7 @@ export default function ListingCard({ listing, saved: savedProp, onToggleSaved }
   return (
     <Link
       to={`/listing/${listing.id}`}
-      className="group block overflow-hidden rounded-xl2 border border-line/10 bg-surface transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+      className="glass group block overflow-hidden rounded-xl2 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
     >
       <div className={`relative flex h-40 items-center justify-center ${listing.bg}`}>
         {listing.photoUrls?.length > 0 && (

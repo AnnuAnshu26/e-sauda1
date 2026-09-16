@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
 import { HelpCircle, Wifi, WifiOff } from 'lucide-react'
 import { useNetworkStatusContext } from '../context/NetworkStatusContext'
+import ThemeToggle from './ThemeToggle'
 
 export default function Footer() {
   const { liteMode, setLiteMode } = useNetworkStatusContext()
 
   return (
-    <footer className="border-t border-line/10 bg-cream-dark">
+    <footer className="glass !rounded-none !border-x-0 !border-b-0">
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
           <div>
@@ -17,23 +18,26 @@ export default function Footer() {
             <p className="mt-4 max-w-xs text-sm text-ink/50">
               Trust-first local marketplace. Escrow-secured. Delivery baked in.
             </p>
-            {/* Manual override for Lite mode -- auto-detected on connections the
-                browser itself reports as slow/data-saver (see useNetworkStatus),
-                but this covers Safari/iOS (no such API) and anyone who just wants
-                to save data on request. Turning it on doesn't disable any feature --
-                only how photos/video are loaded (see components/LazyImage.tsx). */}
-            <button
-              onClick={() => setLiteMode(!liteMode)}
-              className={`mt-4 flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                liteMode
-                  ? 'border-clay/30 bg-clay/10 text-clay'
-                  : 'border-line/10 text-ink/50 hover:text-ink'
-              }`}
-              aria-pressed={liteMode}
-            >
-              {liteMode ? <WifiOff size={13} /> : <Wifi size={13} />}
-              Lite mode {liteMode ? 'on' : 'off'}
-            </button>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {/* Manual override for Lite mode -- auto-detected on connections the
+                  browser itself reports as slow/data-saver (see useNetworkStatus),
+                  but this covers Safari/iOS (no such API) and anyone who just wants
+                  to save data on request. Turning it on doesn't disable any feature --
+                  only how photos/video are loaded (see components/LazyImage.tsx). */}
+              <button
+                onClick={() => setLiteMode(!liteMode)}
+                className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  liteMode
+                    ? 'border-clay/30 bg-clay/10 text-clay'
+                    : 'border-line/10 text-ink/50 hover:text-ink'
+                }`}
+                aria-pressed={liteMode}
+              >
+                {liteMode ? <WifiOff size={13} /> : <Wifi size={13} />}
+                Lite mode {liteMode ? 'on' : 'off'}
+              </button>
+              <ThemeToggle className="border border-line/10" />
+            </div>
             <p className="mt-1.5 max-w-[15rem] text-[11px] text-ink/35">
               Loads photos/video on tap instead of automatically — handy on a slow connection.
             </p>
