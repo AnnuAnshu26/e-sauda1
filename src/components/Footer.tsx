@@ -68,6 +68,7 @@ export default function Footer() {
           <div>
             <h4 className="eyebrow">Legal</h4>
             <ul className="mt-4 space-y-2.5 text-sm text-ink/60">
+              <li><Link to="/about" className="hover:text-clay">About us</Link></li>
               <li><Link to="/terms" className="hover:text-clay">Terms and conditions</Link></li>
               <li><Link to="/privacy" className="hover:text-clay">Privacy policy</Link></li>
               <li><Link to="/refund-policy" className="hover:text-clay">Cancellation &amp; refunds</Link></li>

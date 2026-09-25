@@ -27,6 +27,7 @@ const Privacy = lazy(() => import('./pages/legal/Privacy'))
 const RefundPolicy = lazy(() => import('./pages/legal/RefundPolicy'))
 const ShippingPolicy = lazy(() => import('./pages/legal/ShippingPolicy'))
 const ContactUs = lazy(() => import('./pages/legal/ContactUs'))
+const AboutUs = lazy(() => import('./pages/legal/AboutUs'))
 const Pricing = lazy(() => import('./pages/legal/Pricing'))
 const Signup = lazy(() => import('./pages/Signup'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
@@ -77,6 +78,7 @@ function AnimatedRoutes() {
         <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
         <Route path="/shipping-policy" element={<PageTransition><ShippingPolicy /></PageTransition>} />
         <Route path="/contact" element={<PageTransition><ContactUs /></PageTransition>} />
+        <Route path="/about" element={<PageTransition><AboutUs /></PageTransition>} />
         {/* Legal/compliance pages stay reachable without logging in -- payment
             gateways (Razorpay) and app-store review both expect Terms/Privacy/
             Refund/Contact to be publicly viewable, not gated behind auth. */}

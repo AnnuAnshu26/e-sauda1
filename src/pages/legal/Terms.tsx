@@ -9,9 +9,10 @@ export default function Terms() {
   return (
     <LegalLayout title="Terms and Conditions" lastUpdated="July 19, 2026">
       <p>
-        e-Sauda ("we", "us", "the platform") is operated by ANSHU YADAV, a
-        sole proprietorship registered in India, operating out of SOUTH WEST DELHI,DELHI.
-        These Terms govern your use of e-Sauda's website and services.
+        <strong>This website is operated by ANSHU YADAV</strong>, trading as
+        e-Sauda ("we", "us", "the platform"), a sole proprietorship registered in
+        India, operating out of South West Delhi, Delhi. These Terms govern your use
+        of e-Sauda's website and services.
       </p>
 
       <h2>What e-Sauda is</h2>
