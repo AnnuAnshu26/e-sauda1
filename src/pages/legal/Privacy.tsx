@@ -20,6 +20,11 @@ export default function Privacy() {
           does not receive or store your card, UPI or bank details. We store only the
           transaction reference and amount needed to confirm that the fee was paid.
         </li>
+        <li>
+          Seller KYC information: identity document details, PAN, and bank/UPI payout
+          details, collected only from sellers to verify identity and send payouts.
+          These are never shown to other users.
+        </li>
         <li>Ratings and reports you submit about other users or listings.</li>
         <li>Basic usage data (e.g. login times) needed to keep your account secure.</li>
       </ul>
