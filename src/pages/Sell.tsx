@@ -57,7 +57,7 @@ export default function Sell() {
   // itself exists -- see publish() below for why that ordering is the fix for
   // listings that used to end up live with missing media.
   const [pendingListingId] = useState(() => crypto.randomUUID());
-  // Kept across a failed publish attempt so retrying doesn't charge the anti-bot
+  // Kept across a failed publish attempt so retrying doesn't charge the listing
   // fee a second time -- payListingFee's Razorpay order stays valid/unconsumed
   // until create_listing_with_fee actually runs.
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
