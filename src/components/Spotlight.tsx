@@ -43,7 +43,7 @@ export default function Spotlight({ slides }: { slides: SpotlightSlide[] }) {
     >
       {/* Index rail */}
       <div className="flex items-center justify-between border-b border-line/10 px-6 py-3.5 sm:px-8">
-        <p className="eyebrow">(The Sauda Vault)</p>
+        <p className="eyebrow">(How a deal works)</p>
         <div className="flex items-center gap-5">
           {slides.map((s, i) => (
             <button

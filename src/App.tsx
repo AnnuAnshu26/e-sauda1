@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense } from 'react'
+import { lazy, Suspense } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import Navbar from './components/Navbar'
@@ -18,8 +18,6 @@ import { ThemeProvider } from './context/ThemeContext'
 const Home = lazy(() => import('./pages/Home'))
 const Browse = lazy(() => import('./pages/Browse'))
 const Sell = lazy(() => import('./pages/Sell'))
-const Orders = lazy(() => import('./pages/Orders'))
-const Vault = lazy(() => import('./pages/Vault'))
 const Profile = lazy(() => import('./pages/Profile'))
 const Login = lazy(() => import('./pages/Login'))
 const Terms = lazy(() => import('./pages/legal/Terms'))
@@ -29,6 +27,8 @@ const ShippingPolicy = lazy(() => import('./pages/legal/ShippingPolicy'))
 const ContactUs = lazy(() => import('./pages/legal/ContactUs'))
 const AboutUs = lazy(() => import('./pages/legal/AboutUs'))
 const Pricing = lazy(() => import('./pages/legal/Pricing'))
+const CancellationPolicy = lazy(() => import('./pages/legal/CancellationPolicy'))
+const SafetyTips = lazy(() => import('./pages/legal/SafetyTips'))
 const Signup = lazy(() => import('./pages/Signup'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
 const ResetPassword = lazy(() => import('./pages/ResetPassword'))
@@ -50,12 +50,12 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         {/* Home, Browse, Explore, listing detail, and seller profile stay publicly
             viewable (no RequireAuth) -- these are the pages that show products and
-            pricing. Payment-gateway reviewers (PayU, Razorpay) and search crawlers
+            pricing. Payment-gateway reviewers (Razorpay) and search crawlers
             hit these anonymously; gating them behind login made the whole site look
             "non-operational" during verification even though the data layer (RLS
             policies) already allows anonymous reads. Actions that need an account
-            (chat, buy, save, edit) already redirect to /login on their own inside
-            each page -- see handleChat/handleBuy in ListingDetail.tsx. */}
+            (chat, save, edit) already redirect to /login on their own inside
+            each page -- see handleChat in ListingDetail.tsx. */}
         <Route path="/" element={<PageTransition><Home /></PageTransition>} />
         <Route path="/browse" element={<PageTransition><Browse /></PageTransition>} />
         <Route path="/explore" element={<PageTransition><Explore /></PageTransition>} />
@@ -76,6 +76,8 @@ function AnimatedRoutes() {
         <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
         <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
         <Route path="/refund-policy" element={<PageTransition><RefundPolicy /></PageTransition>} />
+        <Route path="/cancellation-policy" element={<PageTransition><CancellationPolicy /></PageTransition>} />
+        <Route path="/safety" element={<PageTransition><SafetyTips /></PageTransition>} />
         <Route path="/shipping-policy" element={<PageTransition><ShippingPolicy /></PageTransition>} />
         <Route path="/contact" element={<PageTransition><ContactUs /></PageTransition>} />
         <Route path="/about" element={<PageTransition><AboutUs /></PageTransition>} />
@@ -116,22 +118,6 @@ function AnimatedRoutes() {
           element={
             <RequireAuth>
               <PageTransition><MyListings /></PageTransition>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/orders"
-          element={
-            <RequireAuth>
-              <PageTransition><Orders /></PageTransition>
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/vault"
-          element={
-            <RequireAuth>
-              <PageTransition><Vault /></PageTransition>
             </RequireAuth>
           }
         />

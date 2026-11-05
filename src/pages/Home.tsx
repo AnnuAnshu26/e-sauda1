@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
-  Lock,
   ShieldCheck,
   Truck,
   Sparkles,
@@ -13,9 +12,9 @@ import {
   Keyboard,
   Smartphone,
   MessageSquareText,
-  Wallet,
   MapPinned,
-  KeyRound,
+  Handshake,
+  Search,
 } from "lucide-react";
 import { categories } from "../data/listings";
 import { fetchListings } from "../lib/listings";
@@ -28,35 +27,35 @@ import { categoryIcons } from "../lib/categoryIcons";
 import { fetchWishlistBasedRecommendations } from "../lib/recommendations";
 import { useAuth } from "../context/AuthContext";
 
-const vaultSlides: SpotlightSlide[] = [
-  { index: "01", title: "Lock the price", desc: "Chat in-app. Agree on a number. No phone numbers leaked.", icon: MessageSquareText },
-  { index: "02", title: "Fund the vault", desc: "Buyer pays via UPI/card. Money is held — not released.", icon: Wallet },
-  { index: "03", title: "Meet or ship", desc: "Rider assigned. Dashboard shows 'FUNDS SECURED' in green.", icon: MapPinned },
-  { index: "04", title: "OTP handover", desc: "Buyer inspects, shares OTP. Vault opens. Seller paid instantly.", icon: KeyRound },
+const dealSlides: SpotlightSlide[] = [
+  { index: "01", title: "Find it", desc: "Browse local listings, watch the seller's video and check their profile and ratings.", icon: Search },
+  { index: "02", title: "Chat & agree a price", desc: "Message the seller in the app, make an offer, and settle on a fair price.", icon: MessageSquareText },
+  { index: "03", title: "Meet nearby", desc: "Pick a busy public place and a time that suits you both. Never pay in advance.", icon: MapPinned },
+  { index: "04", title: "Check, then pay", desc: "Inspect the item, then pay the seller directly by cash or UPI. No middleman.", icon: Handshake },
 ];
 
 const features = [
-  { icon: Lock, title: "Vaulted escrow, always", desc: "Buyer's money sits in a digital vault. Handover OTP unlocks only when 'FUNDS SECURED' shows on your dashboard." },
+  { icon: Handshake, title: "Direct deals, zero commission", desc: "You pay the seller directly. e-Sauda takes no cut of the sale; sellers only pay a small listing fee." },
   { icon: ShieldCheck, title: "Progressive trust limits", desc: "New users list 1–2 items. Great ratings unlock more. Bulk resellers stay filtered out — by design." },
-  { icon: Truck, title: "One-tap city delivery", desc: "Rapido, Uber & Dunzo baked into checkout. Price, ETA and rider — all locked in one tap." },
+  { icon: Truck, title: "Local meetups", desc: "Meet nearby in a public place, inspect the item, then pay. Nothing is shipped." },
   { icon: Sparkles, title: "AI-cleaned photos", desc: "Snap it messy. We segment the background, block stock-photo scams and suggest a fair price." },
 ];
 
 const heroIcons = [Bike, Armchair, Snowflake, Keyboard];
 
 const handoverSteps = [
-  { title: "Enfield handover in 32 min", sub: "Rapido rider assigned · ETA 6 min" },
-  { title: "Enfield handover in 24 min", sub: "Rider en route · ETA 3 min" },
-  { title: "Enfield handover in 18 min", sub: "Rider arriving · Confirm on OTP screen" },
+  { title: "Chat with the seller", sub: "Ask questions · Agree a price" },
+  { title: "Meet in a public place", sub: "Check the item · Test it" },
+  { title: "Pay the seller directly", sub: "Cash or UPI · After you've checked" },
 ];
 
 // Rotates through the headline facts one at a time, right in the hero, so
 // the "why us" pitch is visible the instant the page loads instead of
 // living further down the page behind a scroll.
 const tickerFacts = [
-  { icon: Lock, text: "Buyer's money sits in escrow until you're both ready" },
-  { icon: ShieldCheck, text: "Every seller is DigiLocker-verified" },
-  { icon: Truck, text: "Same-day city delivery, price locked in one tap" },
+  { icon: Handshake, text: "Deal directly with people near you — no commission" },
+  { icon: ShieldCheck, text: "Every listing has a real video of the item" },
+  { icon: Truck, text: "Meet locally, check the item, then pay" },
   { icon: Sparkles, text: "AI cleans up your listing photos automatically" },
 ];
 
@@ -184,9 +183,9 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
           >
             <p className="max-w-lg text-base text-ink/60">
-              India's first marketplace where money sits in escrow, sellers are
-              verified, and a rider shows up when you're ready. No brokers. No
-              "OTP bhejo" scams. Just clean deals.
+              Local classifieds where you deal directly with real people nearby.
+              Watch the video, chat, meet, check the item, then pay. No
+              brokers, no commission, no "OTP bhejo" scams.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
@@ -214,9 +213,9 @@ export default function Home() {
           className="mt-14 grid grid-cols-1 gap-px overflow-hidden rounded-xl2 border border-line/10 bg-line/10 sm:grid-cols-3"
         >
           {[
-            ["₹42 Cr", "Vaulted last month"],
-            ["2.1 M", "Verified sellers"],
-            ["4.8★", "Buyer rating"],
+            ["0%", "Commission on sales"],
+            ["Video", "On every listing"],
+            ["₹1", "To list your first item"],
           ].map(([n, l]) => (
             <div key={l} className="bg-surface px-8 py-8 transition-colors duration-200 hover:bg-cream-dark">
               <p className="font-display text-4xl font-extrabold text-ink">{n}</p>
@@ -236,7 +235,7 @@ export default function Home() {
             transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
             className="absolute right-6 top-6 flex items-center gap-1.5 rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-cream-dark shadow-lg"
           >
-            <ShieldCheck size={14} className="text-clay" /> DigiLocker verified
+            <ShieldCheck size={14} className="text-clay" /> Meet &amp; check before you pay
           </motion.span>
           <div className="flex h-64 items-center justify-center gap-8">
             {heroIcons.map((Icon, i) => (
@@ -269,7 +268,7 @@ export default function Home() {
                 transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
                 className="h-2 w-2 rounded-full bg-emerald-500"
               />
-              FUNDS SECURED
+              HOW A DEAL WORKS
             </p>
             <AnimatePresence mode="wait">
               <motion.div
@@ -331,10 +330,10 @@ export default function Home() {
       {/* Trust strip */}
       <section className="border-y border-line/10 bg-cream-dark py-4">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-10 gap-y-2 px-6 eyebrow !text-ink/70">
-          <span className="flex items-center gap-2"><Lock size={14} /> Escrow-vaulted payments</span>
-          <span className="flex items-center gap-2"><ShieldCheck size={14} /> DigiLocker-verified IDs</span>
-          <span className="flex items-center gap-2"><Truck size={14} /> Rapido · Uber · Dunzo delivery</span>
-          <span className="flex items-center gap-2"><Sparkles size={14} /> Two-way accountability score</span>
+          <span className="flex items-center gap-2"><Handshake size={14} /> Direct deals, no commission</span>
+          <span className="flex items-center gap-2"><ShieldCheck size={14} /> Report &amp; block tools</span>
+          <span className="flex items-center gap-2"><Truck size={14} /> Meet in person, pay after checking</span>
+          <span className="flex items-center gap-2"><Sparkles size={14} /> Ratings after every deal</span>
         </div>
       </section>
 
@@ -344,7 +343,7 @@ export default function Home() {
           <div>
             <p className="eyebrow">(Fresh in your city)</p>
             <h2 className="mt-2 font-display text-3xl font-extrabold text-ink">Real people, real items</h2>
-            <p className="mt-1 text-sm text-ink/50">Every listing gated by our anti-bot fee.</p>
+            <p className="mt-1 text-sm text-ink/50">A small listing fee keeps spam and bots out.</p>
           </div>
           <Link to="/browse" className="text-sm font-semibold text-clay hover:underline">Browse all →</Link>
         </Reveal>
@@ -400,21 +399,21 @@ export default function Home() {
         </section>
       )}
 
-      {/* Vault pitch — the signature moment: numbered, auto-advancing,
+      {/* How a deal works — the signature moment: numbered, auto-advancing,
           crossfading. Hover to pause, click a number to jump. */}
       <section className="border-y border-line/10 bg-cream-dark py-14">
         <Reveal className="mx-auto max-w-3xl px-6 text-center">
           <h2 className="font-display text-4xl font-extrabold text-ink">
-            No screenshot scams. <span className="text-clay">Ever.</span>
+            Meet. Check. <span className="text-clay">Then pay.</span>
           </h2>
           <p className="mt-3 text-sm text-ink/60">
-            Every rupee sits in a regulated escrow ledger until the buyer
-            physically inspects the item. Seller sees a giant green banner — not
-            a WhatsApp screenshot — before handing anything over.
+            e-Sauda connects you with a buyer or seller nearby. You agree the
+            deal in chat and complete it in person, so you only pay once you've
+            seen the item. Never pay in advance, and never share an OTP.
           </p>
         </Reveal>
         <Reveal className="mx-auto mt-8 max-w-5xl px-6" delay={0.1}>
-          <Spotlight slides={vaultSlides} />
+          <Spotlight slides={dealSlides} />
         </Reveal>
       </section>
 
@@ -451,11 +450,11 @@ export default function Home() {
             Your first listing costs ₹1.
           </p>
           <p className="font-display text-4xl font-extrabold not-italic leading-[0.95] tracking-tight text-cream/55">
-            Your last scam happened yesterday.
+            Keep 100% of your sale price.
           </p>
           <p className="mt-5 max-w-xl text-cream/70">
             Join the marketplace built by neighbours, for neighbours. Fair fees,
-            real people, and money that only moves when you're ready.
+            real people, and no commission on what you sell.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <Link

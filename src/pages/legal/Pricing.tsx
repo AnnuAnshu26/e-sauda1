@@ -1,57 +1,62 @@
+import { Link } from 'react-router-dom'
 import LegalLayout from '../../components/LegalLayout'
 
 export default function Pricing() {
   return (
-    <LegalLayout title="Pricing" lastUpdated="July 19, 2026">
+    <LegalLayout title="Pricing" lastUpdated="November 5, 2026">
       <p>
-        This page describes what e-Sauda currently charges, in plain terms, for both
-        buyers and sellers.
+        e-Sauda is a classifieds platform. Buyers and sellers deal with each other
+        directly, so the only thing e-Sauda charges for is a small fee when a seller
+        publishes a listing.
       </p>
 
-      <h2>Posting a listing</h2>
+      <h2>For buyers: free</h2>
       <p>
-        Posting your first active listing in a category costs a ₹1 anti-bot listing
-        fee, charged through our payment gateway partner before the listing goes
-        live. This fee increases the more active listings you already have in that
-        same category at the time of posting -- ₹10 for a second, ₹25 for a third or
-        beyond -- as a deterrent against bulk/bot-style relisting, not a revenue
-        feature. It resets per category as your listings there sell, expire, or are
-        removed.
+        Browsing, chatting with sellers and saving listings cost nothing. e-Sauda
+        takes no commission and never handles your payment. You pay the seller
+        directly, in person, for the price you agree with them.
       </p>
 
-      <h2>Buying a listing (Sauda Vault)</h2>
+      <h2>For sellers: listing fee</h2>
       <p>
-        When you buy a listing through Sauda Vault, you pay exactly the listed price
-        shown on the listing -- in Indian Rupees (INR) -- through our payment gateway
-        partner. e-Sauda does not currently add any platform commission, service fee,
-        or payment-processing surcharge on top of the listed price.
+        The fee is charged in Indian Rupees (INR) through our payment gateway partner
+        (Razorpay) before your listing goes live. It depends on how many active
+        listings you already have in the same category:
+      </p>
+      <ul>
+        <li>First active listing in a category: ₹1</li>
+        <li>Second active listing in the same category: ₹10</li>
+        <li>Third or further active listing in the same category: ₹25</li>
+      </ul>
+      <p>
+        The count resets as your listings there are sold, expire or are removed.
+        The fee covers publishing the listing and helps keep spam and bulk
+        reselling off the platform.
       </p>
 
-      <h2>Delivery fees</h2>
-      <p>
-        If you choose to arrange delivery through a third party instead of meeting in
-        person, an estimated delivery fee is shown before you confirm. See our
-        Shipping Policy for the current status of this feature.
-      </p>
+      <h2>What we do not charge</h2>
+      <ul>
+        <li>No commission or percentage on the sale price.</li>
+        <li>No fee to buyers.</li>
+        <li>No shipping or handling fees, because items are handed over in person.</li>
+      </ul>
 
       <h2>Refunds</h2>
       <p>
-        If a Vault order is cancelled before handover, you're refunded in full, minus
-        any delivery fee already incurred for that specific order. See our
-        Cancellation and Refunds Policy for the full timeline. The ₹1-₹25 anti-bot
-        listing fee is not refundable once a listing has been published, since it
-        covers the act of posting itself rather than the sale.
+        The listing fee is not refundable once a listing has been published. If you
+        were charged but your listing was not published, you can retry without being
+        charged again, or contact us for a refund. See our{' '}
+        <Link to="/refund-policy" className="text-clay hover:underline">Refund Policy</Link>.
       </p>
 
       <h2>Changes to pricing</h2>
       <p>
-        If e-Sauda introduces or changes any fee described on this page, this page
-        will be updated in advance, and the change will be clearly shown in the
-        relevant part of the app before you're charged.
+        If e-Sauda introduces or changes any fee, this page will be updated first, and
+        the amount will be shown clearly in the app before you are charged.
       </p>
 
       <h2>Contact</h2>
-      <p>Questions about pricing can be sent to edotsauda@gmail.com .</p>
+      <p>Questions about pricing can be sent to edotsauda@gmail.com.</p>
     </LegalLayout>
   )
 }

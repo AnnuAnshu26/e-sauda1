@@ -1,3 +1,5 @@
+> **Note (Nov 2026):** e-Sauda is now a C2C classifieds platform with no escrow/Vault. Sections below that mention the Vault, orders, OTP handover, delivery or KYC are out of date. See `C2C_MIGRATION.md`.
+
 # feature/legal-pages — setup guide
 
 Six pages required for Razorpay's "Business website details" activation

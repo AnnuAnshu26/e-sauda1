@@ -40,34 +40,8 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    // The one real blocker: real money sitting in escrow tied to this specific
-    // person. Historical (completed/cancelled) orders are fine to leave behind --
-    // that's exactly what the soft-delete/anonymize approach protects -- but an
-    // order still awaiting handover has an active counterparty depending on this
-    // account still existing and being reachable to resolve it.
-    const { data: activeOrders, error: activeOrdersError } = await adminClient
-      .from('vault_orders')
-      .select('id')
-      .eq('status', 'funded')
-      .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-      .limit(1)
-
-    if (activeOrdersError) {
-      console.error('Failed to check active orders:', activeOrdersError)
-      return jsonResponse({ error: 'Could not verify your account is safe to delete' }, 500)
-    }
-    if (activeOrders && activeOrders.length > 0) {
-      return jsonResponse(
-        {
-          error:
-            'You have a Vault order still in progress. Complete or cancel it before deleting your account.',
-        },
-        400,
-      )
-    }
-
     // Ban indefinitely (100 years) rather than delete the auth.users row -- this is
-    // what lets historical vault_orders/messages/reports the OTHER party is involved
+    // what lets historical messages/ratings/reports the OTHER party is involved
     // in stay completely intact. See the schema file's comment for the full reasoning.
     const { error: banError } = await adminClient.auth.admin.updateUserById(user.id, {
       email: `deleted-${user.id}@e-sauda.invalid`,

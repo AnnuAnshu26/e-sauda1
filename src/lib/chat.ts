@@ -59,7 +59,7 @@ export async function getOrCreateConversation(
 export async function fetchConversations(userId: string): Promise<ConversationSummary[]> {
   const { data, error } = await supabase
     .from('conversations')
-    .select('*, listings(title, price, emoji, photo_urls)')
+    .select('*, listings(title, price, emoji, photo_urls, status)')
     .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
     .order('created_at', { ascending: false })
   if (error) throw error
@@ -81,6 +81,7 @@ export async function fetchConversations(userId: string): Promise<ConversationSu
         listingPrice: Number(row.listings?.price ?? 0),
         listingEmoji: row.listings?.emoji ?? '📦',
         listingPhotoUrl: row.listings?.photo_urls?.[0] ?? null,
+        listingStatus: row.listings?.status ?? null,
         otherPartyId: row.buyer_id === userId ? row.seller_id : row.buyer_id,
         lastMessageBody: lastMsg?.body ?? null,
         lastMessageAt: lastMsg?.created_at ?? null,

@@ -16,7 +16,7 @@ export default function Footer() {
               <span className="font-display text-base font-extrabold tracking-tight text-ink">e-Sauda</span>
             </div>
             <p className="mt-4 max-w-xs text-sm text-ink/50">
-              Trust-first local marketplace. Escrow-secured. Delivery baked in.
+              Local classifieds for India. Buy and sell directly with people near you — meet, check the item, then pay.
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {/* Manual override for Lite mode -- auto-detected on connections the
@@ -47,8 +47,8 @@ export default function Footer() {
             <ul className="mt-4 space-y-2.5 text-sm text-ink/60">
               <li><Link to="/browse" className="hover:text-clay">Browse listings</Link></li>
               <li><Link to="/sell" className="hover:text-clay">Sell an item</Link></li>
-              <li><Link to="/vault" className="hover:text-clay">Sauda Vault</Link></li>
-              <li><Link to="/orders" className="hover:text-clay">My orders</Link></li>
+              <li><Link to="/my-listings" className="hover:text-clay">My listings</Link></li>
+              <li><Link to="/safety" className="hover:text-clay">Safety tips</Link></li>
             </ul>
           </div>
           <div>
@@ -59,8 +59,8 @@ export default function Footer() {
                   <HelpCircle size={14} /> Help guide — how e-Sauda works
                 </Link>
               </li>
-              <li>DigiLocker verification (coming soon)</li>
-              <li>OTP handover</li>
+              <li>DigiLocker verification (rolling out)</li>
+              <li>Meet in public places</li>
               <li>Chat moderation</li>
               <li>Report &amp; block</li>
             </ul>
@@ -71,15 +71,16 @@ export default function Footer() {
               <li><Link to="/about" className="hover:text-clay">About us</Link></li>
               <li><Link to="/terms" className="hover:text-clay">Terms and conditions</Link></li>
               <li><Link to="/privacy" className="hover:text-clay">Privacy policy</Link></li>
-              <li><Link to="/refund-policy" className="hover:text-clay">Cancellation &amp; refunds</Link></li>
-              <li><Link to="/shipping-policy" className="hover:text-clay">Shipping policy</Link></li>
+              <li><Link to="/refund-policy" className="hover:text-clay">Refund policy (listing fee)</Link></li>
+              <li><Link to="/cancellation-policy" className="hover:text-clay">Cancellation policy</Link></li>
+              <li><Link to="/shipping-policy" className="hover:text-clay">Shipping &amp; delivery</Link></li>
               <li><Link to="/pricing" className="hover:text-clay">Pricing</Link></li>
               <li><Link to="/contact" className="hover:text-clay">Contact us</Link></li>
             </ul>
           </div>
         </div>
         <p className="mt-14 border-t border-line/10 pt-6 text-xs text-ink/30">
-          © 2026 e-Sauda. <Link to="/terms" className="hover:text-clay">Terms</Link> · <Link to="/privacy" className="hover:text-clay">Privacy</Link> ·{' '}
+          © 2026 e-Sauda, operated by ANSHU YADAV. <Link to="/terms" className="hover:text-clay">Terms</Link> · <Link to="/privacy" className="hover:text-clay">Privacy</Link> ·{' '}
           <Link to="/help" className="hover:text-clay">Help guide</Link>
         </p>
       </div>

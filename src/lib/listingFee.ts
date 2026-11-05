@@ -8,14 +8,11 @@ interface CreateFeeOrderResponse {
   fee: number
 }
 
-// Mirrors payWithRazorpay in lib/razorpay.ts almost exactly -- the difference is what's
-// being paid for (a category-based listing fee computed server-side, rather than an
-// existing listing's price) and which two Edge Functions/verification table it talks
-// to (create-listing-fee-order / verify-listing-fee-payment / listing_fee_payments,
-// instead of the Vault purchase versions). Kept as a separate module rather than
-// generalizing payWithRazorpay to cover both, since the two flows genuinely pay for
-// different things and forcing one function to branch between them would be more
-// confusing than two small, clearly-named ones.
+// The seller's listing fee -- the only payment that goes through e-Sauda. The amount
+// is computed server-side from the category (never trusted from the client) by the
+// create-listing-fee-order Edge Function and verified by verify-listing-fee-payment,
+// which records it in listing_fee_payments. Buyers and sellers pay each other directly
+// and in person, outside the app.
 export async function payListingFee(
   category: string,
   buyerName: string,
@@ -31,7 +28,7 @@ export async function payListingFee(
       amount: order.amount,
       currency: order.currency,
       name: 'e-Sauda',
-      description: `Anti-bot listing fee — ${category}`,
+      description: `Listing fee — ${category}`,
       order_id: order.orderId,
       prefill: { name: buyerName, email: buyerEmail },
       theme: { color: '#2d4a3e' },
@@ -61,11 +58,7 @@ export async function payListingFee(
   })
 }
 
-// Duplicated from lib/razorpay.ts rather than imported -- both modules load the exact
-// same external script (Razorpay's Checkout.js is a single global, not per-flow), and
-// the shared `(window as any).Razorpay` check already makes a second call here a
-// no-op if it's already loaded. Not worth the coupling of exporting internal loader
-// state across modules for what's a two-line function.
+// Loads Razorpay's Checkout.js once (it's a script-injected modal, not an npm package).
 let scriptLoadingPromise: Promise<void> | null = null
 function loadRazorpayScript(): Promise<void> {
   if ((window as any).Razorpay) return Promise.resolve()

@@ -187,7 +187,7 @@ export default function Sell() {
   }
 
   // Once a category is picked, check how many active listings this user already
-  // has in it — that's what drives the real progressive-cap and anti-bot fee.
+  // has in it — that's what drives the real progressive-cap and listing fee.
   useEffect(() => {
     if (!category || !user) {
       setActiveInCategory(null);
@@ -288,7 +288,7 @@ export default function Sell() {
     setPublishError(null);
     try {
       // Reuse an order from a previous failed attempt instead of charging the
-      // anti-bot fee again -- payListingFee's Razorpay order stays valid and
+      // listing fee again -- payListingFee's Razorpay order stays valid and
       // unconsumed until create_listing_with_fee (below) actually runs.
       const razorpayOrderId =
         pendingOrderId ??
@@ -391,7 +391,7 @@ export default function Sell() {
           Listing published
         </h1>
         <p className="mt-2 text-sm text-ink/60">
-          "{title || "Your item"}" is live in {category}. Anti-bot fee of ₹
+          "{title || "Your item"}" is live in {category}. Listing fee of ₹
           {nextListingFee} applied.
         </p>
         {photoWarning && (
@@ -479,7 +479,7 @@ export default function Sell() {
             </div>
           ) : (
             <div className="mt-5 rounded-lg bg-clay/10 p-3 text-xs text-clay">
-              Anti-bot fee for your next listing in <strong>this category</strong>: ₹
+              Listing fee for your next listing in <strong>this category</strong>: ₹
               {nextListingFee}. Rises as you post more in the same sub-category —
               bulk resellers pay ₹500/listing.
             </div>
@@ -736,7 +736,7 @@ export default function Sell() {
       <div className="glass-elevated sticky bottom-4 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl2 p-4">
         <div>
           <p className="text-sm font-medium text-ink">
-            Anti-bot fee due now: ₹{nextListingFee}
+            Listing fee due now: ₹{nextListingFee}
           </p>
           {missingFields.length > 0 && (
             <p className="mt-0.5 text-xs text-ink/50">

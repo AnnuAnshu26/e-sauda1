@@ -3,8 +3,6 @@ Allow: /
 Disallow: /messages
 Disallow: /sell
 Disallow: /my-listings
-Disallow: /orders
-Disallow: /vault
 Disallow: /profile
 Disallow: /saved
 Disallow: /admin

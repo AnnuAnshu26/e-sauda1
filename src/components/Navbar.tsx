@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { MapPin, Search, Bell, Plus, User as UserIcon, MessageSquare, Wallet, ShoppingBag, LogOut, Inbox, Heart, ShieldAlert, Package, Clapperboard, PlayCircle, Menu, X } from 'lucide-react'
+import { MapPin, Search, Bell, Plus, User as UserIcon, ShoppingBag, LogOut, Inbox, Heart, ShieldAlert, Package, Clapperboard, PlayCircle, Menu, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useNotifications } from '../hooks/useNotifications'
 import { timeAgo } from '../lib/time'
@@ -10,7 +10,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   // Small-screen nav drawer -- separate from the account dropdown (menuOpen)
-  // above. Below md, the inline "Browse / Messages / Saved / Vault / Orders"
+  // above. Below md, the inline "Browse / Messages / Saved / Sell"
   // links (see the `hidden md:flex` nav further down) are invisible with no
   // other way to reach them, so this is what makes the site navigable at all
   // on a phone.
@@ -115,8 +115,7 @@ export default function Navbar() {
           <Link to="/browse" className="hover:text-ink">Browse</Link>
           {user && <Link to="/messages" className="hover:text-ink">Messages</Link>}
           {user && <Link to="/saved" className="hover:text-ink">Saved</Link>}
-          <Link to="/vault" className="hover:text-ink">Vault</Link>
-          <Link to="/orders" className="hover:text-ink">Orders</Link>
+          <Link to="/sell" className="hover:text-ink">Sell</Link>
         </nav>
 
         {/* Standalone Reels/Explore button -- deliberately its own always-visible
@@ -230,12 +229,6 @@ export default function Navbar() {
                   <Link to="/saved" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream-dark">
                     <Heart size={16} /> Saved
                   </Link>
-                  <Link to="/orders" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream-dark">
-                    <MessageSquare size={16} /> My orders
-                  </Link>
-                  <Link to="/vault" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream-dark">
-                    <Wallet size={16} /> Sauda Vault
-                  </Link>
                   <Link to="/browse" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg p-3 text-sm hover:bg-cream-dark">
                     <ShoppingBag size={16} /> Browse marketplace
                   </Link>
@@ -289,16 +282,6 @@ export default function Navbar() {
                 </Link>
               </li>
             )}
-            <li>
-              <Link to="/vault" onClick={() => setMobileNavOpen(false)} className="block rounded-lg px-2 py-2 hover:bg-surface">
-                Vault
-              </Link>
-            </li>
-            <li>
-              <Link to="/orders" onClick={() => setMobileNavOpen(false)} className="block rounded-lg px-2 py-2 hover:bg-surface">
-                Orders
-              </Link>
-            </li>
             <li>
               <Link to="/help" onClick={() => setMobileNavOpen(false)} className="block rounded-lg px-2 py-2 text-clay hover:bg-surface">
                 Help guide

@@ -52,7 +52,7 @@ export async function markAllNotificationsRead(userId: string): Promise<void> {
   if (error) throw error
 }
 
-// Live-updates the bell the moment a trigger inserts a row (new message, vault status
+// Live-updates the bell the moment a trigger inserts a row (new message, report status
 // change, etc.) -- no polling needed. Call the returned function on unmount.
 export function subscribeToNotifications(
   userId: string,

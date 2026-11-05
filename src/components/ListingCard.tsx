@@ -1,4 +1,4 @@
-import { Heart, Lock, ImageOff } from 'lucide-react'
+import { Heart, ImageOff } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Listing } from '../types'
@@ -42,13 +42,6 @@ export default function ListingCard({ listing, saved: savedProp, onToggleSaved }
             className="absolute inset-0 h-full w-full transition-transform duration-300 group-hover:scale-105"
           />
         )}
-        <div className="absolute left-2 top-2 flex gap-1">
-          {listing.escrow && (
-            <span className="flex items-center gap-1 rounded-full bg-cream/90 px-2 py-1 text-[11px] font-medium text-ink">
-              <Lock size={11} /> Escrow
-            </span>
-          )}
-        </div>
         <button
           onClick={(e) => {
             e.preventDefault()

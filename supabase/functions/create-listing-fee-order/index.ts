@@ -1,8 +1,9 @@
 // Deploy: supabase functions deploy create-listing-fee-order
-// Reuses the RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET secrets already set for the Vault
-// payment functions -- no new secrets needed.
+// Needs the RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET secrets (see RAZORPAY_SETUP.md).
+// This is the only payment in e-Sauda: buyers and sellers pay each other directly, so
+// the seller's listing fee is the only thing that goes through Razorpay.
 //
-// Mirrors create-razorpay-order's core principle: the fee tier is computed here,
+// Core principle: the fee tier is computed here,
 // server-side, from the seller's real active-listing count in this category -- never
 // trusted from the client. A client claiming "this is my first listing in Books"
 // when it's actually their third would otherwise pay ₹1 instead of ₹25.

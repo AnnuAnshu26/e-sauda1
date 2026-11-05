@@ -1,17 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Lock, ShieldCheck, MapPin, MessageCircle } from 'lucide-react'
+import { ShieldCheck, MapPin, MessageCircle, AlertTriangle } from 'lucide-react'
 import { fetchListingById } from '../lib/listings'
 import { fetchRecommendedListings } from '../lib/recommendations'
 import { getOrCreateConversation } from '../lib/chat'
-import { createVaultOrder } from '../lib/vault'
-import { payWithRazorpay } from '../lib/razorpay'
 import { fetchMyAcceptedOffer } from '../lib/chatOffers'
 import { useAuth } from '../context/AuthContext'
 import { useSavedListings } from '../hooks/useSavedListings'
 import { useUserLocation } from '../hooks/useUserLocation'
 import { haversineKm, formatDistanceKm } from '../lib/distance'
-import { Listing, VaultOrderWithOtp, ChatOffer } from '../types'
+import { Listing, ChatOffer } from '../types'
 import ReportButton from '../components/ReportButton'
 import ListingCard from '../components/ListingCard'
 import ListingMap from '../components/ListingMap'
@@ -21,7 +19,7 @@ import { useNetworkStatusContext } from '../context/NetworkStatusContext'
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { user, profile } = useAuth()
+  const { user } = useAuth()
   const { savedIds, toggleSaved } = useSavedListings()
   const [listing, setListing] = useState<Listing | null>(null)
   const [loading, setLoading] = useState(true)
@@ -29,9 +27,6 @@ export default function ListingDetail() {
   const [activePhoto, setActivePhoto] = useState(0)
   const [startingChat, setStartingChat] = useState(false)
   const [chatError, setChatError] = useState<string | null>(null)
-  const [buying, setBuying] = useState(false)
-  const [buyError, setBuyError] = useState<string | null>(null)
-  const [purchase, setPurchase] = useState<VaultOrderWithOtp | null>(null)
   const [recommended, setRecommended] = useState<Listing[]>([])
   const [acceptedOffer, setAcceptedOffer] = useState<ChatOffer | null>(null)
 
@@ -59,7 +54,7 @@ export default function ListingDetail() {
 
   // Runs after the main listing loads (not in parallel with it) since it needs the
   // listing's category to know what to look for. Failing quietly to an empty list is
-  // fine here — this section is a bonus, not core to viewing or buying the listing.
+  // fine here — this section is a bonus, not core to viewing the listing.
   useEffect(() => {
     if (!listing) {
       setRecommended([])
@@ -105,34 +100,6 @@ export default function ListingDetail() {
       setChatError(err.message || 'Could not start a chat. Try again.')
     } finally {
       setStartingChat(false)
-    }
-  }
-
-  async function handleBuy() {
-    if (!user) {
-      navigate('/login')
-      return
-    }
-    if (!listing) return
-    setBuying(true)
-    setBuyError(null)
-    try {
-      const { razorpayOrderId } = await payWithRazorpay(
-        listing.id,
-        profile?.display_name || 'e-Sauda buyer',
-        user.email || '',
-      )
-      const order = await createVaultOrder(listing.id, razorpayOrderId)
-      setPurchase(order)
-      setListing({ ...listing, status: 'sold' })
-    } catch (err: any) {
-      // Closing the Checkout modal without paying isn't a failure worth alarming
-      // someone about -- they just changed their mind, so no error banner for it.
-      if (err.message !== 'cancelled') {
-        setBuyError(err.message || 'Could not complete this purchase. Try again.')
-      }
-    } finally {
-      setBuying(false)
     }
   }
 
@@ -213,11 +180,6 @@ export default function ListingDetail() {
 
         <div>
           <div className="flex items-center gap-2">
-            {listing.escrow && (
-              <span className="flex items-center gap-1 rounded-full bg-clay/10 px-2.5 py-1 text-xs font-medium text-clay">
-                <Lock size={11} /> Escrow protected
-              </span>
-            )}
             {listing.verified && (
               <span className="flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-1 text-xs font-medium text-emerald-400">
                 <ShieldCheck size={11} /> Verified
@@ -243,7 +205,7 @@ export default function ListingDetail() {
             <div className="mt-3">
               <ListingMap lat={listing.latitude} lng={listing.longitude} label={listing.location || listing.city || listing.title} />
               <p className="mt-1.5 text-xs text-ink/40">
-                Approximate area shown for privacy — exact address is shared only after a Vault purchase.
+                Approximate area shown for privacy — agree the exact meeting spot with the seller in chat.
               </p>
             </div>
           )}
@@ -278,7 +240,6 @@ export default function ListingDetail() {
           )}
 
           {chatError && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-400">{chatError}</p>}
-          {buyError && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-400">{buyError}</p>}
 
           <div className="mt-8">
             {isOwner ? (
@@ -291,26 +252,6 @@ export default function ListingDetail() {
                   Edit listing
                 </Link>
               </div>
-            ) : purchase ? (
-              <div className="rounded-xl2 border border-emerald-500/30 bg-emerald-500/10 p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold text-emerald-400">
-                  <ShieldCheck size={16} /> Funds secured in the Vault
-                </p>
-                <p className="mt-3 text-xs uppercase tracking-wide text-ink/50">Your handover OTP</p>
-                <p className="mt-1 font-display text-3xl font-semibold tracking-widest text-ink">
-                  {purchase.handoverOtp}
-                </p>
-                <p className="mt-2 text-xs text-ink/50">
-                  Only share this with the seller in person, after you've inspected the item.
-                  Never send it over chat, SMS, or a screenshot.
-                </p>
-                <Link
-                  to="/vault"
-                  className="mt-4 inline-block rounded-full bg-forest px-5 py-2.5 text-sm font-semibold text-cream hover:bg-forest-light"
-                >
-                  Go to Sauda Vault
-                </Link>
-              </div>
             ) : listing.status !== 'active' ? (
               <div className="rounded-lg bg-ink/5 p-4 text-sm text-ink/60">
                 This listing is no longer available.
@@ -319,9 +260,9 @@ export default function ListingDetail() {
               <div>
                 {acceptedOffer && (
                   <div className="mb-3 rounded-lg border border-forest/20 bg-forest/5 px-4 py-2.5 text-sm text-forest">
-                    You have an accepted offer — you'll pay{' '}
+                    You and the seller agreed on{' '}
                     <strong>₹{acceptedOffer.amount.toLocaleString('en-IN')}</strong> instead of the listed
-                    price when you buy.
+                    price. Pay this directly to the seller when you meet.
                   </div>
                 )}
                 <div className="flex flex-wrap gap-3">
@@ -333,18 +274,14 @@ export default function ListingDetail() {
                     <MessageCircle size={16} />
                     {startingChat ? 'Starting chat…' : 'Chat with seller'}
                   </button>
-                  <button
-                    onClick={handleBuy}
-                    disabled={buying}
-                    className="flex items-center gap-2 rounded-full bg-clay px-6 py-3 text-sm font-semibold text-cream hover:bg-clay-light disabled:opacity-50"
-                  >
-                    <Lock size={16} />
-                    {buying
-                      ? 'Locking funds…'
-                      : acceptedOffer
-                        ? `Buy with Vault — ₹${acceptedOffer.amount.toLocaleString('en-IN')}`
-                        : 'Buy with Vault'}
-                  </button>
+                </div>
+                <div className="mt-4 flex gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-ink/70">
+                  <AlertTriangle size={14} className="mt-0.5 shrink-0 text-amber-400" />
+                  <p>
+                    Deal directly with the seller. Meet in a public place, check the item, and only
+                    then pay. <strong>Never pay in advance</strong> or share an OTP.{' '}
+                    <Link to="/safety" className="text-clay hover:underline">Safety tips</Link>
+                  </p>
                 </div>
               </div>
             )}

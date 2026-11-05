@@ -62,7 +62,7 @@ module.exports = async (req, res) => {
         ? 'This listing is no longer available.'
         : listing.description
           ? listing.description.slice(0, 150)
-          : `${priceText ? priceText + ' · ' : ''}Buy it locally on e-Sauda, with escrow protection.`,
+          : `${priceText ? priceText + ' · ' : ''}Buy it locally on e-Sauda — chat with the seller, meet, check it, then pay directly.`,
     )
     // Deliberately no fallback image URL when a listing has none — pointing og:image
     // at a nonexistent asset just shows a broken-image icon on WhatsApp, which is

@@ -18,7 +18,6 @@ export function mapRow(row: any): Listing {
     location: row.location,
     distanceKm: Number(row.distance_km ?? 0),
     verified: false, // real per-listing verification isn't wired up yet
-    escrow: true, // every listing on the platform uses the vault flow
     emoji: row.emoji,
     bg: row.bg,
     photoUrls: row.photo_urls ?? [],
@@ -96,7 +95,7 @@ export async function fetchUserListings(ownerId: string): Promise<Listing[]> {
 }
 
 // Used by the Sell wizard to show/enforce the progressive listing cap and
-// the tiered anti-bot fee for a specific category.
+// the tiered listing fee for a specific category.
 export async function countActiveListingsInCategory(
   ownerId: string,
   category: Category,
@@ -165,7 +164,7 @@ export async function attachPhotos(id: string, photoUrls: string[]): Promise<voi
 }
 
 // Category is deliberately not editable here — it feeds the per-category listing cap
-// and anti-bot fee tier (see countActiveListingsInCategory), and letting someone swap
+// and listing fee tier (see countActiveListingsInCategory), and letting someone swap
 // category after posting would be a way to dodge that. Everything else about a listing
 // is fair game to fix after the fact (typos, price changes, more detail, etc).
 export interface ListingUpdateInput {

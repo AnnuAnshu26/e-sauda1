@@ -6,9 +6,9 @@
 //
 // This is a real (not mocked) integration -- it calls Groq's actual API. What's
 // "grounding" rather than a generic chatbot is that every request re-fetches this
-// specific user's own listings, vault orders, and conversation count server-side
+// specific user's own listings server-side
 // (never trusted from the client) and folds a compact summary of that real data into
-// the system prompt, so answers like "what's the status of my order" or "what did I
+// the system prompt, so answers like "what did I
 // list my scooter for" are answered from the database, not guessed by the model.
 //
 // Model: overridable via a GROQ_MODEL secret (supabase secrets set GROQ_MODEL=...)
@@ -78,43 +78,28 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    const [{ data: profile }, { data: myListings }, { data: boughtOrders }, { data: soldOrders }] =
-      await Promise.all([
-        adminClient.from('profiles').select('display_name, city').eq('id', user.id).single(),
-        adminClient
-          .from('listings')
-          .select('id, title, price, category, status, created_at')
-          .eq('owner_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(20),
-        adminClient
-          .from('vault_orders')
-          .select('id, amount, status, listing_id, listings(title)')
-          .eq('buyer_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(15),
-        adminClient
-          .from('vault_orders')
-          .select('id, amount, status, listing_id, listings(title)')
-          .eq('seller_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(15),
-      ])
+    const [{ data: profile }, { data: myListings }] = await Promise.all([
+      adminClient.from('profiles').select('display_name, city').eq('id', user.id).single(),
+      adminClient
+        .from('listings')
+        .select('id, title, price, category, status, created_at')
+        .eq('owner_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20),
+    ])
 
-    const fmtListing = (l: any) => `- "${l.title}" — ₹${l.price} — ${l.category} — status: ${l.status}`
-    const fmtOrder = (o: any) =>
-      `- "${o.listings?.title ?? 'listing removed'}" — ₹${o.amount} — status: ${o.status} — order id: ${o.id}`
+    const fmtListing = (l: any) => `- \"${l.title}\" — ₹${l.price} — ${l.category} — status: ${l.status}`
 
     const today = new Date().toLocaleDateString('en-IN', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     })
 
     const context = `
-You are the official AI shopping assistant for e-Sauda, a peer-to-peer marketplace app where
-people buy and sell second-hand goods directly with each other, with payment held safely in
-escrow (Sauda Vault) until handover. You help this specific logged-in user with anything
-related to the site: browsing/finding listings, categories, buying and selling, tracking
-orders, payments and escrow, refunds/cancellations, account/login issues, listing fees,
+You are the official AI shopping assistant for e-Sauda, a C2C online classifieds platform where
+people buy and sell second-hand goods directly with each other. Buyers and sellers chat in the
+app, meet in person, and pay each other directly (cash or UPI) -- e-Sauda never holds or
+handles that money. You help this specific logged-in user with anything related to the site:
+browsing/finding listings, categories, selling, listing fees, safety, account/login issues,
 policies, and general navigation help.
 
 RULES YOU MUST FOLLOW:
@@ -123,12 +108,12 @@ RULES YOU MUST FOLLOW:
    how to use the site. If asked something unrelated to e-Sauda (general knowledge, other
    companies, coding help, personal advice, current events, etc.), reply with exactly:
    "I'm here to help only with questions related to e-Sauda. I'm not able to assist with that,
-   but I'm happy to help you with anything about our products, orders, or services!"
+   but I'm happy to help you with anything about our listings, safety tips, or services!"
    Do not answer the out-of-scope part even partially -- decline the whole thing.
 
 2. CLARIFY VAGUE QUERIES. If a question is ambiguous, incomplete, or could mean several
    things, don't guess -- ask one short, specific clarifying question first (e.g. "issue with
-   my order" -> ask whether it's about delivery, a wrong item, or payment). Give the full
+   my listing" -> ask whether it's about publishing, the listing fee, or a report). Give the full
    answer only once you know exactly what they need.
 
 3. USE ONLY VERIFIED INFORMATION. Base every answer strictly on the real data below and the
@@ -143,9 +128,9 @@ RULES YOU MUST FOLLOW:
    back to how you can help with e-Sauda.
 
 6. ESCALATION. If the user is frustrated, reporting a bug, or needs something you can't
-   resolve yourself (refund approval, account recovery, a moderation dispute, a payment that
-   didn't go through), say clearly that you're escalating and point them to human support:
-   edotsauda@gmail.com (or the Contact Us page), mentioning their order ID/listing if relevant.
+   resolve yourself (a listing fee refund, account recovery, a moderation dispute, a listing fee
+   payment that didn't go through), say clearly that you're escalating and point them to human support:
+   edotsauda@gmail.com (or the Contact Us page), mentioning the listing if relevant.
 
 Always work out the user's intent first. If unclear, ask (rule 2). If out of scope, decline
 politely per rule 1 and offer to help with something you can.
@@ -158,32 +143,28 @@ HOW THE APP ACTUALLY WORKS (use this instead of guessing or hedging with "likely
 - To message a buyer or seller about a specific listing: open that listing's detail page and
   click "Chat with seller" (buyer's side) -- this creates a real-time chat thread. All ongoing
   threads are listed on the Messages page (navbar).
-- Inside a chat thread, a buyer can propose a different price using the "Make offer" box above
-  the message input. The seller sees Accept/Decline buttons on that offer card. If accepted,
-  that becomes the real price charged at checkout -- not the original listing price.
-- To actually buy: the "Buy with Vault" button on a listing detail page starts a real Razorpay
-  payment. Once paid, it creates a Sauda Vault escrow order -- money is held, not sent directly
-  to the seller.
-- After paying, the buyer gets a 6-digit handover OTP shown on their Vault page. The seller does
-  NOT see this code -- the buyer must tell it to them in person (or via chat) at handover. The
-  seller enters that code on their own Vault page to complete the order and release the escrow.
-- To cancel a funded (not yet handed over) order: either party can cancel from the Vault page.
-  If a delivery rider was already arranged, a logistics fee is deducted from the refund.
-- Selling requires: Sell page -> pick category -> fill details -> a mandatory short video of the
-  item (required, not optional -- photos are optional) -> pay a small anti-bot listing fee ->
-  publish.
-- New accounts must verify a mobile number via OTP before using most of the app.
+- Inside a chat thread, either person can propose a price using the \"Make offer\" box above
+  the message input; the other person can accept, decline or counter it. An accepted offer is
+  simply the price they've agreed to pay each other when they meet -- e-Sauda does not collect it.
+- There is NO in-app purchase, checkout, escrow or \"Vault\". Buyers pay the seller directly, in
+  person, by cash or UPI, after inspecting the item. Never tell anyone to pay in advance. e-Sauda
+  cannot refund or reverse payments between users.
+- Sellers pay a small listing fee through Razorpay when publishing: ₹1 for the first active
+  listing in a category, ₹10 for the second, ₹25 for the third or more. It is not refundable once
+  published. Buyers pay nothing to e-Sauda.
+- Selling: Sell page -> pick category -> fill details -> a mandatory short video of the item
+  (required, not optional -- photos are optional) -> pay the listing fee -> publish. Sellers can
+  edit, mark as sold or remove listings from My Listings.
+- After an item is marked sold, the buyer and seller can rate each other from their chat.
+- Safety: meet in a public place, check the item before paying, never share OTPs, never scan a QR
+  code to receive money. Users can report or block anyone. The Safety tips page is at /safety.
+  For online fraud they can call the national cyber crime helpline 1930.
+- New accounts verify their email address before using most of the app.
 
 User: ${profile?.display_name ?? 'this user'}${profile?.city ? ` (${profile.city})` : ''}
 
 Their own listings (as a seller):
 ${(myListings ?? []).map(fmtListing).join('\n') || '(none yet)'}
-
-Their purchases (as a buyer, via Sauda Vault):
-${(boughtOrders ?? []).map(fmtOrder).join('\n') || '(none yet)'}
-
-Their sales (as a seller, via Sauda Vault):
-${(soldOrders ?? []).map(fmtOrder).join('\n') || '(none yet)'}
 
 If they ask "what should I buy/order", suggest based on gaps you can reasonably infer from
 their own listings/category (e.g. someone selling a scooter might want a helmet), but be

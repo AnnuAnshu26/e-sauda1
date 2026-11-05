@@ -3,7 +3,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { Lock, ShieldCheck, Award, Star, TrendingUp, Pencil, Check, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { fetchUserListings } from "../lib/listings";
-import { fetchMyPurchases, fetchMySales } from "../lib/vault";
 import { fetchSavedListingIds } from "../lib/savedItems";
 import { updateDisplayName } from "../lib/profiles";
 import Reveal from "../components/Reveal";
@@ -24,26 +23,22 @@ export default function Profile() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  // Active listings, completed saudas, and saved items are all real now, from the
-  // `listings`, `vault_orders`, and `saved_items` tables. Rating and trust score are
+  // Active listings, completed saudas (the user's own listings marked as sold), and
+  // saved items are all real, from the `listings` and `saved_items` tables. Rating and trust score are
   // real too, from `profiles` (fed by submit_rating() in supabase/ratings_schema.sql).
   useEffect(() => {
     if (!user) return;
     fetchUserListings(user.id)
-      .then((listings) =>
+      .then((listings) => {
         setActiveListingCount(
           listings.filter((l) => l.status === "active").length,
-        ),
-      )
-      .catch(() => setActiveListingCount(0));
-
-    Promise.all([fetchMyPurchases(user.id), fetchMySales(user.id)])
-      .then(([purchases, sales]) =>
-        setCompletedCount(
-          [...purchases, ...sales].filter((o) => o.status === "completed").length,
-        ),
-      )
-      .catch(() => setCompletedCount(0));
+        );
+        setCompletedCount(listings.filter((l) => l.status === "sold").length);
+      })
+      .catch(() => {
+        setActiveListingCount(0);
+        setCompletedCount(0);
+      });
 
     fetchSavedListingIds(user.id)
       .then((ids) => setSavedCount(ids.size))
@@ -202,12 +197,12 @@ export default function Profile() {
           />
         </div>
         <p className="mt-2 text-xs text-ink/50">
-          Complete more saudas, get 5-star ratings and verify identity to grow.
+          Sell more items, get 5-star ratings and verify identity to grow.
         </p>
       </Reveal>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Stat label="Completed saudas" value={completedCount} />
+        <Stat label="Items sold" value={completedCount} />
         <Link to="/my-listings">
           <Stat
             label="Active listings"
@@ -261,16 +256,10 @@ export default function Profile() {
 
       <div className="mt-8 flex flex-wrap gap-3">
         <button
-          onClick={() => navigate("/orders")}
+          onClick={() => navigate("/my-listings")}
           className="rounded-full border border-line/10 bg-surface px-5 py-2.5 text-sm font-semibold hover:bg-cream-dark"
         >
-          My orders
-        </button>
-        <button
-          onClick={() => navigate("/vault")}
-          className="rounded-full border border-line/10 bg-surface px-5 py-2.5 text-sm font-semibold hover:bg-cream-dark"
-        >
-          Sauda Vault
+          My listings
         </button>
         <button
           onClick={() => navigate("/sell")}
@@ -286,7 +275,7 @@ export default function Profile() {
           <>
             <p className="mt-1 text-sm text-ink/60">
               Permanently delete your account. Your name and personal details are
-              removed everywhere; past transactions the other party is involved in
+              removed everywhere; past chats and ratings the other party is involved in
               stay on their record, just showing "Deleted user" instead of your name.
             </p>
             <button
@@ -300,8 +289,7 @@ export default function Profile() {
           <>
             <p className="mt-1 text-sm text-ink/60">
               This can't be undone. You'll be logged out immediately and won't be
-              able to log back in. If you have a Vault order still in progress,
-              this will be blocked until you complete or cancel it.
+              able to log back in. Your active listings will be taken down.
             </p>
             <label className="mt-4 block text-sm font-medium text-ink">
               Type <span className="font-mono font-semibold">DELETE</span> to confirm

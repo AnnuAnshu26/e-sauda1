@@ -4,9 +4,9 @@ import { useAuth } from '../context/AuthContext'
 import { askAssistant, AssistantMessage } from '../lib/chatbot'
 
 // Floating assistant available on every page once logged in — for either a
-// buyer ("where's my order", "what did I pay") or a seller ("what am I
+// buyer ("how do I list this", "is this safe") or a seller ("what am I
 // selling", "what should I list next"). Each request re-grounds itself in
-// this user's real listings/orders server-side (see chat-assistant Edge
+// this user's real listings server-side (see chat-assistant Edge
 // Function) rather than answering from general knowledge alone.
 export default function ChatbotWidget() {
   const { session } = useAuth()
@@ -56,7 +56,7 @@ export default function ChatbotWidget() {
           <div className="flex-1 space-y-3 overflow-y-auto p-3">
             {messages.length === 0 && (
               <p className="mt-6 text-center text-xs text-ink/40">
-                Ask about your orders, listings, or what to buy next —
+                Ask about your listings, fees, safety tips, or how e-Sauda works —
                 buyer or seller, either way.
               </p>
             )}

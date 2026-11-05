@@ -34,7 +34,7 @@ export function useNotifications() {
         if (!cancelled) setLoading(false)
       })
 
-    // New rows (a message just landed, a vault order just changed status) show up
+    // New rows (a message just landed, a report was reviewed) show up
     // instantly instead of only appearing after the next page load.
     const unsubscribe = subscribeToNotifications(user.id, (n) => {
       setNotifications((prev) => [n, ...prev])

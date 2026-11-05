@@ -75,7 +75,7 @@ export async function updateReportStatus(id: string, status: 'reviewed' | 'dismi
 
 // Sets a listing to 'removed' -- same status a seller's own delete-listing path could
 // reach, just triggered by an admin instead. Doesn't hard-delete the row, so its chat
-// history and past vault orders stay intact for anyone who needs to look back at them.
+// history and past chats stay intact for anyone who needs to look back at them.
 export async function removeListing(listingId: string): Promise<void> {
   const { error } = await supabase.from('listings').update({ status: 'removed' }).eq('id', listingId)
   if (error) throw error
