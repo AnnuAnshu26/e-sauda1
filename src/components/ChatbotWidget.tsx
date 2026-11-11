@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { MessageCircleQuestion, X, Send } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { askAssistant, AssistantMessage } from '../lib/chatbot'
@@ -10,6 +11,7 @@ import { askAssistant, AssistantMessage } from '../lib/chatbot'
 // Function) rather than answering from general knowledge alone.
 export default function ChatbotWidget() {
   const { session } = useAuth()
+  const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<AssistantMessage[]>([])
   const [draft, setDraft] = useState('')
@@ -43,9 +45,9 @@ export default function ChatbotWidget() {
   }
 
   return (
-    <div className="fixed bottom-5 right-5 z-50">
+    <div className={`fixed right-4 z-50 sm:right-5 ${pathname === '/sell' ? 'bottom-28 sm:bottom-24' : 'bottom-4 sm:bottom-5'}`}>
       {open && (
-        <div className="mb-3 flex h-[28rem] w-80 flex-col overflow-hidden rounded-2xl border border-line/10 bg-surface shadow-xl">
+        <div className="mb-3 flex h-[28rem] max-h-[70vh] w-[calc(100vw-2rem)] max-w-xs flex-col sm:max-w-sm overflow-hidden rounded-2xl border border-line/10 bg-surface shadow-xl">
           <div className="flex items-center justify-between border-b border-line/5 bg-forest px-4 py-3">
             <p className="text-sm font-semibold text-ink">e-Sauda Assistant</p>
             <button onClick={() => setOpen(false)} aria-label="Close assistant" className="text-ink/80 hover:text-ink">

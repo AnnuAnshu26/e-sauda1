@@ -148,7 +148,7 @@ export default function Navbar() {
               )}
             </button>
             {notifOpen && (
-              <div className="glass-elevated absolute right-0 mt-2 w-80 rounded-xl2 p-2">
+              <div className="glass-elevated absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl2 p-2">
                 <div className="flex items-center justify-between border-b border-line/10 p-2">
                   <p className="text-sm font-semibold text-ink">Notifications</p>
                   {unreadCount > 0 && (

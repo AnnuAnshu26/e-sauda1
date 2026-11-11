@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { categories } from "../data/listings";
 import { countActiveListingsInCategory, createListing } from "../lib/listings";
@@ -36,6 +36,7 @@ export default function Sell() {
   const [posted, setPosted] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const actionBarRef = useRef<HTMLDivElement>(null);
   const [mobile, setMobile] = useState<string>(() => {
     try {
       return localStorage.getItem("e-sauda-fee-mobile") || "";
@@ -297,6 +298,14 @@ export default function Sell() {
     }
   }
 
+  // Bring the error into view -- on a long form the sticky bar can be covered or
+  // the message can be set while the person is scrolled elsewhere.
+  useEffect(() => {
+    if (publishError) {
+      actionBarRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [publishError]);
+
   async function publish() {
     if (!user || !category) return;
     if (!videoFile) {
@@ -438,7 +447,7 @@ export default function Sell() {
           </p>
         )}
         <button
-          onClick={() => navigate("/orders")}
+          onClick={() => navigate("/my-listings")}
           className="mt-8 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-cream hover:bg-forest-light"
         >
           Go to My listings
@@ -766,8 +775,11 @@ export default function Sell() {
 
       {/* Bottom action bar: fee due + the single Publish button, sticky so it's
           reachable without scrolling back up on a long page. */}
-      <div className="glass-elevated sticky bottom-4 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl2 p-4">
-        <div>
+      <div
+        ref={actionBarRef}
+        className="glass-elevated sticky bottom-4 z-40 mt-6 flex flex-col gap-3 rounded-xl2 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between"
+      >
+        <div className="min-w-0">
           <p className="text-sm font-medium text-ink">
             Listing fee due now: ₹{nextListingFee}
           </p>
@@ -789,7 +801,7 @@ export default function Sell() {
             />
           )}
           {publishError && (
-            <p className="mt-1.5 max-w-md rounded-lg bg-red-500/10 p-2.5 text-xs text-red-400">
+            <p className="mt-1.5 max-w-md break-words rounded-lg bg-red-500/10 p-2.5 text-xs text-red-400">
               {publishError}
             </p>
           )}
@@ -797,7 +809,7 @@ export default function Sell() {
         <button
           onClick={publish}
           disabled={!canPublish || publishing}
-          className="shrink-0 rounded-full bg-clay px-6 py-2.5 text-sm font-semibold text-cream hover:bg-clay-light disabled:opacity-40"
+          className="w-full shrink-0 rounded-full bg-clay px-6 py-2.5 text-sm font-semibold text-cream hover:bg-clay-light disabled:opacity-40 sm:w-auto"
         >
           {uploadingVideo
             ? "Uploading video…"

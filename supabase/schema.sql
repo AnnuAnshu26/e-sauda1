@@ -1,4 +1,4 @@
-git statuscreate or replace function public.handle_new_user()
+create or replace function public.handle_new_user()
 returns trigger as $$
 begin
   insert into public.profiles (id, display_name)

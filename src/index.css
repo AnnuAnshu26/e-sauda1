@@ -79,6 +79,28 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Never allow sideways page scroll on phones (a single overflowing element would
+   otherwise make the whole page wobble left/right). */
+html,
+body {
+  overflow-x: clip;
+}
+
+img,
+video {
+  max-width: 100%;
+}
+
+/* iOS Safari zooms the page when focusing an input under 16px. */
+@media (max-width: 639px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 body {

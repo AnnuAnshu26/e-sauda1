@@ -45,7 +45,7 @@ function ExploreSlide({
   }, [active])
 
   return (
-    <div className="relative flex h-[calc(100vh-4.5rem)] w-full snap-start items-center justify-center bg-black">
+    <div className="relative flex h-[calc(100dvh-4.5rem)] w-full snap-start items-center justify-center bg-black">
       <video
         ref={videoRef}
         src={listing.videoUrl ?? undefined}
@@ -158,7 +158,7 @@ export default function Explore() {
 
   if (loading) {
     return (
-      <div className="flex h-[calc(100vh-4.5rem)] items-center justify-center bg-black">
+      <div className="flex h-[calc(100dvh-4.5rem)] items-center justify-center bg-black">
         <p className="text-sm text-white/60">Loading videos…</p>
       </div>
     )
@@ -166,7 +166,7 @@ export default function Explore() {
 
   if (listings.length === 0) {
     return (
-      <div className="flex h-[calc(100vh-4.5rem)] flex-col items-center justify-center gap-2 bg-black px-6 text-center">
+      <div className="flex h-[calc(100dvh-4.5rem)] flex-col items-center justify-center gap-2 bg-black px-6 text-center">
         <p className="font-display text-xl text-white">No videos yet</p>
         <p className="text-sm text-white/50">Every new listing includes one — check back soon.</p>
       </div>
@@ -176,7 +176,7 @@ export default function Explore() {
   return (
     <div
       ref={containerRef}
-      className="h-[calc(100vh-4.5rem)] snap-y snap-mandatory overflow-y-scroll"
+      className="h-[calc(100dvh-4.5rem)] snap-y snap-mandatory overflow-y-scroll"
     >
       {listings.map((listing, i) => (
         <div key={listing.id} ref={(el) => (slideRefs.current[i] = el)}>

@@ -7,6 +7,7 @@ import RequireAuth from './components/RequireAuth'
 import PageTransition from './components/PageTransition'
 import RouteLoadingFallback from './components/RouteLoadingFallback'
 import ChatbotWidget from './components/ChatbotWidget'
+import ScrollToTop from './components/ScrollToTop'
 import { NetworkStatusProvider } from './context/NetworkStatusContext'
 import { ThemeProvider } from './context/ThemeContext'
 
@@ -155,6 +156,7 @@ export default function App() {
     <ThemeProvider>
       <NetworkStatusProvider>
         <div className="flex min-h-screen flex-col bg-cream">
+          <ScrollToTop />
           <Navbar />
           <main className="flex-1">
             <Suspense fallback={<RouteLoadingFallback />}>
