@@ -4,6 +4,7 @@ import { ShieldAlert, Check, X, Trash2, UserX, UserCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { fetchReports, updateReportStatus, removeListing, setUserSuspended, AdminReport } from '../lib/admin'
 import { reportReasonLabels } from '../lib/reports'
+import { AdminDisputes, AdminPromotions, AdminChatSafety } from '../components/AdminPanels'
 
 const tabs: Array<'open' | 'reviewed' | 'dismissed' | 'all'> = ['open', 'reviewed', 'dismissed', 'all']
 
@@ -14,6 +15,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [actingOn, setActingOn] = useState<string | null>(null)
+  const [section, setSection] = useState<'reports' | 'disputes' | 'promotions' | 'chat'>('reports')
 
   useEffect(() => {
     if (!profile?.is_admin) return
@@ -110,6 +112,23 @@ export default function Admin() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
+      <nav className="mb-8 flex flex-wrap gap-2 border-b border-line/10 pb-4" aria-label="Admin sections">
+        {([['reports', 'Reports'], ['disputes', 'Disputes'], ['promotions', 'Promotions'], ['chat', 'Chat safety']] as const).map(([k, label]) => (
+          <button
+            key={k}
+            onClick={() => setSection(k)}
+            aria-current={section === k}
+            className={`rounded-full px-4 py-2 text-sm font-semibold ${section === k ? 'bg-ink text-cream' : 'text-ink/60 hover:bg-cream-dark'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+      {section === 'disputes' && <AdminDisputes />}
+      {section === 'promotions' && <AdminPromotions />}
+      {section === 'chat' && <AdminChatSafety />}
+      {section === 'reports' && (
+        <>
       <h1 className="font-display text-3xl font-semibold">Reports</h1>
       <p className="mt-1 text-sm text-ink/60">Trust & safety reports filed by users.</p>
 
@@ -234,6 +253,8 @@ export default function Admin() {
           ))
         )}
       </div>
+        </>
+      )}
     </div>
   )
 }

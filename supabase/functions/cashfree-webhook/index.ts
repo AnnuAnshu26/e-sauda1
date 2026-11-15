@@ -65,6 +65,13 @@ Deno.serve(async (req) => {
     }
 
     const admin = createClient(supabaseUrl, serviceKey)
+
+    // Promotion payments (order ids are prefixed `promo_`) are handled separately; the listing-fee
+    // flow below is untouched. The signature above is already verified for both.
+    if (orderId.startsWith('promo_')) {
+      return await handlePromotionEvent(admin, orderId, payment, appId)
+    }
+
     const { data: localPayment, error: lookupError } = await admin
       .from('cashfree_listing_fee_payments')
       .select('cashfree_order_id,listing_id,seller_id,category,amount,currency,status')
@@ -124,3 +131,58 @@ Deno.serve(async (req) => {
     return json({ error: 'Webhook processing failed.' }, 500)
   }
 })
+
+// Verifies a promotion payment against Cashfree itself (never trusts the webhook body alone) and then
+// calls the service-role-only SQL functions. activate_promotion is idempotent, so retries are safe.
+async function handlePromotionEvent(
+  admin: ReturnType<typeof createClient>,
+  orderId: string,
+  payment: { payment_status?: string; cf_payment_id?: string | number },
+  appId: string,
+) {
+  const apiSecret = Deno.env.get('CASHFREE_SECRET_KEY')
+  if (!apiSecret) return json({ error: 'Webhook is not configured.' }, 500)
+
+  const { data: promo, error } = await admin
+    .from('promotions')
+    .select('id,seller_id,listing_id,plan_code,amount_paise,status')
+    .eq('cashfree_order_id', orderId)
+    .maybeSingle()
+  if (error) throw error
+  if (!promo) return json({ received: true, ignored: true })
+
+  const res = await fetch(`${CASHFREE_BASE_URL}/orders/${encodeURIComponent(orderId)}`, {
+    headers: { Accept: 'application/json', 'x-api-version': API_VERSION, 'x-client-id': appId, 'x-client-secret': apiSecret },
+  })
+  const order = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    console.error('Cashfree promotion order lookup failed:', res.status)
+    return json({ error: 'Could not verify order with Cashfree.' }, 502) // non-2xx => Cashfree retries
+  }
+
+  const amountPaise = Math.round(Number(order.order_amount) * 100)
+  const tags = order.order_tags ?? {}
+  const consistent =
+    amountPaise === promo.amount_paise &&
+    order.order_currency === 'INR' &&
+    tags.purpose === 'promotion' &&
+    tags.promotion_id === promo.id &&
+    tags.seller_id === promo.seller_id &&
+    tags.listing_id === promo.listing_id
+  if (!consistent) {
+    console.error('Promotion webhook metadata mismatch:', orderId)
+    return json({ error: 'Order metadata mismatch.' }, 400)
+  }
+
+  if (order.order_status === 'PAID' && payment.payment_status === 'SUCCESS') {
+    const { error: rpcError } = await admin.rpc('activate_promotion', {
+      p_order_id: orderId,
+      p_payment_id: String(payment.cf_payment_id ?? ''),
+      p_amount_paise: amountPaise,
+    })
+    if (rpcError) throw rpcError
+  } else if (payment.payment_status === 'FAILED' || payment.payment_status === 'USER_DROPPED') {
+    await admin.rpc('fail_promotion', { p_order_id: orderId })
+  }
+  return json({ received: true })
+}

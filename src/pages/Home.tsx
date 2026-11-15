@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { categories } from "../data/listings";
 import { fetchListings } from "../lib/listings";
+import { fetchPromotedListings } from "../lib/promotions";
 import { useSavedListings } from "../hooks/useSavedListings";
 import { Listing } from "../types";
 import ListingCard from "../components/ListingCard";
@@ -104,13 +105,23 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [activeHeroIcon, setActiveHeroIcon] = useState(0);
   const [handoverStep, setHandoverStep] = useState(0);
+  const [promoted, setPromoted] = useState<Listing[]>([]);
   const [recommended, setRecommended] = useState<Listing[]>([]);
   const [recommendedLoading, setRecommendedLoading] = useState(false);
+
+  // Paid placements. Failure is silent: the page works fine without them.
+  useEffect(() => {
+    let cancelled = false;
+    fetchPromotedListings("listing", 4)
+      .then((data) => { if (!cancelled) setPromoted(data); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
     fetchListings()
-      .then((data) => { if (!cancelled) setFresh(data.slice(0, 8)); })
+      .then((data) => { if (!cancelled) setFresh(data.slice(0, 12)); })
       .catch(() => { if (!cancelled) setFresh([]); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
@@ -337,6 +348,24 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Promoted listings -- paid placement, always labelled Sponsored */}
+      {promoted.length > 0 && (
+        <section className="mx-auto max-w-7xl px-6 pt-16" aria-label="Sponsored listings">
+          <div className="mb-6 flex items-end justify-between">
+            <div>
+              <p className="eyebrow">(Sponsored)</p>
+              <h2 className="mt-2 font-display text-3xl font-extrabold text-ink">Promoted listings</h2>
+              <p className="mt-1 text-sm text-ink/50">Sellers pay to show these here. They are not ranked by quality.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+            {promoted.map((l) => (
+              <ListingCard key={l.id} listing={l} sponsored saved={savedIds.has(l.id)} onToggleSaved={toggleSaved} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Fresh listings */}
       <section className="mx-auto max-w-7xl px-6 py-16">
         <Reveal className="mb-8" contentClassName="flex items-end justify-between">
@@ -355,7 +384,7 @@ export default function Home() {
           </div>
         ) : fresh.length > 0 ? (
           <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
-            {fresh.map((l, i) => (
+            {fresh.filter((l) => !promoted.some((p) => p.id === l.id)).slice(0, 8).map((l, i) => (
               <Reveal key={l.id} delay={Math.min(i * 0.05, 0.3)}>
                 <ListingCard listing={l} saved={savedIds.has(l.id)} onToggleSaved={toggleSaved} />
               </Reveal>

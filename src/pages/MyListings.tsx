@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Trash2, Package, CheckCircle, RotateCcw, ChevronRight } from 'lucide-react'
+import { Trash2, Package, CheckCircle, RotateCcw, ChevronRight, Megaphone } from 'lucide-react'
 import Reveal from '../components/Reveal'
 import { useAuth } from '../context/AuthContext'
 import { fetchUserListings, deleteListing, markListingSold, relistListing } from '../lib/listings'
 import { Listing } from '../types'
+import PromoteModal from '../components/PromoteModal'
+import { fetchMyPromotions, formatRupees, isLive, Promotion, PROMOTION_STATUS_LABEL } from '../lib/promotions'
 
 const statusStyles: Record<Listing['status'], string> = {
   active: 'bg-emerald-500/10 text-emerald-400',
@@ -22,6 +24,13 @@ export default function MyListings() {
   const [error, setError] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [statusChangingId, setStatusChangingId] = useState<string | null>(null)
+  const [promotions, setPromotions] = useState<Promotion[]>([])
+  const [promoting, setPromoting] = useState<Listing | null>(null)
+
+  const reloadPromotions = () => {
+    if (user) fetchMyPromotions(user.id).then(setPromotions).catch(() => {})
+  }
+  useEffect(reloadPromotions, [user])
 
   useEffect(() => {
     if (!user) return
@@ -121,12 +130,28 @@ export default function MyListings() {
                   <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusStyles[l.status]}`}>
                     {l.status}
                   </span>
+                  {(() => {
+                    const live = promotions.find((p) => p.listingId === l.id && isLive(p))
+                    return live ? (
+                      <span className="ml-1.5 mt-1 inline-block rounded-full bg-clay/10 px-2 py-0.5 text-xs font-medium text-clay">
+                        Promoted until {new Date(live.expiresAt!).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                      </span>
+                    ) : null
+                  })()}
                 </div>
 
                 <ChevronRight size={16} className="hidden shrink-0 text-ink/25 sm:block" />
               </Link>
 
               <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-2 sm:w-auto">
+                {l.status === 'active' && !promotions.some((p) => p.listingId === l.id && isLive(p)) && (
+                  <button
+                    onClick={() => setPromoting(l)}
+                    className="flex items-center gap-1.5 rounded-full border border-clay/30 bg-clay/10 px-3 py-1.5 text-xs font-semibold text-clay hover:bg-clay/20"
+                  >
+                    <Megaphone size={12} /> Promote
+                  </button>
+                )}
                 {l.status === 'active' && (
                   <button
                     onClick={() => handleMarkSold(l)}
@@ -157,6 +182,46 @@ export default function MyListings() {
           ))
         )}
       </div>
+
+      {promotions.length > 0 && (
+        <section className="mt-10" aria-labelledby="your-promotions">
+          <h2 id="your-promotions" className="font-display text-xl font-semibold text-ink">Your promotions</h2>
+          <div className="mt-3 overflow-x-auto rounded-xl2 border border-line/5 bg-surface">
+            <table className="w-full min-w-[34rem] text-left text-xs">
+              <thead className="text-ink/50">
+                <tr>
+                  <th className="px-4 py-2.5 font-medium">Listing</th>
+                  <th className="px-4 py-2.5 font-medium">Status</th>
+                  <th className="px-4 py-2.5 font-medium">Paid</th>
+                  <th className="px-4 py-2.5 font-medium">Started</th>
+                  <th className="px-4 py-2.5 font-medium">Expires</th>
+                </tr>
+              </thead>
+              <tbody>
+                {promotions.map((p) => {
+                  const l = listings.find((x) => x.id === p.listingId)
+                  const label = p.status === 'active' && !isLive(p) ? 'Expired' : PROMOTION_STATUS_LABEL[p.status]
+                  const date = (d: string | null) => (d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—')
+                  return (
+                    <tr key={p.id} className="border-t border-line/5">
+                      <td className="max-w-[12rem] truncate px-4 py-2.5 text-ink">{l?.title ?? 'Listing'}{p.includesReel && ' + reel'}</td>
+                      <td className="px-4 py-2.5 text-ink/80">{label}</td>
+                      <td className="px-4 py-2.5 text-ink/80">{formatRupees(p.amountPaise)}</td>
+                      <td className="px-4 py-2.5 text-ink/60">{date(p.startsAt)}</td>
+                      <td className="px-4 py-2.5 text-ink/60">{date(p.expiresAt)}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-2 text-[11px] text-ink/40">View and click counts are not tracked yet.</p>
+        </section>
+      )}
+
+      {promoting && (
+        <PromoteModal listing={promoting} onClose={() => setPromoting(null)} onDone={reloadPromotions} />
+      )}
     </div>
   )
 }

@@ -10,9 +10,11 @@ interface ListingCardProps {
   listing: Listing
   saved?: boolean
   onToggleSaved?: (listingId: string) => void
+  // Paid placement. Anything rendered because someone paid MUST pass this so it is labelled.
+  sponsored?: boolean
 }
 
-export default function ListingCard({ listing, saved: savedProp, onToggleSaved }: ListingCardProps) {
+export default function ListingCard({ listing, saved: savedProp, onToggleSaved, sponsored }: ListingCardProps) {
   const [localSaved, setLocalSaved] = useState(false)
   const controlled = onToggleSaved !== undefined
   const saved = controlled ? !!savedProp : localSaved
@@ -53,6 +55,11 @@ export default function ListingCard({ listing, saved: savedProp, onToggleSaved }
         >
           <Heart size={14} className={saved ? 'fill-clay text-clay' : 'text-ink/70'} />
         </button>
+        {sponsored && (
+          <span className="absolute left-2 top-2 rounded-full bg-ink/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-cream">
+            Sponsored
+          </span>
+        )}
         {!(listing.photoUrls?.length > 0) && (
           <ImageOff size={28} strokeWidth={1.5} className="text-ink/25" />
         )}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, MessageSquare, AlertTriangle, Ban, ShieldOff, IndianRupee, Check, X, Sparkles, ExternalLink, Star } from 'lucide-react'
@@ -19,6 +19,8 @@ import {
   subscribeToOffers,
 } from '../lib/chatOffers'
 import { scanMessage, describeFlags } from '../lib/moderation'
+import MessageRiskNotice from '../components/MessageRiskNotice'
+import DealPanel from '../components/DealPanel'
 import { submitRating, fetchMyRatingForConversation } from '../lib/ratings'
 import { blockUser, unblockUser, amIBlocking, fetchMyBlockedUsers, BlockedUser } from '../lib/blocking'
 import { ConversationSummary, Message, ChatOffer } from '../types'
@@ -51,7 +53,13 @@ export default function Messages() {
   const [counteringOfferId, setCounteringOfferId] = useState<string | null>(null)
   const [counterDraft, setCounterDraft] = useState('')
   const [counterSubmitting, setCounterSubmitting] = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  // Scrolling is confined to the thread's own scroll container. The old code called
+  // bottomRef.scrollIntoView(), which scrolls EVERY scrollable ancestor -- including
+  // the window -- so opening a chat (or any new message/offer) yanked the whole page
+  // to the bottom. We now set scrollTop on the container only.
+  const threadScrollRef = useRef<HTMLDivElement>(null)
+  const stickToBottomRef = useRef(true) // is the reader at/near the bottom of the thread?
+  const initialScrollPendingRef = useRef(false) // a freshly opened thread needs one jump to bottom
 
   // Load the inbox list once we know who's logged in.
   useEffect(() => {
@@ -62,6 +70,12 @@ export default function Messages() {
       .catch(() => setConversations([]))
       .finally(() => setLoadingList(false))
   }, [user])
+
+  // Silent refresh (no spinner) -- e.g. after a handover completes and the listing becomes "sold".
+  function reloadConversations() {
+    if (!user) return
+    fetchConversations(user.id).then(setConversations).catch(() => {})
+  }
 
   // Load the open thread + subscribe to new messages arriving live.
   useEffect(() => {
@@ -96,9 +110,51 @@ export default function Messages() {
     }
   }, [activeId])
 
+  // New thread opened: remember to jump to its latest message once it has rendered.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, offers])
+    stickToBottomRef.current = true
+    initialScrollPendingRef.current = true
+  }, [activeId])
+
+  // After messages/offers render: scroll the *thread container* (never the window) --
+  // always for the first paint of a thread, afterwards only if the reader was already
+  // near the bottom, so reading older messages is never interrupted.
+  useLayoutEffect(() => {
+    const el = threadScrollRef.current
+    if (!el || loadingThread) return
+    if (initialScrollPendingRef.current) {
+      initialScrollPendingRef.current = false
+      el.scrollTop = el.scrollHeight
+      // Second pass once images/animations have settled their final height.
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight
+      })
+      return
+    }
+    if (stickToBottomRef.current) {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
+    }
+  }, [messages, offers, loadingThread])
+
+  // Layout around the thread (offer bar, composer, banners, late-loading images) can change
+  // the container's height after the initial scroll. While the reader is at the bottom,
+  // keep them pinned there; if they've scrolled up, never touch their position.
+  useEffect(() => {
+    const el = threadScrollRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(() => {
+      if (stickToBottomRef.current) el.scrollTop = el.scrollHeight
+    })
+    ro.observe(el)
+    if (el.firstElementChild) ro.observe(el.firstElementChild)
+    return () => ro.disconnect()
+  }, [activeId, loadingThread])
+
+  function handleThreadScroll() {
+    const el = threadScrollRef.current
+    if (!el) return
+    stickToBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80
+  }
 
   // Re-check block status whenever the active thread changes -- otherPartyId comes
   // from the conversation list, which is why this depends on `conversations` too.
@@ -397,7 +453,7 @@ export default function Messages() {
               <p className="mt-1 text-xs text-ink/40">Chat with a seller from any listing page.</p>
             </div>
           ) : (
-            <ul className="relative max-h-[70vh] divide-y divide-line/5 overflow-y-auto">
+            <ul className="relative max-h-[70vh] max-h-[70dvh] divide-y divide-line/5 overflow-y-auto overscroll-contain">
               {conversations.map((c, idx) => (
                 <motion.li
                   key={c.id}
@@ -450,7 +506,7 @@ export default function Messages() {
         </div>
 
         {/* Thread */}
-        <div className="flex h-[70vh] flex-col">
+        <div className="flex h-[70vh] h-[70dvh] min-h-0 flex-col">
           {!activeId ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
               <motion.span
@@ -509,6 +565,15 @@ export default function Messages() {
                 </div>
               )}
 
+              {activeConversation && (
+                <DealPanel
+                  conversationId={activeConversation.id}
+                  isBuyer={isBuyer}
+                  listingStatus={activeConversation.listingStatus}
+                  onChanged={reloadConversations}
+                />
+              )}
+
               {canRate && (
                 <div className="border-b border-line/5 bg-emerald-500/5 px-4 py-3">
                   {myRating !== null ? (
@@ -554,7 +619,11 @@ export default function Messages() {
                 </div>
               )}
 
-              <div className="flex-1 space-y-3 overflow-y-auto p-4">
+              <div
+                ref={threadScrollRef}
+                onScroll={handleThreadScroll}
+                className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain p-4"
+              >
                 {loadingThread ? (
                   <div className="space-y-3">
                     {[...Array(3)].map((_, i) => (
@@ -585,12 +654,7 @@ export default function Messages() {
                           >
                             {m.body}
                           </div>
-                          {m.flagged && (
-                            <span className="mt-1 flex items-center gap-1 text-[11px] text-amber-400">
-                              <AlertTriangle size={11} /> Be careful — never share OTPs or pay in
-                              advance
-                            </span>
-                          )}
+                          <MessageRiskNotice message={m} mine={mine} />
                         </motion.div>
                       )
                     }
@@ -701,7 +765,6 @@ export default function Messages() {
                     )
                   })
                 )}
-                <div ref={bottomRef} />
               </div>
 
               {profile?.suspended ? (

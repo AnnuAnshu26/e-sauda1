@@ -5,6 +5,7 @@ import { categories } from "../data/listings";
 import { INDIA_CITIES } from "../data/indiaCities";
 import { Category, Listing } from "../types";
 import { fetchListings } from "../lib/listings";
+import { fetchPromotedListings } from "../lib/promotions";
 import { useSavedListings } from "../hooks/useSavedListings";
 import { useUserLocation } from "../hooks/useUserLocation";
 import { haversineKm } from "../lib/distance";
@@ -148,6 +149,15 @@ export default function Browse() {
     };
   }, [active, min, max, search, city]);
 
+  // Paid placements: fetched once, then intersected with the *already filtered* results below, so a
+  // sponsored listing only appears when it genuinely matches the buyer's category/price/search/city.
+  const [promotedIds, setPromotedIds] = useState<string[]>([]);
+  useEffect(() => {
+    fetchPromotedListings("listing", 20)
+      .then((p) => setPromotedIds(p.map((l) => l.id)))
+      .catch(() => setPromotedIds([]));
+  }, []);
+
   // Real distance from the buyer's live location, not the stored distance_km column
   // (which is never anything but its default 0 -- see lib/listings.ts). Without this,
   // "Nearest first" was sorting on a value that's identical for every listing and
@@ -169,6 +179,17 @@ export default function Browse() {
     }
     return result;
   }, [listings, sort, myCoords]);
+
+  // At most two sponsored cards above the results; they are removed from the organic grid so nothing
+  // appears twice.
+  const sponsored = useMemo(
+    () => filtered.filter((l) => promotedIds.includes(l.id)).slice(0, 2),
+    [filtered, promotedIds],
+  );
+  const organic = useMemo(
+    () => filtered.filter((l) => !sponsored.some((s) => s.id === l.id)),
+    [filtered, sponsored],
+  );
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-8">
@@ -322,7 +343,16 @@ export default function Browse() {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 xl:grid-cols-4">
-              {filtered.map((l) => (
+              {sponsored.map((l) => (
+                <ListingCard
+                  key={`sponsored-${l.id}`}
+                  listing={l}
+                  sponsored
+                  saved={savedIds.has(l.id)}
+                  onToggleSaved={toggleSaved}
+                />
+              ))}
+              {organic.map((l) => (
                 <ListingCard
                   key={l.id}
                   listing={l}

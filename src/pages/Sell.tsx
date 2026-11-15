@@ -86,6 +86,7 @@ export default function Sell() {
 
   const [descSuggestLoading, setDescSuggestLoading] = useState(false);
   const [descSuggestError, setDescSuggestError] = useState<string | null>(null);
+  const [descLanguage, setDescLanguage] = useState<"en" | "hi">("en");
 
   // Newly picked photos go through the crop/rotate editor one at a time before
   // landing in photoFiles -- pendingPhotoQueue holds the rest while editingNewPhoto
@@ -287,6 +288,7 @@ export default function Sell() {
         subCategory: subCategory || undefined,
         condition,
         title: title || undefined,
+        language: descLanguage,
       });
       if (suggestion) setDescription(suggestion);
     } catch (err: any) {
@@ -599,15 +601,31 @@ export default function Sell() {
               {/* Only worth offering once there's an actual photo/video to look at
                   -- see handleSuggestDescription and the Media section below. */}
               {(photoFiles.length > 0 || videoFile) && (
-                <button
-                  type="button"
-                  onClick={handleSuggestDescription}
-                  disabled={descSuggestLoading}
-                  className="flex shrink-0 items-center gap-1.5 rounded-full bg-clay px-3 py-1.5 text-xs font-semibold text-cream hover:bg-clay-light disabled:opacity-50"
-                >
-                  <Sparkles size={12} />
-                  {descSuggestLoading ? "Looking at your photos/video…" : "Suggest description"}
-                </button>
+                <span className="flex shrink-0 items-center gap-2">
+                  <select
+                    value={descLanguage}
+                    onChange={(e) => setDescLanguage(e.target.value as "en" | "hi")}
+                    disabled={descSuggestLoading}
+                    aria-label="Description language"
+                    className="bg-surface text-ink rounded-full border border-line/10 px-2 py-1 text-xs"
+                  >
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={handleSuggestDescription}
+                    disabled={descSuggestLoading}
+                    className="flex items-center gap-1.5 rounded-full bg-clay px-3 py-1.5 text-xs font-semibold text-cream hover:bg-clay-light disabled:opacity-50"
+                  >
+                    <Sparkles size={12} />
+                    {descSuggestLoading
+                      ? "Looking at your photos/video…"
+                      : descSuggestError
+                        ? "Try again"
+                        : "Suggest description"}
+                  </button>
+                </span>
               )}
             </div>
             <textarea

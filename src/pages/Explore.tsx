@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Heart, ArrowUpRight, VolumeX, Volume2 } from 'lucide-react'
 import { fetchListingsWithVideo } from '../lib/listings'
+import { fetchPromotedListings } from '../lib/promotions'
 import { useSavedListings } from '../hooks/useSavedListings'
 import { useAuth } from '../context/AuthContext'
 import { Listing } from '../types'
@@ -17,8 +18,10 @@ function ExploreSlide({
   onToggleMute,
   saved,
   onToggleSaved,
+  sponsored,
 }: {
   listing: Listing
+  sponsored?: boolean
   active: boolean
   muted: boolean
   onToggleMute: () => void
@@ -62,6 +65,12 @@ function ExploreSlide({
 
       {/* Gradient + info overlay, OLX/Shorts-style */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
+
+      {sponsored && (
+        <span className="absolute left-4 top-4 rounded-full bg-black/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+          Sponsored
+        </span>
+      )}
 
       <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5">
         <div className="text-white">
@@ -110,6 +119,7 @@ export default function Explore() {
   const { user } = useAuth()
   const { savedIds, toggleSaved } = useSavedListings()
   const [listings, setListings] = useState<Listing[]>([])
+  const [sponsoredIds, setSponsoredIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
   const [activeIndex, setActiveIndex] = useState(0)
   const [muted, setMuted] = useState(true)
@@ -118,9 +128,23 @@ export default function Explore() {
 
   useEffect(() => {
     let cancelled = false
-    fetchListingsWithVideo()
-      .then((data) => {
-        if (!cancelled) setListings(data)
+    // Organic reels + any reels whose seller paid for reel promotion. A sponsored reel is slotted in
+    // after every 4th organic one (never back-to-back) and removed from the organic list so no reel
+    // is shown twice. Failure to load sponsored reels never blocks the feed.
+    Promise.all([fetchListingsWithVideo(), fetchPromotedListings('reel', 6).catch(() => [] as Listing[])])
+      .then(([organic, promoted]) => {
+        if (cancelled) return
+        const promotedIds = new Set(promoted.map((l) => l.id))
+        const rest = organic.filter((l) => !promotedIds.has(l.id))
+        const merged: Listing[] = []
+        let p = 0
+        rest.forEach((l, i) => {
+          merged.push(l)
+          if ((i + 1) % 4 === 0 && p < promoted.length) merged.push(promoted[p++])
+        })
+        if (merged.length === 0) merged.push(...promoted) // nothing organic: still show what's paid, labelled
+        setSponsoredIds(promotedIds)
+        setListings(merged)
       })
       .catch(() => {
         if (!cancelled) setListings([])
@@ -187,6 +211,7 @@ export default function Explore() {
             onToggleMute={() => setMuted((m) => !m)}
             saved={savedIds.has(listing.id)}
             onToggleSaved={() => (user ? toggleSaved(listing.id) : undefined)}
+            sponsored={sponsoredIds.has(listing.id)}
           />
         </div>
       ))}

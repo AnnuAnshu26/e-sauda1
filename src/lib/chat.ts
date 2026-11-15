@@ -1,7 +1,6 @@
 import { supabase } from './supabase'
 import { Conversation, ConversationSummary, Message } from '../types'
 import { RealtimeChannel } from '@supabase/supabase-js'
-import { scanMessage } from './moderation'
 
 function mapConversation(row: any): Conversation {
   return {
@@ -22,6 +21,7 @@ function mapMessage(row: any): Message {
     createdAt: row.created_at,
     flagged: row.flagged ?? false,
     flagReasons: row.flag_reasons ?? [],
+    riskLevel: row.risk_level ?? (row.flagged ? 'medium' : 'low'),
   }
 }
 
@@ -118,17 +118,14 @@ export async function sendMessage(
   senderId: string,
   body: string,
 ): Promise<Message> {
-  // Computed here (not trusted from the caller) so the stored flag always reflects
-  // the actual message text, and both participants see the same warning on it.
-  const { flagged, reasons } = scanMessage(body)
+  // risk_level / flagged / flag_reasons are deliberately NOT sent: a database trigger
+  // (chat_risk_scan_schema.sql) scans the text and sets them, overriding anything a client supplies.
   const { data, error } = await supabase
     .from('messages')
     .insert({
       conversation_id: conversationId,
       sender_id: senderId,
       body,
-      flagged,
-      flag_reasons: reasons,
     })
     .select('*')
     .single()
@@ -159,4 +156,10 @@ export function subscribeToMessages(
   return () => {
     supabase.removeChannel(channel)
   }
+}
+
+// A sender who thinks their message was wrongly flagged can ask for a human review.
+export async function appealMessageFlag(messageId: string, note?: string): Promise<void> {
+  const { error } = await supabase.rpc('appeal_message_flag', { p_message_id: messageId, p_note: note ?? null })
+  if (error) throw error
 }

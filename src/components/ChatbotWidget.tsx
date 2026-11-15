@@ -17,10 +17,13 @@ export default function ChatbotWidget() {
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
+  // Scroll only the widget's own message list. scrollIntoView() would also scroll
+  // the page behind it (and fired on every render while the widget was open).
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const el = scrollRef.current
+    if (el) el.scrollTop = el.scrollHeight
   }, [messages, open])
 
   if (!session) return null
@@ -55,7 +58,7 @@ export default function ChatbotWidget() {
             </button>
           </div>
 
-          <div className="flex-1 space-y-3 overflow-y-auto p-3">
+          <div ref={scrollRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain p-3">
             {messages.length === 0 && (
               <p className="mt-6 text-center text-xs text-ink/40">
                 Ask about your listings, fees, safety tips, or how e-Sauda works —
@@ -75,7 +78,6 @@ export default function ChatbotWidget() {
             ))}
             {sending && <p className="text-xs text-ink/40">Thinking…</p>}
             {error && <p className="rounded-lg bg-red-500/10 p-2 text-xs text-red-400">{error}</p>}
-            <div ref={bottomRef} />
           </div>
 
           <form onSubmit={onSubmit} className="flex items-center gap-2 border-t border-line/5 p-3">

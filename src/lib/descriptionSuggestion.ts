@@ -76,6 +76,12 @@ export interface DescriptionSuggestionInput {
   subCategory?: string
   condition?: string
   title?: string
+  brand?: string
+  color?: string
+  material?: string
+  size?: string
+  features?: string
+  language?: 'en' | 'hi'
 }
 
 // Builds the image set (up to 2 photos + 1 video frame, matching the edge
@@ -112,6 +118,12 @@ export async function suggestListingDescription(input: DescriptionSuggestionInpu
       subCategory: input.subCategory,
       condition: input.condition,
       title: input.title,
+      brand: input.brand,
+      color: input.color,
+      material: input.material,
+      size: input.size,
+      features: input.features,
+      language: input.language ?? 'en',
     },
   })
 

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { MapPin, Search, Bell, Plus, User as UserIcon, ShoppingBag, LogOut, Inbox, Heart, ShieldAlert, Package, Clapperboard, PlayCircle, Menu, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useNotifications } from '../hooks/useNotifications'
@@ -22,18 +22,37 @@ export default function Navbar() {
   const { user, profile, signOut } = useAuth()
   const { notifications, unreadCount, markRead, markAllRead } = useNotifications()
 
+  const location = useLocation()
+
+  // Outside-click (pointerdown covers mouse + touch) and Escape dismissal for
+  // both floating panels. Listeners are only attached while a panel is open.
   useEffect(() => {
-    function onClick(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+    if (!menuOpen && !notifOpen) return
+    function onPointerDown(e: PointerEvent) {
+      const target = e.target as Node
+      if (menuRef.current && !menuRef.current.contains(target)) setMenuOpen(false)
+      if (notifRef.current && !notifRef.current.contains(target)) setNotifOpen(false)
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
         setMenuOpen(false)
-      }
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setNotifOpen(false)
       }
     }
-    document.addEventListener('mousedown', onClick)
-    return () => document.removeEventListener('mousedown', onClick)
-  }, [])
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [menuOpen, notifOpen])
+
+  // Any navigation closes every floating panel.
+  useEffect(() => {
+    setMenuOpen(false)
+    setNotifOpen(false)
+    setMobileNavOpen(false)
+  }, [location.pathname])
 
   async function handleNotificationClick(id: string, link: string | null) {
     await markRead(id)
@@ -134,9 +153,14 @@ export default function Navbar() {
         <ThemeToggle className="shrink-0" />
 
         {user && (
-          <div className="relative shrink-0" ref={notifRef}>
+          <div className="static shrink-0 sm:relative" ref={notifRef}>
             <button
-              onClick={() => setNotifOpen((v) => !v)}
+              onClick={() => {
+                setMenuOpen(false)
+                setNotifOpen((v) => !v)
+              }}
+              aria-haspopup="dialog"
+              aria-expanded={notifOpen}
               className="relative rounded-full p-2 text-ink/60 hover:bg-surface"
               aria-label="Notifications"
             >
@@ -147,8 +171,16 @@ export default function Navbar() {
                 </span>
               )}
             </button>
+            {/* Floating panel: absolute, so it is out of document flow and can never push
+                the page down. Below sm the wrapper is `static`, so the panel anchors to the
+                full-width sticky header with a 16px gutter (always on-screen); from sm up it
+                anchors under the bell. */}
             {notifOpen && (
-              <div className="glass-elevated absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl2 p-2">
+              <div
+                role="dialog"
+                aria-label="Notifications"
+                className="glass-elevated absolute inset-x-4 top-full z-50 mt-2 rounded-xl2 p-2 sm:inset-x-auto sm:right-0 sm:w-80"
+              >
                 <div className="flex items-center justify-between border-b border-line/10 p-2">
                   <p className="text-sm font-semibold text-ink">Notifications</p>
                   {unreadCount > 0 && (
@@ -197,15 +229,24 @@ export default function Navbar() {
           </div>
         ) : (
           <>
-            <div className="relative shrink-0" ref={menuRef}>
+            <div className="static shrink-0 sm:relative" ref={menuRef}>
               <button
-                onClick={() => setMenuOpen((v) => !v)}
+                onClick={() => {
+                  setNotifOpen(false)
+                  setMenuOpen((v) => !v)
+                }}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                aria-label="Account menu"
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-clay-light font-semibold text-cream"
               >
                 {initial}
               </button>
               {menuOpen && (
-                <div className="glass-elevated absolute right-0 mt-2 w-64 rounded-xl2 p-2">
+                <div
+                  role="menu"
+                  className="glass-elevated absolute inset-x-4 top-full z-50 mt-2 max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-xl2 p-2 sm:inset-x-auto sm:right-0 sm:w-64"
+                >
                   <div className="flex items-center gap-3 border-b border-line/10 p-3">
                     <span className="flex h-9 w-9 items-center justify-center rounded-full bg-clay-light font-semibold text-cream">
                       {initial}

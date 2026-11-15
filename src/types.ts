@@ -70,6 +70,8 @@ export interface Message {
   createdAt: string
   flagged: boolean
   flagReasons: string[]
+  // Set by the server-side scanner (chat_risk_scan_schema.sql); 'low' for older rows.
+  riskLevel: 'low' | 'medium' | 'high'
 }
 
 // A conversation enriched with listing + last-message info, used to render the inbox list.

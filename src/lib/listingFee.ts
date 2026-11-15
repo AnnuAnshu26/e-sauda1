@@ -26,7 +26,7 @@ declare global {
 
 let sdkPromise: Promise<void> | null = null
 
-async function loadCashfreeSdk(): Promise<void> {
+export async function loadCashfreeSdk(): Promise<void> {
   if (window.Cashfree) return
   if (!sdkPromise) {
     sdkPromise = new Promise((resolve, reject) => {

@@ -145,6 +145,16 @@ body::before {
    `position: relative` on the element they're applied to (for the ::before
    highlight) -- already true of most card/nav containers in this app. */
 
+/* IMPORTANT (root-cause fix for the notification/profile dropdown bug):
+   these classes MUST live inside @layer components. Tailwind emits
+   `utilities` after `components`, so utility classes like `absolute`,
+   `fixed` and `sticky` win over the `position: relative` below. When these
+   rules sat outside any layer (after `@tailwind utilities`) they came later in
+   the cascade than the utilities and silently overrode them, turning every
+   `glass-elevated absolute ...` dropdown into an in-flow `relative` block
+   that pushed the page down -- and stopping the `glass sticky` header from
+   being sticky at all. */
+@layer components {
 /* .glass: the everyday frosted panel -- navbar, footer, listing cards,
    dropdowns. Translucent surface + blur what's behind it + a soft top
    highlight, like real glass catching light from above, instead of a flat
@@ -197,6 +207,7 @@ body::before {
     rgb(255 255 255 / var(--glass-highlight-opacity)),
     transparent 45%
   );
+}
 }
 
 /* Numbered pagination tab used in the signature carousel, e.g. (01) (02) —
