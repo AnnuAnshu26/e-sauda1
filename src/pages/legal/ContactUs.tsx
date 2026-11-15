@@ -4,7 +4,7 @@ export default function ContactUs() {
   return (
     <LegalLayout title="Contact Us" lastUpdated="November 5, 2026">
       <p>
-        e-Sauda is operated by ANSHU YADAV, a sole proprietorship based in
+        e-Sauda is operated by AARTI AND ANSHU YADAV, a sole proprietorship based in
         India. If you have a question, an issue with a listing or your account, or need to
         report something, reach us through any of the channels below.
       </p>

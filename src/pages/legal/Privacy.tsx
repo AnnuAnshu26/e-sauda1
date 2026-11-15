@@ -5,7 +5,7 @@ export default function Privacy() {
     <LegalLayout title="Privacy Policy" lastUpdated="November 5, 2026">
       <p>
         This Privacy Policy explains what information e-Sauda collects, why, and how
-        it's used. e-Sauda is operated by ANSHU YADAV, a sole proprietorship
+        it's used. e-Sauda is operated by AARTI AND ANSHU YADAV, a sole proprietorship
         registered in India ("we", "us").
       </p>
 

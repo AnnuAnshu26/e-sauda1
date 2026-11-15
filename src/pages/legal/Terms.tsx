@@ -5,7 +5,7 @@ export default function Terms() {
   return (
     <LegalLayout title="Terms and Conditions" lastUpdated="November 5, 2026">
       <p>
-        <strong>This website is operated by ANSHU YADAV</strong>, trading as
+        <strong>This website is operated by AARTI AND ANSHU YADAV</strong>, trading as
         e-Sauda ("we", "us", "the platform"), a sole proprietorship registered in
         India, operating out of South West Delhi, Delhi. These Terms govern your use
         of e-Sauda's website and services.

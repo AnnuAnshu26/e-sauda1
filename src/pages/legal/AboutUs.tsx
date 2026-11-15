@@ -13,7 +13,7 @@ export default function AboutUs() {
 
       <h2>Who we are</h2>
       <p>
-        e-Sauda is operated by ANSHU YADAV, a sole proprietorship registered in
+        e-Sauda is operated by AARTI AND ANSHU YADAV, a sole proprietorship registered in
         India, operating out of South West Delhi, Delhi.
       </p>
 

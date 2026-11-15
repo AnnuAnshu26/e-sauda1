@@ -80,7 +80,7 @@ export default function Footer() {
           </div>
         </div>
         <p className="mt-14 border-t border-line/10 pt-6 text-xs text-ink/30">
-          © 2026 e-Sauda, operated by ANSHU YADAV. <Link to="/terms" className="hover:text-clay">Terms</Link> · <Link to="/privacy" className="hover:text-clay">Privacy</Link> ·{' '}
+          © 2026 e-Sauda, operated by AARTI AND ANSHU YADAV. <Link to="/terms" className="hover:text-clay">Terms</Link> · <Link to="/privacy" className="hover:text-clay">Privacy</Link> ·{' '}
           <Link to="/help" className="hover:text-clay">Help guide</Link>
         </p>
       </div>
