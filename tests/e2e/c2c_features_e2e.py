@@ -19,7 +19,8 @@ def msg(i,sender,body,level='low',reasons=()): return {'id':f'm{i}','conversatio
 msgs=[msg(1,UID,'Hi, is it available?'),msg(2,OTHER,'Yes. Send advance and scan this QR','high',['advance_payment','qr_payment']),msg(3,UID,'check https://example.com/x','medium',['external_link'])]
 plans=[{'code':'listing_basic','name':'Promote listing','description':'Shown in Promoted section','price_paise':100,'duration_days':3,'includes_reel':False},
        {'code':'listing_reel','name':'Promote listing + reel','description':'Plus Explore reel','price_paise':500,'duration_days':7,'includes_reel':True}]
-state={'rpcs':[]}
+state={'rpcs':[], 'verify':'unpaid'}
+pending_promo={'id':'77777777-7777-7777-7777-777777777777','listing_id':LISTING,'plan_code':'listing_reel','amount_paise':500,'duration_days':7,'includes_reel':True,'status':'pending_payment','starts_at':None,'expires_at':None,'created_at':'2026-11-20T08:00:00Z'}
 
 def handle(route):
     req=route.request; url=req.url; single='vnd.pgrst.object' in req.headers.get('accept','')
@@ -33,6 +34,11 @@ def handle(route):
         if name=='confirm_handover': return ok({'id':'h1','conversation_id':CONV,'listing_id':LISTING,'buyer_id':UID,'seller_id':OTHER,'seller_confirmed_at':None,'buyer_confirmed_at':'2026-11-10T09:00:00Z','completed_at':None})
         if name=='open_dispute': return ok({'id':'d1','conversation_id':CONV,'listing_id':LISTING,'raised_by':UID,'against_user':OTHER,'reason':body.get('p_reason'),'description':body.get('p_description'),'status':'open','resolution_note':None,'created_at':'2026-11-10T09:05:00Z','resolved_at':None})
         return ok(None)
+    if '/functions/v1/verify-promotion-payment' in url:
+        if state['verify']=='unpaid': return route.fulfill(status=200,content_type='application/json',headers=H,body=json.dumps({'status':'pending_payment','orderStatus':'ACTIVE','message':'Cashfree reports this order as ACTIVE, not paid. If money was deducted from your account, it may still be settling: try again in a few minutes.'}))
+        if state['verify']=='paid': return route.fulfill(status=200,content_type='application/json',headers=H,body=json.dumps({'status':'active','message':'Payment confirmed. Your promotion is live.'}))
+        return route.fulfill(status=404,content_type='application/json',headers=H,body=json.dumps({'code':'NOT_FOUND','message':'Requested function was not found'}))
+    if '/rest/v1/promotions' in url: return ok([pending_promo])
     if '/rest/v1/profiles' in url: return ok(profile if single else [profile])
     if '/rest/v1/promotion_plans' in url: return ok(plans)
     if '/rest/v1/conversations' in url: return ok([conv])
@@ -131,6 +137,14 @@ with sync_playwright() as p:
         check('switching plan updates the price (₹5)', pg.locator('button:has-text("Pay ₹5 and promote")').count()==1)
         pg.keyboard.press('Escape'); pg.wait_for_timeout(200)
         check('Escape closes modal and restores scroll', pg.locator('[role=dialog]').count()==0 and pg.evaluate("document.body.style.overflow")!='hidden')
+        # ---------- Check payment button always tells the seller something
+        pg.reload(); pg.wait_for_selector('text=Your promotions'); pg.wait_for_timeout(800)
+        state['verify']='unpaid'; pg.click('button:has-text("Check payment")'); pg.wait_for_selector('[role=status]')
+        check('Check payment (unpaid): shows what Cashfree said', 'not paid' in pg.locator('[role=status]').inner_text())
+        state['verify']='missing'; pg.click('button:has-text("Check payment")'); pg.wait_for_timeout(800)
+        check('Check payment (function unreachable): shows an error, never silent', 'Could not check the payment' in pg.locator('[role=status]').inner_text())
+        state['verify']='paid'; pg.click('button:has-text("Check payment")'); pg.wait_for_timeout(800)
+        check('Check payment (paid): shows success', 'live' in pg.locator('[role=status]').inner_text())
         check('MyListings: no horizontal overflow', noh())
         check('no JS errors', not errs)
         if errs: print(errs[:3])

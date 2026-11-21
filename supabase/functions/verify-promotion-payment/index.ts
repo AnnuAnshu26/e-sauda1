@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
 
     // Already processed -> just report.
     if (promo.status !== 'pending_payment' && promo.status !== 'payment_failed') {
-      return json({ status: promo.status, expiresAt: promo.expires_at })
+      return json({ status: promo.status, expiresAt: promo.expires_at, message: `This promotion is already ${promo.status.replace('_', ' ')}.` })
     }
 
     const headers = { Accept: 'application/json', 'x-api-version': API_VERSION, 'x-client-id': appId, 'x-client-secret': secretKey }
@@ -55,7 +55,10 @@ Deno.serve(async (req) => {
     const order = await orderRes.json().catch(() => ({}))
     if (!orderRes.ok) {
       console.error('verify-promotion-payment: order lookup failed', orderRes.status, JSON.stringify(order)?.slice(0, 300))
-      return json({ status: promo.status, note: 'Could not reach the payment provider. Try again shortly.' })
+      return json({
+        status: promo.status,
+        message: `The payment provider could not be reached (error ${orderRes.status}). If this says 401/403/404, the Cashfree keys saved in Supabase are wrong or belong to a different (test vs production) account.`,
+      })
     }
 
     const amountPaise = Math.round(Number(order.order_amount) * 100)
@@ -68,7 +71,13 @@ Deno.serve(async (req) => {
       return json({ error: 'Order does not match this promotion.' }, 400)
     }
 
-    if (order.order_status !== 'PAID') return json({ status: promo.status, orderStatus: order.order_status })
+    if (order.order_status !== 'PAID') {
+      return json({
+        status: promo.status,
+        orderStatus: order.order_status,
+        message: `Cashfree reports this order as ${order.order_status}, not paid. If money was deducted from your account, it may still be settling: try again in a few minutes.`,
+      })
+    }
 
     // PAID: find the successful payment's id for the record.
     const payRes = await fetch(`${CASHFREE_BASE_URL}/orders/${encodeURIComponent(promo.cashfree_order_id)}/payments`, { headers })
@@ -83,7 +92,7 @@ Deno.serve(async (req) => {
     if (rpcError) throw rpcError
 
     const { data: after } = await admin.from('promotions').select('status,expires_at').eq('id', promo.id).single()
-    return json({ status: after?.status ?? 'active', expiresAt: after?.expires_at ?? null })
+    return json({ status: after?.status ?? 'active', expiresAt: after?.expires_at ?? null, message: 'Payment confirmed. Your promotion is live.' })
   } catch (e) {
     console.error('verify-promotion-payment error:', e)
     return json({ error: 'Could not verify the payment right now.' }, 500)

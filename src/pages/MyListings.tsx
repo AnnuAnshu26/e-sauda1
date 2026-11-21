@@ -28,6 +28,7 @@ export default function MyListings() {
   const [promoting, setPromoting] = useState<Listing | null>(null)
 
   const [checkingPromo, setCheckingPromo] = useState<string | null>(null)
+  const [promoMessage, setPromoMessage] = useState<{ ok: boolean; text: string } | null>(null)
   const autoVerified = useRef(false)
 
   const reloadPromotions = () => {
@@ -44,12 +45,14 @@ export default function MyListings() {
     )
     autoVerified.current = true
     if (pending.length === 0) return
-    Promise.all(pending.map((p) => verifyPromotionPayment(p.id))).then(reloadPromotions)
+    Promise.all(pending.map((p) => verifyPromotionPayment(p.id))).then(reloadPromotions)  // quiet: the button reports details
   }, [promotions, user])
 
   async function checkPayment(id: string) {
     setCheckingPromo(id)
-    await verifyPromotionPayment(id)
+    setPromoMessage(null)
+    const result = await verifyPromotionPayment(id)
+    setPromoMessage({ ok: result.status === 'active', text: result.message })
     reloadPromotions()
     setCheckingPromo(null)
   }
@@ -248,6 +251,14 @@ export default function MyListings() {
               </tbody>
             </table>
           </div>
+          {promoMessage && (
+            <p
+              role="status"
+              className={`mt-3 rounded-lg p-3 text-xs ${promoMessage.ok ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}
+            >
+              {promoMessage.text}
+            </p>
+          )}
           <p className="mt-2 text-[11px] text-ink/40">View and click counts are not tracked yet.</p>
         </section>
       )}

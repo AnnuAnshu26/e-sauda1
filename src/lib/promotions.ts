@@ -104,14 +104,24 @@ export async function fetchPromotedListings(scope: 'listing' | 'reel' = 'listing
   return (data ?? []).map(mapRow)
 }
 
+export interface VerifyResult {
+  status: PromotionStatus | null
+  // Always filled in: what happened, in words the seller can act on. Never swallowed silently.
+  message: string
+}
+
 // Asks the SERVER to check the payment with Cashfree and activate the promotion if it was paid.
 // (The server, not the browser, decides; it is idempotent and safe to call repeatedly.)
-export async function verifyPromotionPayment(promotionId: string): Promise<PromotionStatus | null> {
+export async function verifyPromotionPayment(promotionId: string): Promise<VerifyResult> {
   try {
-    const res = await invokeFunction<{ status: PromotionStatus }>('verify-promotion-payment', { promotionId })
-    return res.status ?? null
-  } catch {
-    return null
+    const res = await invokeFunction<{ status: PromotionStatus; message?: string }>('verify-promotion-payment', { promotionId })
+    return { status: res.status ?? null, message: res.message || 'Checked. No change yet.' }
+  } catch (e: any) {
+    const detail = e?.message || 'unknown error'
+    return {
+      status: null,
+      message: `Could not check the payment: ${detail}. If this keeps happening, the payment-check service may not be set up yet.`,
+    }
   }
 }
 
@@ -148,7 +158,7 @@ export async function startPromotionCheckout(
   // Retry a few times because a UPI payment can take a few seconds to settle.
   onStage?.('confirming')
   for (let i = 0; i < 8; i++) {
-    const status = await verifyPromotionPayment(order.promotionId)
+    const { status } = await verifyPromotionPayment(order.promotionId)
     if (status === 'active') return 'active'
     if (status === 'cancelled') return 'failed'
     await new Promise((r) => setTimeout(r, 2500))
