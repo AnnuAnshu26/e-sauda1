@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Heart, ArrowUpRight, VolumeX, Volume2 } from 'lucide-react'
 import { fetchListingsWithVideo } from '../lib/listings'
-import { fetchPromotedListings } from '../lib/promotions'
+import { fetchPromotedListings, mergeSponsoredReels } from '../lib/promotions'
 import { useSavedListings } from '../hooks/useSavedListings'
 import { useAuth } from '../context/AuthContext'
 import { Listing } from '../types'
@@ -128,21 +128,13 @@ export default function Explore() {
 
   useEffect(() => {
     let cancelled = false
-    // Organic reels + any reels whose seller paid for reel promotion. A sponsored reel is slotted in
-    // after every 4th organic one (never back-to-back) and removed from the organic list so no reel
-    // is shown twice. Failure to load sponsored reels never blocks the feed.
+    // Organic reels + any reels whose seller paid for reel promotion. The first sponsored reel leads the
+    // feed, others follow after every 4th organic one; no reel is ever shown twice. Failure to load sponsored reels never blocks the feed.
     Promise.all([fetchListingsWithVideo(), fetchPromotedListings('reel', 6).catch(() => [] as Listing[])])
       .then(([organic, promoted]) => {
         if (cancelled) return
         const promotedIds = new Set(promoted.map((l) => l.id))
-        const rest = organic.filter((l) => !promotedIds.has(l.id))
-        const merged: Listing[] = []
-        let p = 0
-        rest.forEach((l, i) => {
-          merged.push(l)
-          if ((i + 1) % 4 === 0 && p < promoted.length) merged.push(promoted[p++])
-        })
-        if (merged.length === 0) merged.push(...promoted) // nothing organic: still show what's paid, labelled
+        const merged = mergeSponsoredReels(organic, promoted)
         setSponsoredIds(promotedIds)
         setListings(merged)
       })

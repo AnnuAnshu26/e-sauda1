@@ -12,7 +12,7 @@ b64=lambda o: base64.urlsafe_b64encode(json.dumps(o).encode()).rstrip(b'=').deco
 jwt=f"{b64({'alg':'HS256','typ':'JWT'})}.{b64({'sub':UID,'role':'authenticated','exp':4102444800})}.sig"
 session={'access_token':jwt,'refresh_token':'r','expires_in':3600,'expires_at':4102444800,'token_type':'bearer','user':{'id':UID,'aud':'authenticated','role':'authenticated','email':'me@example.com','app_metadata':{},'user_metadata':{},'created_at':'2024-01-01T00:00:00Z'}}
 def listing(i,title,video=None): return {'id':i,'owner_id':OTHER,'title':title,'price':25000,'category':'Electronics','sub_category':'Laptops','condition':'Good','description':'d','city':'Delhi','location':'Delhi','distance_km':0,'emoji':'💻','bg':'bg-cream-dark','status':'active','created_at':'2026-11-01T00:00:00Z','photo_urls':[],'video_url':video,'latitude':None,'longitude':None}
-L_ORG=listing(ORG,'Organic Desk'); L_PROMO=listing(PROMO,'Promoted Laptop'); L_MINE={**listing(LISTING,'My Camera'),'owner_id':UID}
+L_ORG=listing(ORG,'Organic Desk','http://127.0.0.1:8841/o.mp4'); L_PROMO=listing(PROMO,'Promoted Laptop','http://127.0.0.1:8841/p.mp4'); L_MINE={**listing(LISTING,'My Camera'),'owner_id':UID}
 profile={'id':UID,'display_name':'Test User','city':'Delhi','trust_score':50,'verified':False,'rating_avg':None,'rating_count':0,'is_admin':False,'suspended':False}
 conv={'id':CONV,'listing_id':LISTING,'buyer_id':UID,'seller_id':OTHER,'created_at':'2026-11-01T00:00:00Z','listings':{'title':'Used laptop','price':25000,'emoji':'💻','photo_urls':[],'status':'active'}}
 def msg(i,sender,body,level='low',reasons=()): return {'id':f'm{i}','conversation_id':CONV,'sender_id':sender,'body':body,'created_at':f'2026-11-10T08:{i:02d}:00Z','flagged':level!='low','flag_reasons':list(reasons),'risk_level':level}
@@ -77,6 +77,14 @@ with sync_playwright() as p:
         check('organic listing still shown', pg.locator('text=Organic Desk').count()>=1)
         check('Home: no horizontal overflow', noh())
 
+        # ---------- Placement: promoted first
+        pg.goto(base+'/browse'); pg.wait_for_selector('text=Promoted Laptop'); pg.wait_for_timeout(500)
+        t=pg.evaluate("document.body.innerText")
+        check('Browse: promoted listing is placed BEFORE the organic one, with a Sponsored label', t.index('Promoted Laptop')<t.index('Organic Desk') and 'SPONSORED' in t.upper().split('ORGANIC DESK')[0])
+        pg.goto(base+'/explore'); pg.wait_for_selector('text=Promoted Laptop'); pg.wait_for_timeout(500)
+        t=pg.evaluate("document.body.innerText")
+        check('Explore: sponsored reel is FIRST in the feed and labelled Sponsored', t.index('Promoted Laptop')<t.index('Organic Desk') and 'SPONSORED' in t.upper().split('ORGANIC DESK')[0])
+
         # ---------- Messages
         pg.goto(base+'/messages'); pg.wait_for_selector('text=Used laptop'); pg.locator('ul button:has-text("Used laptop")').first.click()
         pg.wait_for_selector('text=scan this QR'); pg.wait_for_timeout(1200)
@@ -94,10 +102,12 @@ with sync_playwright() as p:
         pg.click('text=Edit message')
         # deal panel
         panel=pg.locator('[data-testid=deal-panel]')
-        check('deal panel visible with buyer wording', panel.count()==1 and pg.locator('text=I received the item').count()==1)
-        pg.click('text=I received the item'); pg.wait_for_selector('text=Waiting for the seller')
+        check('deal panel visible with buyer wording', panel.count()==1 and pg.locator('button:has-text("I received it")').count()==1)
+        pbox=panel.bounding_box()
+        check('deal panel is a compact bar (<= 70px tall collapsed)', pbox['height']<=70)
+        pg.click('button:has-text("I received it")'); pg.wait_for_selector('text=waiting for the seller')
         check('confirming calls confirm_handover and shows waiting-for-other-side', any(n=='confirm_handover' for n,_ in state['rpcs']))
-        pg.click('text=Report a problem'); 
+        pg.click('button:has-text("Details")'); pg.click('button:has-text("Report a problem")'); pg.wait_for_selector('[role=dialog][aria-label="Report a problem"]')
         pg.fill('textarea','short'); 
         check('report needs >=10 chars', pg.locator('button:has-text("Send report")').is_disabled())
         pg.fill('textarea','The screen has a crack not shown in the photos'); pg.click('button:has-text("Send report")'); pg.wait_for_timeout(500)

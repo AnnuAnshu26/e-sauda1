@@ -104,9 +104,15 @@ export async function fetchPromotedListings(scope: 'listing' | 'reel' = 'listing
   return (data ?? []).map(mapRow)
 }
 
-async function fetchPromotionStatus(id: string): Promise<PromotionStatus | null> {
-  const { data } = await supabase.from('promotions').select('status').eq('id', id).maybeSingle()
-  return (data?.status as PromotionStatus) ?? null
+// Asks the SERVER to check the payment with Cashfree and activate the promotion if it was paid.
+// (The server, not the browser, decides; it is idempotent and safe to call repeatedly.)
+export async function verifyPromotionPayment(promotionId: string): Promise<PromotionStatus | null> {
+  try {
+    const res = await invokeFunction<{ status: PromotionStatus }>('verify-promotion-payment', { promotionId })
+    return res.status ?? null
+  } catch {
+    return null
+  }
 }
 
 export type CheckoutOutcome = 'active' | 'pending' | 'failed'
@@ -138,14 +144,16 @@ export async function startPromotionCheckout(
     /* not authoritative -- the server-side status below is */
   }
 
+  // Don't wait for Cashfree's webhook: ask the server to verify the order with Cashfree directly.
+  // Retry a few times because a UPI payment can take a few seconds to settle.
   onStage?.('confirming')
-  for (let i = 0; i < 12; i++) {
-    const status = await fetchPromotionStatus(order.promotionId)
+  for (let i = 0; i < 8; i++) {
+    const status = await verifyPromotionPayment(order.promotionId)
     if (status === 'active') return 'active'
-    if (status === 'payment_failed' || status === 'cancelled') return 'failed'
+    if (status === 'cancelled') return 'failed'
     await new Promise((r) => setTimeout(r, 2500))
   }
-  return 'pending' // payment may still be settling; the webhook will activate it
+  return 'pending' // still unconfirmed; the dashboard's "Check payment" (or the webhook) will finish it
 }
 
 // ---- admin ----
@@ -184,4 +192,22 @@ export async function adminPromotionStats() {
 export async function adminSetPromotionStatus(id: string, status: 'paused' | 'active' | 'cancelled', note?: string) {
   const { error } = await supabase.rpc('admin_set_promotion_status', { p_id: id, p_status: status, p_note: note ?? null })
   if (error) throw error
+}
+
+// Order for the Explore reels feed. A SPONSORED reel is shown FIRST (and labelled), then one more after
+// every 4 organic reels, so sellers get real top placement without the feed turning into ads.
+// Pure function: de-duplicates (a reel is never shown twice) and works with any number of organic reels.
+export function mergeSponsoredReels<T extends { id: string }>(organic: T[], sponsored: T[], every = 4): T[] {
+  const sponsoredIds = new Set(sponsored.map((l) => l.id))
+  const rest = organic.filter((l) => !sponsoredIds.has(l.id))
+  if (sponsored.length === 0) return rest
+  const out: T[] = [sponsored[0]]
+  let next = 1
+  rest.forEach((l, i) => {
+    out.push(l)
+    if ((i + 1) % every === 0 && next < sponsored.length) out.push(sponsored[next++])
+  })
+  // Fewer organic reels than slots: don't lose paid reels, append what's left.
+  while (next < sponsored.length) out.push(sponsored[next++])
+  return out
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Trash2, Package, CheckCircle, RotateCcw, ChevronRight, Megaphone } from 'lucide-react'
 import Reveal from '../components/Reveal'
@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import { fetchUserListings, deleteListing, markListingSold, relistListing } from '../lib/listings'
 import { Listing } from '../types'
 import PromoteModal from '../components/PromoteModal'
-import { fetchMyPromotions, formatRupees, isLive, Promotion, PROMOTION_STATUS_LABEL } from '../lib/promotions'
+import { fetchMyPromotions, formatRupees, isLive, verifyPromotionPayment, Promotion, PROMOTION_STATUS_LABEL } from '../lib/promotions'
 
 const statusStyles: Record<Listing['status'], string> = {
   active: 'bg-emerald-500/10 text-emerald-400',
@@ -27,10 +27,32 @@ export default function MyListings() {
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [promoting, setPromoting] = useState<Listing | null>(null)
 
+  const [checkingPromo, setCheckingPromo] = useState<string | null>(null)
+  const autoVerified = useRef(false)
+
   const reloadPromotions = () => {
     if (user) fetchMyPromotions(user.id).then(setPromotions).catch(() => {})
   }
   useEffect(reloadPromotions, [user])
+
+  // Self-heal: a payment that went through but whose webhook never arrived shows as "pending payment".
+  // Once per visit, ask the server to verify those (recent ones) with Cashfree and activate if paid.
+  useEffect(() => {
+    if (!user || autoVerified.current || promotions.length === 0) return
+    const pending = promotions.filter(
+      (p) => p.status === 'pending_payment' && Date.now() - new Date(p.createdAt).getTime() < 2 * 86400_000,
+    )
+    autoVerified.current = true
+    if (pending.length === 0) return
+    Promise.all(pending.map((p) => verifyPromotionPayment(p.id))).then(reloadPromotions)
+  }, [promotions, user])
+
+  async function checkPayment(id: string) {
+    setCheckingPromo(id)
+    await verifyPromotionPayment(id)
+    reloadPromotions()
+    setCheckingPromo(null)
+  }
 
   useEffect(() => {
     if (!user) return
@@ -205,7 +227,18 @@ export default function MyListings() {
                   return (
                     <tr key={p.id} className="border-t border-line/5">
                       <td className="max-w-[12rem] truncate px-4 py-2.5 text-ink">{l?.title ?? 'Listing'}{p.includesReel && ' + reel'}</td>
-                      <td className="px-4 py-2.5 text-ink/80">{label}</td>
+                      <td className="px-4 py-2.5 text-ink/80">
+                        {label}
+                        {p.status === 'pending_payment' && (
+                          <button
+                            onClick={() => checkPayment(p.id)}
+                            disabled={checkingPromo === p.id}
+                            className="ml-2 rounded-full border border-clay/30 px-2 py-0.5 text-[11px] font-semibold text-clay disabled:opacity-50"
+                          >
+                            {checkingPromo === p.id ? 'Checking…' : 'Check payment'}
+                          </button>
+                        )}
+                      </td>
                       <td className="px-4 py-2.5 text-ink/80">{formatRupees(p.amountPaise)}</td>
                       <td className="px-4 py-2.5 text-ink/60">{date(p.startsAt)}</td>
                       <td className="px-4 py-2.5 text-ink/60">{date(p.expiresAt)}</td>
